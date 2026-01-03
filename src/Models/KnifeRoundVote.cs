@@ -3,16 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using SwiftlyS2.Shared.Players;
-
 namespace Match;
 
-public static class TeamHelper
+public enum KnifeRoundVote
 {
-    public static Team ToggleTeam(Team team) =>
-        team > Team.Spectator
-            ? team == Team.T
-                ? Team.CT
-                : Team.T
-            : team;
+    None,
+    Stay,
+    Switch,
 }

@@ -17,10 +17,17 @@ namespace Match;
 )]
 public partial class Match(ISwiftlyCore core) : BasePlugin(core)
 {
+    public bool PendingInternalPush = true;
+    public bool DidKickBots = false;
+
     public override void Load(bool hotReload)
     {
         Swiftly.Initialize();
         ConVars.Initialize();
+        Core.Event.OnConVarValueChanged += OnConVarValueChanged;
+        Core.Event.OnMapLoad += OnMapLoad;
+        Core.Event.OnTick += OnTick;
+        Natives.CCSBotManager_MaintainBotQuota.AddHook(OnMaintainBotQuota);
     }
 
     public override void Unload() { }
