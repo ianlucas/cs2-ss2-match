@@ -10,17 +10,17 @@ namespace Match;
 
 public class StateWarmup : BaseState
 {
-    private readonly List<Guid> _hooks = [];
+    private readonly List<Guid> _gameEvents = [];
 
     public override void Load()
     {
         Swiftly.Core.EntitySystem.GetGameRules()?.RoundsPlayedThisPhase = 0;
-        _hooks.Add(Swiftly.Core.GameEvent.HookPost<EventItemPickup>(OnItemPickup));
+        _gameEvents.Add(Swiftly.Core.GameEvent.HookPost<EventItemPickup>(OnItemPickup));
     }
 
     public override void Unload()
     {
-        foreach (var guid in _hooks)
+        foreach (var guid in _gameEvents)
             Swiftly.Core.GameEvent.Unhook(guid);
     }
 

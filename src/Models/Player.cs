@@ -24,4 +24,9 @@ public class Player(ulong steamId, string name, PlayerTeam team, IPlayer? handle
     public KnifeRoundVote KnifeRoundVote = KnifeRoundVote.None;
 
     public PlayerStats Stats = new(steamId);
+
+    public void LeaveTeam()
+    {
+        Team.RemovePlayer(this);
+    }
 }

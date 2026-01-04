@@ -96,6 +96,11 @@ public class PlayerTeam(Team startingTeam)
         InGameLeader ??= player;
     }
 
+    public bool CanAddPlayer()
+    {
+        return Players.Count < ConVars.PlayersNeededPerTeam.Value;
+    }
+
     public void RemovePlayer(Player player)
     {
         Players.Remove(player);
