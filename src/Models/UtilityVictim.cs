@@ -5,16 +5,4 @@
 
 namespace Match;
 
-public partial class Match
-{
-    public void HandleBotsChanged()
-    {
-        if (ConVars.IsBots.Value)
-            DidKickBots = false;
-    }
-
-    public void HandleIsMatchmakingChanged()
-    {
-        Game.EvaluateMatchmakingCondicion();
-    }
-}
+public class UtilityVictim : Dictionary<ulong, UtilityDamage> { }

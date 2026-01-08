@@ -9,33 +9,41 @@ using SwiftlyS2.Shared.Misc;
 
 namespace Match;
 
-public class WarmupReadyState : StateWarmup
+public class ReadyUpWarmupState : StateWarmup
 {
     public override string Name => "warmup";
     public static readonly List<string> ReadyCmds = ["css_ready", "css_r", "css_pronto"];
     public static readonly List<string> UnreadyCmds = ["css_unready", "css_ur", "css_naopronto"];
     private long _warmupStart = 0;
-    private readonly List<Guid> _commands = [];
-    private readonly List<Guid> _gameEvents = [];
 
     public override void Load()
     {
+        Game.Log($"matchmaking={Game.IsMatchmaking()}");
+        Cstv.Stop();
+        Cstv.Set(ConVars.IsTvRecord.Value);
+        if (Game.CheckCurrentMap())
+            return /* Map will be changed. */
+            ;
         base.Load();
-        Swiftly.Core.Event.OnTick += OnTick;
-        _gameEvents.Add(Swiftly.Core.GameEvent.HookPost<EventPlayerTeam>(OnPlayerTeam));
-        _gameEvents.Add(Swiftly.Core.GameEvent.HookPost<EventPlayerDisconnect>(OnPlayerDisconnect));
-        _gameEvents.Add(Swiftly.Core.GameEvent.HookPost<EventRoundPrestart>(OnRoundPrestart));
-        _gameEvents.Add(Swiftly.Core.GameEvent.HookPost<EventCsWinPanelMatch>(OnCsWinPanelMatch));
+        HookCoreEvent("OnTick", OnTick);
+        HookGameEvent<EventPlayerTeam>(OnPlayerTeam);
+        HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
+        HookGameEvent<EventRoundPrestart>(OnRoundPrestart);
+        HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
         foreach (var cmd in ReadyCmds)
-            _commands.Add(Swiftly.Core.Command.RegisterCommand(cmd, OnReadyCommand));
+            RegisterCommand(cmd, OnReadyCommand);
         foreach (var cmd in UnreadyCmds)
-            _commands.Add(Swiftly.Core.Command.RegisterCommand(cmd, OnUnreadyCommand));
+            RegisterCommand(cmd, OnUnreadyCommand);
         Game.ResetTeamsForNewMatch();
         if (ConVars.IsMatchmaking.Value)
         {
             _warmupStart = TimeHelper.Now();
             Timers.SetEverySecond("PrintWaitingPlayersReady", OnPrintMatchmakingReady);
-            Timers.Set("MatchmakingReadyTimeout", ConVars.MatchmakingReadyTimeout.Value, () => { });
+            Timers.Set(
+                "MatchmakingReadyTimeout",
+                ConVars.MatchmakingReadyTimeout.Value,
+                OnMatchCancelled
+            );
         }
         Timers.SetEveryChatInterval("PrintWarmupCommands", OnPrintWarmupCommands);
         Game.Log("Executing warm-up commands...");
@@ -44,19 +52,6 @@ public class WarmupReadyState : StateWarmup
             isLockTeams: Game.AreTeamsLocked()
         );
         _matchCancelled = false;
-    }
-
-    public override void Unload()
-    {
-        base.Unload();
-        Swiftly.Core.Event.OnTick -= OnTick;
-        foreach (var guid in _gameEvents)
-            Swiftly.Core.GameEvent.Unhook(guid);
-        foreach (var guid in ReadyCmds)
-            Swiftly.Core.Command.UnregisterCommand(guid);
-        Timers.Clear("PrintWaitingPlayersReady");
-        Timers.Clear("MatchmakingReadyTimeout");
-        Timers.Clear("PrintWarmupCommands");
     }
 
     public void OnTick()
@@ -157,6 +152,7 @@ public class WarmupReadyState : StateWarmup
             if (state != null)
             {
                 state.IsReady = true;
+                Game.SendEvent(Game.Get5.OnTeamReadyStatusChanged(team: state.Team));
                 TryStartMatch();
             }
         }
@@ -170,6 +166,7 @@ public class WarmupReadyState : StateWarmup
         if (state != null)
         {
             state.IsReady = false;
+            Game.SendEvent(Game.Get5.OnTeamReadyStatusChanged(team: state.Team));
         }
     }
 
@@ -178,11 +175,11 @@ public class WarmupReadyState : StateWarmup
         var players = Game.Teams.SelectMany(t => t.Players);
         if (players.Count() == Game.GetNeededPlayersCount() && players.All(p => p.IsReady))
         {
-            // if (!Match.IsLoadedFromFile)
-            //     Match.Setup();
-            // Match.SetState(
-            //     Match.knife_round_enabled.Value ? new StateKnifeRound() : new StateLive()
-            // );
+            if (!Game.IsLoadedFromFile)
+                Game.Setup();
+            Game.SetState(
+                ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new StateLive()
+            );
         }
     }
 

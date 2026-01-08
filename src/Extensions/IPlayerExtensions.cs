@@ -22,6 +22,18 @@ public static class IPlayerExtensions
             return false;
         }
 
+        public int GetHealth()
+        {
+            return Math.Max(
+                (
+                    self.IsFakeClient
+                        ? self.Controller.Pawn.Value
+                        : self.Controller.PlayerPawn.Value
+                )?.Health ?? 0,
+                0
+            );
+        }
+
         public Player? GetState()
         {
             return Game

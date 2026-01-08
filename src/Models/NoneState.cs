@@ -3,18 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-namespace Match;
+using Match;
 
-public partial class Match
+public class NoneState : ReadyUpWarmupState
 {
-    public void HandleBotsChanged()
-    {
-        if (ConVars.IsBots.Value)
-            DidKickBots = false;
-    }
-
-    public void HandleIsMatchmakingChanged()
-    {
-        Game.EvaluateMatchmakingCondicion();
-    }
+    public override string Name => "none";
 }

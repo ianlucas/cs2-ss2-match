@@ -5,16 +5,9 @@
 
 namespace Match;
 
-public partial class Match
+public class ThrownMolotov(int roundNumber, long roundTime, Player player)
 {
-    public void HandleBotsChanged()
-    {
-        if (ConVars.IsBots.Value)
-            DidKickBots = false;
-    }
-
-    public void HandleIsMatchmakingChanged()
-    {
-        Game.EvaluateMatchmakingCondicion();
-    }
+    public int RoundNumber = roundNumber;
+    public long RoundTime = roundTime;
+    public Player Player = player;
 }

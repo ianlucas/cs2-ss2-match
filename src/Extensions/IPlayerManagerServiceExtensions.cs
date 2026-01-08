@@ -23,9 +23,30 @@ public static class IPlayerManagerServiceExtensions
                 .Where(p => p.Pawn?.TeamNum == (int)Team.CT || p.Pawn?.TeamNum == (int)Team.T);
         }
 
+        public IEnumerable<IPlayer> GetActualPlayers()
+        {
+            return self.GetAllPlayers().Where(p => !p.IsFakeClient);
+        }
+
         public void UpdateScoreboards()
         {
             Swiftly.Core.GameEvent.Fire<EventNextlevelChanged>();
+        }
+
+        public void RemoveAllClans()
+        {
+            bool didUpdatePlayers = false;
+            foreach (var player in self.GetAllPlayers())
+                if (player.SetPlayerClan(""))
+                    didUpdatePlayers = true;
+            if (didUpdatePlayers)
+                self.UpdateScoreboards();
+        }
+
+        public void SendAllRepeat(string message, int amount = 3)
+        {
+            for (var n = 0; n < amount; n++)
+                self.SendChat(message);
         }
     }
 }

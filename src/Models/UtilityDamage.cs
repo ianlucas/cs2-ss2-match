@@ -5,16 +5,17 @@
 
 namespace Match;
 
-public partial class Match
+public class UtilityDamage(
+    Player player,
+    bool killed = false,
+    int damage = 0,
+    bool friendlyFire = false,
+    float blindDuration = 0f
+)
 {
-    public void HandleBotsChanged()
-    {
-        if (ConVars.IsBots.Value)
-            DidKickBots = false;
-    }
-
-    public void HandleIsMatchmakingChanged()
-    {
-        Game.EvaluateMatchmakingCondicion();
-    }
+    public Player Player = player;
+    public bool Killed = killed;
+    public int Damage = damage;
+    public bool FriendlyFire = friendlyFire;
+    public float BindDuration = blindDuration;
 }
