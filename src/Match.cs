@@ -20,6 +20,7 @@ public partial class Match(ISwiftlyCore core) : BasePlugin(core)
 {
     public bool PendingInternalPush = true;
     public bool DidKickBots = false;
+    public static readonly List<string> LoadMatchCmds = ["match_load", "get5_loadmatch"];
 
     public override void Load(bool hotReload)
     {
@@ -31,7 +32,15 @@ public partial class Match(ISwiftlyCore core) : BasePlugin(core)
         Core.Event.OnClientSteamAuthorize += OnClientSteamAuthorize;
         Core.Event.OnClientDisconnected += OnClientDisconnected;
         Core.GameEvent.HookPost<EventPlayerChat>(OnPlayerChat);
+        Natives.CCSGameRules_ChangeTeam.AddHook(OnChangeTeam);
         Natives.CCSBotManager_MaintainBotQuota.AddHook(OnMaintainBotQuota);
+        foreach (var cmd in LoadMatchCmds)
+            Core.Command.RegisterCommand(cmd, OnMatchLoadCommand);
+        Core.Command.RegisterCommand("match_status", OnMatchStatusCommand);
+        Core.Command.RegisterCommand("sw_start", OnStartCommand);
+        Core.Command.RegisterCommand("sw_restart", OnRestartCommand);
+        Core.Command.RegisterCommand("sw_map", OnMapCommand);
+        Directory.CreateDirectory(Core.GetConfigPath());
     }
 
     public override void Unload() { }

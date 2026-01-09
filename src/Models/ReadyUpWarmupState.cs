@@ -12,8 +12,8 @@ namespace Match;
 public class ReadyUpWarmupState : StateWarmup
 {
     public override string Name => "warmup";
-    public static readonly List<string> ReadyCmds = ["css_ready", "css_r", "css_pronto"];
-    public static readonly List<string> UnreadyCmds = ["css_unready", "css_ur", "css_naopronto"];
+    public static readonly List<string> ReadyCmds = ["sw_ready", "sw_r", "sw_pronto"];
+    public static readonly List<string> UnreadyCmds = ["sw_unready", "sw_ur", "sw_naopronto"];
     private long _warmupStart = 0;
 
     public override void Load()

@@ -12,8 +12,8 @@ namespace Match;
 public class KnifeVoteWarmupState : ReadyUpWarmupState
 {
     public override string Name => "waiting_for_knife_decision";
-    public static readonly List<string> StayCmds = ["css_stay", "css_ficar"];
-    public static readonly List<string> SwitchCmds = ["css_switch", "css_trocar"];
+    public static readonly List<string> StayCmds = ["sw_stay", "sw_ficar"];
+    public static readonly List<string> SwitchCmds = ["sw_switch", "sw_trocar"];
     public static readonly List<KnifeRoundVote> KnifeRoundVotes =
     [
         KnifeRoundVote.Stay,

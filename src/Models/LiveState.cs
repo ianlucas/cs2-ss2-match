@@ -15,9 +15,9 @@ namespace Match;
 public partial class LiveState : BaseState
 {
     public override string Name => "live";
-    public static readonly List<string> PauseCmds = ["css_pause", "css_p", "css_pausar"];
-    public static readonly List<string> UnpauseCmds = ["css_unpause", "css_up", "css_despausar"];
-    public static readonly List<string> SurrenderCmds = ["css_gg", "css_desistir"];
+    public static readonly List<string> PauseCmds = ["sw_pause", "sw_p", "sw_pausar"];
+    public static readonly List<string> UnpauseCmds = ["sw_unpause", "sw_up", "sw_despausar"];
+    public static readonly List<string> SurrenderCmds = ["sw_gg", "sw_desistir"];
     public long RoundStartedAt = 0;
     public int Round = -1;
     private bool _isForfeiting = false;
