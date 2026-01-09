@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.Misc;
 
 namespace Match;
@@ -13,19 +14,14 @@ public static class Cstv
 
     static Cstv()
     {
-        _match.Plugin.AddCommandListener("changelevel", OnChangeLevel);
+        Swiftly.Core.Event.OnCommandExecuteHook += OnCommandExecuteHook;
     }
 
-    public static HookResult OnChangeLevel(CCSPlayerController? _, CommandInfo info)
+    public static void OnCommandExecuteHook(IOnCommandExecuteHookEvent @event)
     {
-        if (IsRecording())
-        {
-            Stop();
-            var arguments = info.ArgString.Trim().Replace("\"", "").ToLower();
-            Swiftly.Core.Engine.ExecuteCommand($"changelevel \"{arguments}\"");
-            return HookResult.Stop;
-        }
-        return HookResult.Continue;
+        if (@event.HookMode == HookMode.Pre && @event.Command.Arg(0) == "changelevel")
+            if (IsRecording())
+                Stop();
     }
 
     public static bool IsRecording() => _filename != null;

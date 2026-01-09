@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using Match;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
+
+namespace Match;
 
 public class KnifeVoteWarmupState : ReadyUpWarmupState
 {

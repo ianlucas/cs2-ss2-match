@@ -178,7 +178,7 @@ public class ReadyUpWarmupState : StateWarmup
             if (!Game.IsLoadedFromFile)
                 Game.Setup();
             Game.SetState(
-                ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new StateLive()
+                ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new LiveState()
             );
         }
     }

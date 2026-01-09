@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using Match;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
+
+namespace Match;
 
 public class KnifeRoundState : ReadyUpWarmupState
 {
@@ -22,7 +23,7 @@ public class KnifeRoundState : ReadyUpWarmupState
         Game.Log("Execing Knife Round");
         Config.ExecKnife();
         Cstv.Record(Game.DemoFilename);
-        Swiftly.Core.PlayerManager.RemoveAllClans();
+        Swiftly.Core.PlayerManager.RemovePlayerClans();
     }
 
     public HookResult OnRoundStart(EventRoundStart @event)
@@ -31,7 +32,7 @@ public class KnifeRoundState : ReadyUpWarmupState
             Swiftly.Core.Scheduler.NextWorldUpdate(() => Game.SetState(new KnifeVoteWarmupState()));
         else
         {
-            Swiftly.Core.PlayerManager.SendAllRepeat(
+            Swiftly.Core.PlayerManager.SendChatRepeat(
                 Swiftly.Core.Localizer["match.knife", Game.GetChatPrefix()]
             );
             Game.SendEvent(Game.Get5.OnKnifeRoundStarted());

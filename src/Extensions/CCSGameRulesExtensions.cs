@@ -22,6 +22,11 @@ public static class CCSGameRulesExtensions
             Natives.CCSGameRules_HandleSwapTeams.Call(self.Address);
         }
 
+        public bool IsLastRoundBeforeHalfTime()
+        {
+            return Natives.CCSGameRules_IsLastRoundBeforeHalfTime.Call(self.Address);
+        }
+
         public Team DetermineWinnerBySurvival()
         {
             var tPlayers = Swiftly.Core.PlayerManager.GetT();

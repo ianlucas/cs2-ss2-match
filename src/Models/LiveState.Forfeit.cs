@@ -1,0 +1,63 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Ian Lucas. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+using SwiftlyS2.Shared.GameEventDefinitions;
+using SwiftlyS2.Shared.Misc;
+using SwiftlyS2.Shared.Players;
+
+namespace Match;
+
+public partial class LiveState
+{
+    public HookResult OnPlayerConnect(EventPlayerConnect @event)
+    {
+        OnPlayerConnected(@event.UserIdPlayer);
+        return HookResult.Continue;
+    }
+
+    public HookResult OnPlayerConnectFull(EventPlayerConnectFull @event)
+    {
+        OnPlayerConnected(@event.UserIdPlayer);
+        return HookResult.Continue;
+    }
+
+    public void OnPlayerConnected(IPlayer player)
+    {
+        var playerState = player.GetState();
+        if (playerState != null && Game.Teams.All(t => t.Players.Any(p => p.Handle != null)))
+        {
+            _isForfeiting = false;
+            Timers.Clear("ForfeitMatch");
+            Game.Log("We are no longer forfeiting the match.");
+        }
+    }
+
+    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event)
+    {
+        var playerState = @event.UserIdPlayer.GetState();
+        if (playerState != null)
+            TryForfeitMatch(playerState);
+        return HookResult.Continue;
+    }
+
+    public void TryForfeitMatch(Player? disconnecting = null)
+    {
+        if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && Game.MapEndResult == null)
+            foreach (var team in Game.Teams)
+                if (
+                    team.Players.Count > 0
+                    && team.Players.All(p =>
+                        p.SteamID == disconnecting?.SteamID || p.Handle == null
+                    )
+                )
+                {
+                    _isForfeiting = true;
+                    Timers.Set("ForfeitMatch", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
+                    Game.Log("A team is forfeiting the match.");
+                    // @todo: Notify players a team is forfeiting.
+                    return;
+                }
+    }
+}

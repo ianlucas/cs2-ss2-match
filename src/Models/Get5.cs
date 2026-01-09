@@ -505,7 +505,7 @@ public class Get5
         };
 
     private object ToGet5Weapon(string weapon) =>
-        new { name = weapon.Replace("weapon_", ""), id = ItemUtilities.GetItemDefIndex(weapon) };
+        new { name = weapon.Replace("weapon_", ""), id = ItemHelper.GetItemDefIndex(weapon) };
 
     private string ToGet5Site(int? site) =>
         site switch

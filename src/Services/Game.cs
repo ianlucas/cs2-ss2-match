@@ -244,8 +244,10 @@ public static class Game
         }
     }
 
-    public static void Log(string message)
+    public static void Log(string message, bool printToChat = false)
     {
+        if (printToChat)
+            Swiftly.Core.PlayerManager.SendChat(message);
         if (!ConVars.IsVerbose.Value)
             return;
         var stackTrace = new StackTrace();

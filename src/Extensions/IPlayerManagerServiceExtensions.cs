@@ -17,6 +17,11 @@ public static class IPlayerManagerServiceExtensions
             return self.GetAllPlayers().FirstOrDefault(p => p.SteamID == steamID);
         }
 
+        public IEnumerable<IPlayer> GetAliveInTeam(Team team)
+        {
+            return self.GetAlive().Where(p => p.Controller.Team == team);
+        }
+
         public IEnumerable<IPlayer> GetPlayersInTeams()
         {
             return self.GetAllPlayers()
@@ -33,7 +38,7 @@ public static class IPlayerManagerServiceExtensions
             Swiftly.Core.GameEvent.Fire<EventNextlevelChanged>();
         }
 
-        public void RemoveAllClans()
+        public void RemovePlayerClans()
         {
             bool didUpdatePlayers = false;
             foreach (var player in self.GetAllPlayers())
@@ -43,7 +48,7 @@ public static class IPlayerManagerServiceExtensions
                 self.UpdateScoreboards();
         }
 
-        public void SendAllRepeat(string message, int amount = 3)
+        public void SendChatRepeat(string message, int amount = 3)
         {
             for (var n = 0; n < amount; n++)
                 self.SendChat(message);
