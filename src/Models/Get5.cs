@@ -420,13 +420,13 @@ public class Get5
             site = ToGet5Site(site),
         };
 
-    public object OnPlayerConnected(IPlayer player, string ipAddress) =>
+    public object OnPlayerConnected(IPlayer player) =>
         new
         {
             @event = "player_connect",
             matchid = Game.Id,
             player = ToGet5Player(player),
-            ip_address = ipAddress,
+            ip_address = player.IPAddress,
         };
 
     public object OnPlayerDisconnected(IPlayer player) =>
@@ -795,7 +795,7 @@ public class Get5Match
     public string? FavoredPercentageText { get; set; }
 
     [JsonPropertyName("team1")]
-    public required Get5MatchTeam team1 { get; set; }
+    public required Get5MatchTeam Team1 { get; set; }
 
     [JsonPropertyName("team2")]
     public Get5MatchTeam? Team2 { get; set; }

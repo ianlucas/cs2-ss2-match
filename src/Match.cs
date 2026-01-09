@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 using SwiftlyS2.Shared;
+using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Plugins;
 
 namespace Match;
@@ -27,6 +28,9 @@ public partial class Match(ISwiftlyCore core) : BasePlugin(core)
         Core.Event.OnConVarValueChanged += OnConVarValueChanged;
         Core.Event.OnMapLoad += OnMapLoad;
         Core.Event.OnTick += OnTick;
+        Core.Event.OnClientSteamAuthorize += OnClientSteamAuthorize;
+        Core.Event.OnClientDisconnected += OnClientDisconnected;
+        Core.GameEvent.HookPost<EventPlayerChat>(OnPlayerChat);
         Natives.CCSBotManager_MaintainBotQuota.AddHook(OnMaintainBotQuota);
     }
 

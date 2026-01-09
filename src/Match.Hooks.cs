@@ -5,11 +5,33 @@
 
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.ProtobufDefinitions;
+using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace Match;
 
 public partial class Match
 {
+    public Natives.CCSPlayerController_ChangeTeamDelegate OnChangeTeam(
+        Func<Natives.CCSPlayerController_ChangeTeamDelegate> next
+    )
+    {
+        return (thisPtr, team) =>
+        {
+            var controller = Core.Memory.ToSchemaClass<CCSPlayerController>(thisPtr);
+            var player = controller.ToPlayer()?.GetState();
+            if (Game.AreTeamsLocked())
+                if (player != null)
+                {
+                    var currentTeam = (int)player.Team.CurrentTeam;
+                    if (team != currentTeam)
+                        team = currentTeam;
+                }
+                else
+                    team = (int)Team.Spectator;
+            next()(thisPtr, team);
+        };
+    }
+
     public Natives.CCSBotManager_MaintainBotQuotaDelegate OnMaintainBotQuota(
         Func<Natives.CCSBotManager_MaintainBotQuotaDelegate> next
     )
