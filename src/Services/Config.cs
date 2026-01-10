@@ -27,6 +27,7 @@ public static class Config
             "mp_warmuptime_all_players_connected 0",
             "mp_weapons_allow_typecount -1",
             "sv_hibernate_when_empty 0",
+            "cash_team_bonus_shorthanded 0",
             // Voting convars
             "sv_allow_votes 0",
             "sv_vote_allow_spectators 0",
@@ -96,7 +97,6 @@ public static class Config
             "cash_player_killed_hostage -1000",
             "cash_player_killed_teammate -300",
             "cash_player_rescued_hostage 1000",
-            "cash_team_bonus_shorthanded 0",
             "cash_team_elimination_bomb_map 3250",
             "cash_team_elimination_hostage_map_ct 3000",
             "cash_team_elimination_hostage_map_t 3000",

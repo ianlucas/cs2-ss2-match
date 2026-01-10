@@ -24,7 +24,7 @@ public static class IPlayerManagerServiceExtensions
 
         public IEnumerable<IPlayer> GetPlayersInTeams()
         {
-            return self.GetAllValidPlayers()
+            return self.GetActualPlayers()
                 .Where(p => p.Pawn?.TeamNum == (int)Team.CT || p.Pawn?.TeamNum == (int)Team.T);
         }
 
@@ -41,7 +41,7 @@ public static class IPlayerManagerServiceExtensions
         public void RemovePlayerClans()
         {
             bool didUpdatePlayers = false;
-            foreach (var player in self.GetAllPlayers())
+            foreach (var player in self.GetActualPlayers())
                 if (player.SetPlayerClan(""))
                     didUpdatePlayers = true;
             if (didUpdatePlayers)

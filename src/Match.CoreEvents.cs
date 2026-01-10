@@ -48,7 +48,7 @@ public partial class Match
     public void OnClientSteamAuthorize(IOnClientSteamAuthorizeEvent @event)
     {
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
-        if (player != null)
+        if (player != null && !player.IsFakeClient)
         {
             var playerState = player.GetState();
             if (playerState != null)
@@ -74,7 +74,7 @@ public partial class Match
     public void OnClientDisconnected(IOnClientDisconnectedEvent @event)
     {
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
-        if (player != null)
+        if (player != null && !player.IsFakeClient)
         {
             player.GetState()?.Handle = null;
             Game.SendEvent(Game.Get5.OnPlayerDisconnected(player));

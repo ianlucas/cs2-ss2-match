@@ -24,7 +24,6 @@ public static class Game
     public static BaseState State { get; set; } = new();
     public static bool IsLoadedFromFile { get; set; } = false;
     public static bool IsSeriesStarted { get; set; } = false;
-    public static bool IsFirstMapRestarted { get; set; } = false;
     public static PlayerTeam? KnifeRoundWinner { get; set; }
     public static MapEndResult? MapEndResult { get; set; } = null;
 
@@ -45,7 +44,6 @@ public static class Game
         IsClinchSeries = true;
         IsLoadedFromFile = false;
         IsSeriesStarted = false;
-        IsFirstMapRestarted = false;
         KnifeRoundWinner = null;
         MapEndResult = null;
         Maps.Clear();
@@ -103,12 +101,8 @@ public static class Game
     public static bool CheckCurrentMap()
     {
         var currentMap = GetMap();
-        if (
-            (currentMap != null && (Swiftly.Core.Engine.GlobalVars.MapName != currentMap.MapName))
-            || (ConVars.IsRestartFirstMap.Value && !IsFirstMapRestarted)
-        )
+        if (currentMap != null && (Swiftly.Core.Engine.GlobalVars.MapName != currentMap.MapName))
         {
-            IsFirstMapRestarted = true;
             var currentMapName = currentMap?.MapName ?? Swiftly.Core.Engine.GlobalVars.MapName;
             Log($"Need to change map to {currentMapName}");
             Swiftly.Core.Engine.ExecuteCommand($"changelevel {currentMapName}");
@@ -216,14 +210,12 @@ public static class Game
 
     public static string? BackupPrefix =>
         Id != null
-            ? Swiftly.Core.GetConfigConVarPath(
-                $"{MatchFolder}/{Swiftly.Core.Engine.GlobalVars.MapName}"
-            )
+            ? Swiftly.Core.GetConfigPath($"{MatchFolder}/{Swiftly.Core.Engine.GlobalVars.MapName}")
             : null;
 
     public static string? DemoFilename =>
         Id != null
-            ? Swiftly.Core.GetConfigConVarPath(
+            ? Swiftly.Core.GetConfigPath(
                 $"{MatchFolder}/{Swiftly.Core.Engine.GlobalVars.MapName}.dem"
             )
             : null;

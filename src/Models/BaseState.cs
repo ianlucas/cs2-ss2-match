@@ -10,7 +10,6 @@ using SwiftlyS2.Shared.Memory;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
-using SwiftlyS2.Shared.ProtobufDefinitions;
 
 namespace Match;
 
@@ -85,8 +84,12 @@ public class BaseState
 
     public HookResult OnRoundPrestart(EventRoundPrestart _)
     {
-        if (Swiftly.Core.EntitySystem.GetGameRules()?.GamePhase == 5)
+        var gameRules = Swiftly.Core.EntitySystem.GetGameRules();
+        if (gameRules?.GamePhaseEnum == GamePhase.GAMEPHASE_MATCH_ENDED)
+        {
+            gameRules.GamePhaseEnum = GamePhase.GAMEPHASE_WARMUP_ROUND;
             OnMapEnd(); // Map result should be computed at State::OnCsWinPanelRound.
+        }
         return HookResult.Continue;
     }
 
@@ -167,26 +170,6 @@ public class BaseState
             IsSeriesOver = isSeriesOver,
             Winner = winner,
         };
-        if (isSeriesOver)
-        {
-            var isMatchmaking = ConVars.IsMatchmaking.Value;
-            Timers.Set(
-                "KickPlayers",
-                15.0f,
-                () =>
-                {
-                    if (isMatchmaking)
-                    {
-                        Game.Log("Match is over, kicking players.");
-                        foreach (var player in Swiftly.Core.PlayerManager.GetActualPlayers())
-                            player.Kick(
-                                "Match is reserved for a lobby.",
-                                ENetworkDisconnectionReason.NETWORK_DISCONNECT_REJECT_RESERVED_FOR_LOBBY
-                            );
-                    }
-                }
-            );
-        }
         if (Cstv.IsRecording())
         {
             var filename = Game.DemoFilename;
@@ -243,6 +226,8 @@ public class BaseState
             Game.Reset();
             Game.EvaluateMatchmakingCondicion();
         }
+        else
+            Game.MapEndResult = null;
         Game.SetState(isSeriesOver ? new NoneState() : new ReadyupWarmupState());
     }
 }

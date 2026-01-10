@@ -42,7 +42,7 @@ public partial class Match
             {
                 if (DidKickBots)
                     return 0;
-                foreach (var player in Core.PlayerManager.GetAllPlayers())
+                foreach (var player in Core.PlayerManager.GetAllValidPlayers())
                     if (player.IsFakeClient)
                         player.Kick(
                             "Kicked by match_bots' ConVar.",
@@ -78,7 +78,13 @@ public partial class Match
                 if (bots + humans < neededPerTeam)
                     Core.Engine.ExecuteCommand($"bot_add_{team}");
             }
-            return next()(thisPtr);
+            foreach (var player in Core.PlayerManager.GetSpectators())
+                if (player.IsFakeClient)
+                    player.Kick(
+                        "Kicked by match_bots' ConVar.",
+                        ENetworkDisconnectionReason.NETWORK_DISCONNECT_KICKED
+                    );
+            return 0;
         };
     }
 }

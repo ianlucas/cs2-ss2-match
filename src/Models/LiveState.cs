@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using SwiftlyS2.Shared.Commands;
-using SwiftlyS2.Shared.Convars;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
@@ -21,7 +19,6 @@ public partial class LiveState : BaseState
     public long RoundStartedAt = 0;
     public int Round = -1;
     private bool _isForfeiting = false;
-    private bool _isLastRoundBeforeHalfTime = false;
     private uint _lastThrownSmokegrenade = 0;
     private long _bombPlantedAt = 0;
     private int? _lastPlantedBombZone = null;
@@ -105,9 +102,7 @@ public partial class LiveState : BaseState
     {
         Round += 1;
         RoundStartedAt = TimeHelper.Now();
-        var gameRules = Swiftly.Core.EntitySystem.GetGameRules();
         _canSurrender = true;
-        _isLastRoundBeforeHalfTime = gameRules?.IsLastRoundBeforeHalfTime() ?? false;
         _playerHealth.Clear();
         foreach (var molotovEntityId in _thrownMolotovs.Keys)
             SendOnMolotovDetonatedEvent(molotovEntityId);
