@@ -34,14 +34,11 @@ public partial class LiveState : BaseState
 
     public override void Load()
     {
-        foreach (var cmd in SurrenderCmds)
-            RegisterCommand(cmd, OnSurrenderCommand);
-        foreach (var cmd in PauseCmds)
-            RegisterCommand(cmd, OnPauseCommand);
-        foreach (var cmd in UnpauseCmds)
-            RegisterCommand(cmd, OnUnpauseCommand);
-        RegisterCommand("sw_restore", OnRestoreCommand);
-        HookCoreEvent("OnTick", OnTick);
+        RegisterCommand(SurrenderCmds, OnSurrenderCommand);
+        RegisterCommand(PauseCmds, OnPauseCommand);
+        RegisterCommand(UnpauseCmds, OnUnpauseCommand);
+        RegisterCommand(["sw_restore"], OnRestoreCommand);
+        HookCoreEvent<EventDelegates.OnTick>(OnTick);
         HookGameEvent<EventPlayerConnect>(OnPlayerConnect);
         HookGameEvent<EventPlayerConnectFull>(OnPlayerConnectFull);
         HookGameEvent<EventRoundPrestart>(OnRoundPrestart);
@@ -57,7 +54,7 @@ public partial class LiveState : BaseState
         HookGameEvent<EventInfernoExpire>(OnInfernoExpire);
         HookGameEvent<EventFlashbangDetonate>(OnFlashbangDetonate);
         HookGameEvent<EventPlayerBlind>(Stats_OnPlayerBlind);
-        HookCoreEvent("OnEntityTakeDamageEvent", OnEntityTakeDamage);
+        HookCoreEvent<EventDelegates.OnEntityTakeDamage>(OnEntityTakeDamage);
         HookGameEvent<EventPlayerHurt>(OnPlayerHurt);
         HookGameEvent<EventPlayerDeath>(Stats_OnPlayerDeath);
         HookGameEvent<EventBombPlanted>(Stats_OnBombPlanted);

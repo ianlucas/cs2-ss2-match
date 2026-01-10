@@ -34,9 +34,13 @@ public class BaseState
             Swiftly.Core.GameEvent.Unhook(guid);
     }
 
-    protected void RegisterCommand(string commandName, ICommandService.CommandListener handler)
+    protected void RegisterCommand(
+        List<string> commandNames,
+        ICommandService.CommandListener handler
+    )
     {
-        _commands.Add(Swiftly.Core.Command.RegisterCommand(commandName, handler));
+        foreach (var name in commandNames)
+            _commands.Add(Swiftly.Core.Command.RegisterCommand(name, handler, registerRaw: true));
     }
 
     protected void HookGameEvent<T>(
@@ -52,9 +56,10 @@ public class BaseState
         );
     }
 
-    protected void HookCoreEvent<THandler>(string eventName, THandler handler)
+    protected void HookCoreEvent<THandler>(THandler handler)
         where THandler : Delegate
     {
+        var eventName = typeof(THandler).Name;
         var eventSource = Swiftly.Core.Event;
         var eventInfo =
             eventSource.GetType().GetEvent(eventName) ?? throw new ArgumentException(

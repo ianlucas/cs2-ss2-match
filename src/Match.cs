@@ -35,11 +35,11 @@ public partial class Match(ISwiftlyCore core) : BasePlugin(core)
         Natives.CCSGameRules_ChangeTeam.AddHook(OnChangeTeam);
         Natives.CCSBotManager_MaintainBotQuota.AddHook(OnMaintainBotQuota);
         foreach (var cmd in LoadMatchCmds)
-            Core.Command.RegisterCommand(cmd, OnMatchLoadCommand);
-        Core.Command.RegisterCommand("match_status", OnMatchStatusCommand);
-        Core.Command.RegisterCommand("sw_start", OnStartCommand);
-        Core.Command.RegisterCommand("sw_restart", OnRestartCommand);
-        Core.Command.RegisterCommand("sw_map", OnMapCommand);
+            Core.Command.RegisterCommand(cmd, OnMatchLoadCommand, registerRaw: true);
+        Core.Command.RegisterCommand("match_status", OnMatchStatusCommand, registerRaw: true);
+        Core.Command.RegisterCommand("sw_start", OnStartCommand, registerRaw: true);
+        Core.Command.RegisterCommand("sw_restart", OnRestartCommand, registerRaw: true);
+        Core.Command.RegisterCommand("sw_map", OnMapCommand, registerRaw: true);
         Directory.CreateDirectory(Core.GetConfigPath());
     }
 

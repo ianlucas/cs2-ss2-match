@@ -24,10 +24,8 @@ public class KnifeVoteWarmupState : ReadyUpWarmupState
     {
         base.Load();
         HookGameEvent<EventPlayerTeam>(OnPlayerTeamPre, HookMode.Pre);
-        foreach (var cmd in StayCmds)
-            RegisterCommand(cmd, OnStayCommand);
-        foreach (var cmd in SwitchCmds)
-            RegisterCommand(cmd, OnSwitchCommand);
+        RegisterCommand(StayCmds, OnStayCommand);
+        RegisterCommand(SwitchCmds, OnSwitchCommand);
         Timers.SetEveryChatInterval("PrintKnifeVoteCommands", OnPrintKnifeVoteCommands);
         Timers.Set("KnifeVoteTimeout", ConVars.KnifeVoteTimeout.Value - 1, OnKnifeVoteTimeout);
         // TODO Place this somewhere else.

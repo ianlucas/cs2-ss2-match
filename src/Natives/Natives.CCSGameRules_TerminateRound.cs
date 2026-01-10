@@ -20,7 +20,7 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSGameRules_TerminateRoundDelegate>
     > _lazyTerminateRound = new(() =>
-        FromSignature<CCSGameRules_TerminateRoundDelegate>("CCSGameRules::TerminateRound")
+        FromSignature<CCSGameRules_TerminateRoundDelegate>("CGameRules::TerminateRound")
     );
 
     public static IUnmanagedFunction<CCSGameRules_TerminateRoundDelegate> CCSGameRules_TerminateRound =>

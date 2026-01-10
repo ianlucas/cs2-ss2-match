@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 using SwiftlyS2.Shared.Commands;
+using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 
@@ -25,15 +26,13 @@ public class ReadyUpWarmupState : StateWarmup
             return /* Map will be changed. */
             ;
         base.Load();
-        HookCoreEvent("OnTick", OnTick);
+        HookCoreEvent<EventDelegates.OnTick>(OnTick);
         HookGameEvent<EventPlayerTeam>(OnPlayerTeam);
         HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
         HookGameEvent<EventRoundPrestart>(OnRoundPrestart);
         HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
-        foreach (var cmd in ReadyCmds)
-            RegisterCommand(cmd, OnReadyCommand);
-        foreach (var cmd in UnreadyCmds)
-            RegisterCommand(cmd, OnUnreadyCommand);
+        RegisterCommand(ReadyCmds, OnReadyCommand);
+        RegisterCommand(UnreadyCmds, OnUnreadyCommand);
         Game.ResetTeamsForNewMatch();
         if (ConVars.IsMatchmaking.Value)
         {
