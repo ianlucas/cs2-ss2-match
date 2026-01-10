@@ -3,16 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using SwiftlyS2.Shared.Players;
-
 namespace Match;
 
-public static class TeamHelper
+public class UtilityDamage(
+    Player player,
+    bool killed = false,
+    int damage = 0,
+    bool friendlyFire = false,
+    float blindDuration = 0f
+)
 {
-    public static Team ToggleTeam(Team team) =>
-        team > Team.Spectator
-            ? team == Team.T
-                ? Team.CT
-                : Team.T
-            : team;
+    public Player Player = player;
+    public bool Killed = killed;
+    public int Damage = damage;
+    public bool FriendlyFire = friendlyFire;
+    public float BindDuration = blindDuration;
 }

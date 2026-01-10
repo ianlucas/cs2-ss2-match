@@ -3,16 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using SwiftlyS2.Shared.Players;
+using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace Match;
 
-public static class TeamHelper
+public static class CCSPlayerControllerExtensions
 {
-    public static Team ToggleTeam(Team team) =>
-        team > Team.Spectator
-            ? team == Team.T
-                ? Team.CT
-                : Team.T
-            : team;
+    extension(CCSPlayerController self)
+    {
+        public int GetHealth()
+        {
+            return Math.Max(
+                (self.SteamID == 0 ? self.Pawn.Value : self.PlayerPawn.Value)?.Health ?? 0,
+                0
+            );
+        }
+    }
 }

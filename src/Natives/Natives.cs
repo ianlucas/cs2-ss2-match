@@ -9,7 +9,9 @@ namespace Match;
 
 public static partial class Natives
 {
-    private static IUnmanagedFunction<TDelegate> FromSignature<TDelegate>(string signatureName)
+    private static IUnmanagedFunction<TDelegate> GetFunctionBySignature<TDelegate>(
+        string signatureName
+    )
         where TDelegate : Delegate
     {
         nint? address = Swiftly.Core.GameData.GetSignature(signatureName);
@@ -20,8 +22,16 @@ public static partial class Natives
         return Swiftly.Core.Memory.GetUnmanagedFunctionByAddress<TDelegate>(address.Value);
     }
 
-    private static int FromOffset(string offset)
+    private static IUnmanagedFunction<TDelegate> GetFunctionByOffset<TDelegate>(
+        string vtableName,
+        string offsetName
+    )
+        where TDelegate : Delegate
     {
-        return Swiftly.Core.GameData.GetOffset(offset);
+        var offset = Swiftly.Core.GameData.GetOffset(offsetName);
+        var vtable =
+            Swiftly.Core.Memory.GetVTableAddress(Library.Server, vtableName)
+            ?? throw new InvalidOperationException("Failed to locate CCSPlayerController vtable.");
+        return Swiftly.Core.Memory.GetUnmanagedFunctionByVTable<TDelegate>(vtable, offset);
     }
 }

@@ -3,16 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using SwiftlyS2.Shared.Players;
-
 namespace Match;
 
-public static class TeamHelper
+public class ThrownMolotov(int roundNumber, long roundTime, Player player)
 {
-    public static Team ToggleTeam(Team team) =>
-        team > Team.Spectator
-            ? team == Team.T
-                ? Team.CT
-                : Team.T
-            : team;
+    public int RoundNumber = roundNumber;
+    public long RoundTime = roundTime;
+    public Player Player = player;
 }

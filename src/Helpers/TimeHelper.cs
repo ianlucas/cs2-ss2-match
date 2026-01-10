@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using SwiftlyS2.Shared.Players;
-
 namespace Match;
 
-public static class TeamHelper
+public static class TimeHelper
 {
-    public static Team ToggleTeam(Team team) =>
-        team > Team.Spectator
-            ? team == Team.T
-                ? Team.CT
-                : Team.T
-            : team;
+    public static long Now() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    public static long NowSeconds() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+    public static string Format(long seconds)
+    {
+        return $"{seconds / 60}:{seconds % 60:D2}";
+    }
 }

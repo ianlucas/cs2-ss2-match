@@ -3,10 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using System.Runtime.InteropServices;
-using SwiftlyS2.Shared;
-using SwiftlyS2.Shared.SchemaDefinitions;
-
 namespace Match;
 
 public static class SchemaHelper

@@ -9,16 +9,17 @@ namespace Match;
 
 public static partial class Natives
 {
-    public delegate byte CCSBotManager_MaintainBotQuotaDelegate(nint thisPtr);
+    public delegate void CCSPlayerController_ChangeTeamDelegate(nint a1, int a2);
 
     private static readonly Lazy<
-        IUnmanagedFunction<CCSBotManager_MaintainBotQuotaDelegate>
-    > _lazyMaintainBotQuota = new(() =>
-        GetFunctionBySignature<CCSBotManager_MaintainBotQuotaDelegate>(
-            "CCSBotManager::MaintainBotQuota"
+        IUnmanagedFunction<CCSPlayerController_ChangeTeamDelegate>
+    > _lazyChangeTeam = new(() =>
+        GetFunctionByOffset<CCSPlayerController_ChangeTeamDelegate>(
+            "CCSPlayerController",
+            "CCSPlayerController::ChangeTeam"
         )
     );
 
-    public static IUnmanagedFunction<CCSBotManager_MaintainBotQuotaDelegate> CCSBotManager_MaintainBotQuota =>
-        _lazyMaintainBotQuota.Value;
+    public static IUnmanagedFunction<CCSPlayerController_ChangeTeamDelegate> CCSGameRules_ChangeTeam =>
+        _lazyChangeTeam.Value;
 }
