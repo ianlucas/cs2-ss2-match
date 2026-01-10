@@ -43,8 +43,7 @@ public class BaseState
         ICommandService.CommandListener handler
     )
     {
-        foreach (var name in commandNames)
-            _commands.Add(Swiftly.Core.Command.RegisterCommand(name, handler, registerRaw: true));
+        _commands.AddRange(Swiftly.Core.Command.Register(commandNames, handler));
     }
 
     protected void HookGameEvent<T>(
