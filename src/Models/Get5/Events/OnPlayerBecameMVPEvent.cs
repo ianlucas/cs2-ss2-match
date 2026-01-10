@@ -23,7 +23,7 @@ public sealed class OnPlayerBecameMVPEvent : Get5Event
     [JsonPropertyName("reason")]
     public int Reason { get; init; }
 
-    public static OnPlayerBecameMVPEvent Create(Player player, int reason) =>
+    public static OnPlayerBecameMVPEvent Create(PlayerState player, int reason) =>
         new()
         {
             MatchId = Game.Id,

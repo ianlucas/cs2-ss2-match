@@ -38,7 +38,7 @@ public sealed class OnMolotovDetonatedEvent : Get5Event
     public static OnMolotovDetonatedEvent Create(
         int roundNumber,
         long roundTime,
-        Player player,
+        PlayerState player,
         string weapon,
         UtilityVictim victims
     ) =>

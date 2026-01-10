@@ -77,11 +77,11 @@ public class ReadyupWarmupState : WarmupState
         foreach (var player in Swiftly.Core.PlayerManager.GetPlayersInTeams())
         {
             var localize = Swiftly.Core.Localizer;
-            var state = player.GetState();
+            var playerState = player.GetState();
             player.SendChat(localize["match.commands", Game.GetChatPrefix()]);
             if (needed > 0)
                 player.SendChat(localize["match.commands_needed", needed]);
-            if (state?.IsReady != true)
+            if (playerState?.IsReady != true)
                 player.SendChat(localize["match.commands_ready"]);
             player.SendChat(localize["match.commands_gg"]);
         }
@@ -139,20 +139,20 @@ public class ReadyupWarmupState : WarmupState
         if (player != null && !_matchCancelled)
         {
             Game.Log($"{player.Controller.PlayerName} sent !ready.");
-            var state = player.GetState();
-            if (state == null && !Game.IsLoadedFromFile)
+            var playerState = player.GetState();
+            if (playerState == null && !Game.IsLoadedFromFile)
             {
                 var team = Game.GetTeam(player.Controller.Team);
                 if (team != null && team.CanAddPlayer())
                 {
-                    state = new(player.SteamID, player.Controller.PlayerName, team, player);
-                    team.AddPlayer(state);
+                    playerState = new(player.SteamID, player.Controller.PlayerName, team, player);
+                    team.AddPlayer(playerState);
                 }
             }
-            if (state != null)
+            if (playerState != null)
             {
-                state.IsReady = true;
-                Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: state.Team));
+                playerState.IsReady = true;
+                Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
                 TryStartMatch();
             }
         }
@@ -162,11 +162,11 @@ public class ReadyupWarmupState : WarmupState
     {
         var player = context.Sender;
         Game.Log($"{player?.Controller.PlayerName} sent !unready.");
-        var state = player?.GetState();
-        if (state != null)
+        var playerState = player?.GetState();
+        if (playerState != null)
         {
-            state.IsReady = false;
-            Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: state.Team));
+            playerState.IsReady = false;
+            Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
         }
     }
 

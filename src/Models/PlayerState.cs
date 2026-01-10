@@ -7,7 +7,7 @@ using SwiftlyS2.Shared.Players;
 
 namespace Match;
 
-public class Player(ulong steamId, string name, PlayerTeam team, IPlayer? handle = null)
+public class PlayerState(ulong steamId, string name, PlayerTeam team, IPlayer? handle = null)
 {
     public bool IsReady = false;
 

@@ -26,7 +26,7 @@ public sealed class OnGrenadeThrownEvent : Get5Event
     [JsonPropertyName("weapon")]
     public object Weapon { get; init; } = null!;
 
-    public static OnGrenadeThrownEvent Create(Player player, string weapon) =>
+    public static OnGrenadeThrownEvent Create(PlayerState player, string weapon) =>
         new()
         {
             MatchId = Game.Id,

@@ -6,14 +6,14 @@
 namespace Match;
 
 public class UtilityDamage(
-    Player player,
+    PlayerState player,
     bool killed = false,
     int damage = 0,
     bool friendlyFire = false,
     float blindDuration = 0f
 )
 {
-    public Player Player = player;
+    public PlayerState Player = player;
     public bool Killed = killed;
     public int Damage = damage;
     public bool FriendlyFire = friendlyFire;

@@ -18,11 +18,11 @@ public partial class Match
         return (thisPtr, team) =>
         {
             var controller = Core.Memory.ToSchemaClass<CCSPlayerController>(thisPtr);
-            var player = controller.ToPlayer()?.GetState();
+            var playerState = controller.GetState();
             if (Game.AreTeamsLocked())
-                if (player != null)
+                if (playerState != null)
                 {
-                    var currentTeam = (int)player.Team.CurrentTeam;
+                    var currentTeam = (int)playerState.Team.CurrentTeam;
                     if (team != currentTeam)
                         team = currentTeam;
                 }

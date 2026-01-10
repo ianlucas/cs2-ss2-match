@@ -29,7 +29,11 @@ public sealed class OnBombDefusedEvent : Get5Event
     [JsonPropertyName("bomb_time_remaining")]
     public long BombTimeRemaining { get; init; }
 
-    public static OnBombDefusedEvent Create(Player player, int? site, long bombTimeRemaining) =>
+    public static OnBombDefusedEvent Create(
+        PlayerState player,
+        int? site,
+        long bombTimeRemaining
+    ) =>
         new()
         {
             MatchId = Game.Id,

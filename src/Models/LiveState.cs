@@ -192,7 +192,7 @@ public partial class LiveState : BaseState
         var entity = Swiftly.Core.EntitySystem.GetEntityByIndex<CBaseEntity>((uint)@event.EntityID);
         var pawn = entity?.OwnerEntity.Value?.As<CCSPlayerPawn>();
         var controller = pawn?.Controller.Value?.As<CCSPlayerController>();
-        var playerState = controller?.ToPlayer()?.GetState();
+        var playerState = controller?.GetState();
         if (entity != null && playerState != null)
             _thrownMolotovs[entity.Index] = new(
                 Game.GetRoundNumber(),
@@ -245,29 +245,39 @@ public partial class LiveState : BaseState
 
     public HookResult OnPlayerHurt(EventPlayerHurt @event)
     {
-        var attacker = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victim = @event.UserIdPlayer.GetState();
-        if (attacker != null && victim != null)
+        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
+        var victimState = @event.UserIdPlayer.GetState();
+        if (attackerState != null && victimState != null)
         {
             var damage = Math.Max(
                 0,
                 Math.Min(
                     @event.DmgHealth,
-                    _playerHealth.TryGetValue(victim.SteamID, out var health) ? health : 100
+                    _playerHealth.TryGetValue(victimState.SteamID, out var health) ? health : 100
                 )
             );
-            if (victim.DamageReport.TryGetValue(attacker.SteamID, out var attackerDamageReport))
+            if (
+                victimState.DamageReport.TryGetValue(
+                    attackerState.SteamID,
+                    out var attackerDamageReport
+                )
+            )
             {
                 attackerDamageReport.From.Value += damage;
                 attackerDamageReport.From.Hits += 1;
             }
-            if (attacker.DamageReport.TryGetValue(victim.SteamID, out var victimDamageReport))
+            if (
+                attackerState.DamageReport.TryGetValue(
+                    victimState.SteamID,
+                    out var victimDamageReport
+                )
+            )
             {
                 victimDamageReport.To.Value += damage;
                 victimDamageReport.To.Hits += 1;
             }
             Stats_OnPlayerHurt(@event, damage);
-            _playerHealth[victim.SteamID] = Math.Max(0, (int)@event.Health);
+            _playerHealth[victimState.SteamID] = Math.Max(0, (int)@event.Health);
         }
         return HookResult.Continue;
     }
@@ -285,7 +295,7 @@ public partial class LiveState : BaseState
         var inflictor = info.Inflictor.Value;
         if (inflictor == null || !ItemHelper.IsUtilityDesignerName(inflictor.DesignerName))
             return;
-        var playerState = controller?.ToPlayer()?.GetState();
+        var playerState = controller?.GetState();
         if (playerState != null && controller != null)
         {
             var victims = _utilityVictims.TryGetValue(inflictor.Index, out var v) ? v : [];

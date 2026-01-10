@@ -204,7 +204,7 @@ public partial class Match
             foreach (var playerSchema in players)
             {
                 var steamId = playerSchema.Key;
-                var player = new Player(
+                var player = new PlayerState(
                     steamId,
                     playerSchema.Value,
                     team,

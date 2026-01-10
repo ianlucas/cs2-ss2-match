@@ -41,7 +41,7 @@ public static class Get5EventHelpers
             ? new { side = ToSideString(team.CurrentTeam), team = ToTeamString(team) }
             : null;
 
-    public static object ToPlayer(Player player) =>
+    public static object ToPlayer(PlayerState player) =>
         new
         {
             steamid = player.SteamID.ToString(),

@@ -18,5 +18,12 @@ public static class CCSPlayerControllerExtensions
                 0
             );
         }
+
+        public PlayerState? GetState()
+        {
+            return Game
+                .Teams.SelectMany(t => t.Players)
+                .FirstOrDefault(p => p.SteamID == self.SteamID);
+        }
     }
 }

@@ -26,7 +26,7 @@ public sealed class OnBombPlantedEvent : Get5Event
     [JsonPropertyName("site")]
     public string Site { get; init; } = "none";
 
-    public static OnBombPlantedEvent Create(Player player, int? site) =>
+    public static OnBombPlantedEvent Create(PlayerState player, int? site) =>
         new()
         {
             MatchId = Game.Id,

@@ -32,7 +32,7 @@ public sealed class OnFlashbangDetonatedEvent : Get5Event
     public static OnFlashbangDetonatedEvent Create(
         int roundNumber,
         long roundTime,
-        Player player,
+        PlayerState player,
         string weapon,
         UtilityVictim victims
     ) =>

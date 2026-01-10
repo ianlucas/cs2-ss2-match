@@ -42,7 +42,7 @@ public partial class LiveState
         return HookResult.Continue;
     }
 
-    public void TryForfeitMatch(Player? disconnecting = null)
+    public void TryForfeitMatch(PlayerState? disconnecting = null)
     {
         if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && Game.MapEndResult == null)
             foreach (var team in Game.Teams)

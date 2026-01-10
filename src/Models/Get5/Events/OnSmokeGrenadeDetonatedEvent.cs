@@ -32,7 +32,7 @@ public sealed class OnSmokeGrenadeDetonatedEvent : Get5Event
     public static OnSmokeGrenadeDetonatedEvent Create(
         int roundNumber,
         long roundTime,
-        Player player,
+        PlayerState player,
         string weapon,
         bool didExtinguishMolotovs
     ) =>

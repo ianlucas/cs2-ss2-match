@@ -59,11 +59,11 @@ public class KnifeVoteWarmupState : WarmupState
     public void OnStayCommand(ICommandContext context)
     {
         var player = context.Sender;
-        var state = player?.GetState();
-        if (state != null)
+        var playerState = player?.GetState();
+        if (playerState != null)
         {
             Game.Log($"{player?.Controller.PlayerName} voted !stay.");
-            state.KnifeRoundVote = KnifeRoundVote.Stay;
+            playerState.KnifeRoundVote = KnifeRoundVote.Stay;
             CheckIfPlayersVoted();
         }
     }
@@ -71,11 +71,11 @@ public class KnifeVoteWarmupState : WarmupState
     public void OnSwitchCommand(ICommandContext context)
     {
         var player = context.Sender;
-        var state = player?.GetState();
-        if (state != null)
+        var playerState = player?.GetState();
+        if (playerState != null)
         {
             Game.Log($"{player?.Controller.PlayerName} voted !switch.");
-            state.KnifeRoundVote = KnifeRoundVote.Switch;
+            playerState.KnifeRoundVote = KnifeRoundVote.Switch;
             CheckIfPlayersVoted();
         }
     }

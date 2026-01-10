@@ -27,8 +27,7 @@ public static class IPlayerExtensions
             return self.Controller.GetHealth();
         }
 
-        // TODO Add this to Controller for convenience as well.
-        public Player? GetState()
+        public PlayerState? GetState()
         {
             return Game
                 .Teams.SelectMany(t => t.Players)

@@ -20,7 +20,6 @@ public static class IoHelper
                 backupPath = $"{filename}.{version}";
                 version++;
             } while (File.Exists(backupPath));
-
             File.Copy(filename, backupPath);
         }
         string jsonString = JsonSerializer.Serialize(contents);

@@ -57,9 +57,9 @@ public sealed class OnPlayerDeathEvent : Get5Event
     public object? Assist { get; init; }
 
     public static OnPlayerDeathEvent Create(
-        Player player,
-        Player? attacker,
-        Player? assister,
+        PlayerState player,
+        PlayerState? attacker,
+        PlayerState? assister,
         string weapon,
         bool isKilledByBomb,
         bool isHeadshot,

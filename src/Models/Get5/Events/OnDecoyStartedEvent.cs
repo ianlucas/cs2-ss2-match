@@ -26,7 +26,7 @@ public sealed class OnDecoyStartedEvent : Get5Event
     [JsonPropertyName("weapon")]
     public object Weapon { get; init; } = null!;
 
-    public static OnDecoyStartedEvent Create(Player player, string weapon) =>
+    public static OnDecoyStartedEvent Create(PlayerState player, string weapon) =>
         new()
         {
             MatchId = Game.Id,

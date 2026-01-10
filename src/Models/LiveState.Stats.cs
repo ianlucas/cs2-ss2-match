@@ -13,7 +13,7 @@ namespace Match;
 
 public partial class LiveState
 {
-    private readonly Dictionary<int, List<(Player, PlayerStats)>> _statsBackup = [];
+    private readonly Dictionary<int, List<(PlayerState, PlayerStats)>> _statsBackup = [];
     private readonly Dictionary<int, List<(PlayerTeam, TeamStats)>> _teamStatsBackup = [];
     private readonly Dictionary<Team, bool> _isTeamClutching = [];
     private readonly Dictionary<ulong, int> _roundClutchingCount = [];
@@ -67,23 +67,25 @@ public partial class LiveState
 
     public HookResult Stats_OnPlayerBlind(EventPlayerBlind @event)
     {
-        var attacker = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victim = @event.UserIdPlayer.GetState();
-        if (attacker != null && victim != null)
+        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
+        var victimState = @event.UserIdPlayer.GetState();
+        if (attackerState != null && victimState != null)
         {
-            var friendlyFire = attacker.Team == victim.Team;
+            var friendlyFire = attackerState.Team == victimState.Team;
             if (@event.BlindDuration > 2.5f)
                 if (friendlyFire)
-                    attacker.Stats.FriendliesFlashed += 1;
+                    attackerState.Stats.FriendliesFlashed += 1;
                 else
-                    attacker.Stats.EnemiesFlashed += 1;
+                    attackerState.Stats.EnemiesFlashed += 1;
 
             var entityId = (uint)@event.EntityID;
             var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-            var theVictim = victims.TryGetValue(victim.SteamID, out var p) ? p : new(victim);
+            var theVictim = victims.TryGetValue(victimState.SteamID, out var p)
+                ? p
+                : new(victimState);
             theVictim.FriendlyFire = friendlyFire;
             theVictim.BindDuration = @event.BlindDuration;
-            victims[victim.SteamID] = theVictim;
+            victims[victimState.SteamID] = theVictim;
             _utilityVictims[entityId] = victims;
         }
         return HookResult.Continue;
@@ -91,18 +93,18 @@ public partial class LiveState
 
     public void Stats_OnPlayerHurt(EventPlayerHurt @event, int damage)
     {
-        var attacker = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victim = @event.UserIdPlayer.GetState();
-        if (attacker != null && victim != null && attacker != victim)
+        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
+        var victimState = @event.UserIdPlayer.GetState();
+        if (attackerState != null && victimState != null && attackerState != victimState)
         {
-            attacker.Stats.Damage += damage;
+            attackerState.Stats.Damage += damage;
             if (ItemHelper.IsUtilityDesignerName(@event.Weapon))
-                attacker.Stats.UtilDamage += damage;
+                attackerState.Stats.UtilDamage += damage;
         }
-        if (attacker != null && attacker != victim && @event.Weapon != "world")
+        if (attackerState != null && attackerState != victimState && @event.Weapon != "world")
         {
-            var weaponStats = attacker.Stats.GetWeaponStats(
-                ItemHelper.NormalizeDesignerName(@event.Weapon, attacker.Handle?.Controller)
+            var weaponStats = attackerState.Stats.GetWeaponStats(
+                ItemHelper.NormalizeDesignerName(@event.Weapon, attackerState.Handle?.Controller)
             );
             weaponStats.Hits += 1;
             weaponStats.Damage += damage;
@@ -141,11 +143,11 @@ public partial class LiveState
 
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
-        var attacker = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victim = @event.UserIdPlayer.GetState();
-        if (victim == null)
+        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
+        var victimState = @event.UserIdPlayer.GetState();
+        if (victimState == null)
             return HookResult.Continue;
-        var victimTeam = victim.Team.CurrentTeam;
+        var victimTeam = victimState.Team.CurrentTeam;
         if (
             !_isTeamClutching.ContainsKey(victimTeam)
             && Swiftly.Core.PlayerManager.GetAliveInTeam(victimTeam).Count() == 1
@@ -160,48 +162,48 @@ public partial class LiveState
         }
         var killedByBomb = @event.Weapon == "planted_c4";
         var killedWithKnife = ItemHelper.IsMeleeDesignerName(@event.Weapon);
-        var isSuicide = (attacker == null || attacker == victim) && !killedByBomb;
+        var isSuicide = (attackerState == null || attackerState == victimState) && !killedByBomb;
         var headshot = @event.Headshot;
         var normalizedWeapon = ItemHelper.NormalizeDesignerName(
             @event.Weapon,
-            attacker?.Handle?.Controller
+            attackerState?.Handle?.Controller
         );
-        Player? assister = null;
-        victim.Stats.Deaths += 1;
-        _playerDied[victim.SteamID] = true;
+        PlayerState? assisterState = null;
+        victimState.Stats.Deaths += 1;
+        _playerDied[victimState.SteamID] = true;
         if (!_hadFirstDeath)
         {
             _hadFirstDeath = true;
             if (victimTeam == Team.T)
-                victim.Stats.FirstDeathsT += 1;
+                victimState.Stats.FirstDeathsT += 1;
             else
-                victim.Stats.FirstDeathsCT += 1;
+                victimState.Stats.FirstDeathsCT += 1;
         }
         if (isSuicide)
-            victim.Stats.Suicides += 1;
+            victimState.Stats.Suicides += 1;
         else if (!killedByBomb)
         {
-            if (attacker?.Team == victim.Team)
-                attacker.Stats.Teamkills += 1;
-            else if (attacker != null)
+            if (attackerState?.Team == victimState.Team)
+                attackerState.Stats.Teamkills += 1;
+            else if (attackerState != null)
             {
-                var weaponStats = attacker.Stats.GetWeaponStats(normalizedWeapon);
+                var weaponStats = attackerState.Stats.GetWeaponStats(normalizedWeapon);
                 weaponStats.Kills += 1;
                 if (headshot)
                     weaponStats.Headshots += 1;
-                var attackerTeam = attacker.Team.CurrentTeam;
+                var attackerTeam = attackerState.Team.CurrentTeam;
                 if (!_hadFirstKill)
                 {
                     _hadFirstKill = true;
                     if (attackerTeam == Team.T)
-                        attacker.Stats.FirstKillsT += 1;
+                        attackerState.Stats.FirstKillsT += 1;
                     else
-                        attacker.Stats.FirstKillsCT += 1;
+                        attackerState.Stats.FirstKillsCT += 1;
                 }
-                _roundKills[attacker.SteamID] += 1;
-                _playerKilledBy[victim.SteamID] = (
+                _roundKills[attackerState.SteamID] += 1;
+                _playerKilledBy[victimState.SteamID] = (
                     victimTeam,
-                    attacker.SteamID,
+                    attackerState.SteamID,
                     attackerTeam,
                     TimeHelper.Now()
                 );
@@ -213,41 +215,41 @@ public partial class LiveState
                 )
                     if (
                         attackerTeam == theVictimTeam
-                        && victim.SteamID == theVictimAttacker
+                        && victimState.SteamID == theVictimAttacker
                         && victimTeam == theVictimAttackerTeam
                         && (TimeHelper.Now() - theVictimKilledAt) <= 2_000
                     )
                     {
-                        attacker.Stats.TradeKills += 1;
+                        attackerState.Stats.TradeKills += 1;
                         _playerKilledOrAssistedOrTradedKill[aVictim] = true;
                     }
-                attacker.Stats.Kills += 1;
-                _playerKilledOrAssistedOrTradedKill[attacker.SteamID] = true;
+                attackerState.Stats.Kills += 1;
+                _playerKilledOrAssistedOrTradedKill[attackerState.SteamID] = true;
                 if (headshot)
-                    attacker.Stats.HeadshotKills += 1;
+                    attackerState.Stats.HeadshotKills += 1;
                 if (killedWithKnife)
-                    attacker.Stats.KnifeKills += 1;
-                assister = Swiftly.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
-                if (assister != null)
+                    attackerState.Stats.KnifeKills += 1;
+                assisterState = Swiftly.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
+                if (assisterState != null)
                 {
-                    var friendlyFire = assister.Team == victim.Team;
+                    var friendlyFire = assisterState.Team == victimState.Team;
                     var assistedFlash = @event.AssistedFlash;
                     if (!friendlyFire)
                         if (assistedFlash)
-                            assister.Stats.FlashbangAssists += 1;
+                            assisterState.Stats.FlashbangAssists += 1;
                         else
                         {
-                            assister.Stats.Assists += 1;
-                            _playerKilledOrAssistedOrTradedKill[assister.SteamID] = true;
+                            assisterState.Stats.Assists += 1;
+                            _playerKilledOrAssistedOrTradedKill[assisterState.SteamID] = true;
                         }
                 }
             }
         }
         Game.SendEvent(
             OnPlayerDeathEvent.Create(
-                player: victim,
-                attacker,
-                assister,
+                player: victimState,
+                attackerState,
+                assisterState,
                 weapon: normalizedWeapon,
                 isKilledByBomb: killedByBomb,
                 isHeadshot: headshot,
@@ -256,7 +258,7 @@ public partial class LiveState
                 isAttackerBlind: @event.AttackerBlind,
                 isNoScope: @event.NoScope,
                 isSuicide: isSuicide,
-                isFriendlyFire: victim.Team == attacker?.Team,
+                isFriendlyFire: victimState.Team == attackerState?.Team,
                 isFlashAssist: @event.AssistedFlash
             )
         );
