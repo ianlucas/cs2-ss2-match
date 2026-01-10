@@ -21,10 +21,7 @@ public static class Timers
     public static void Clear(string name)
     {
         if (_timers.TryRemove(name, out var timer))
-        {
             timer.Cancel();
-            timer.Dispose();
-        }
     }
 
     public static void Set(string name, float interval, Action callback)
@@ -36,7 +33,7 @@ public static class Timers
     public static void SetEveryChatInterval(string name, Action callback)
     {
         Clear(name);
-        var timer = Swiftly.Core.Scheduler.DelayAndRepeatBySeconds(0, ChatInterval, callback);
+        var timer = Swiftly.Core.Scheduler.DelayAndRepeatBySeconds(0.001f, ChatInterval, callback);
         Swiftly.Core.Scheduler.StopOnMapChange(timer);
         _timers[name] = timer;
     }
@@ -44,7 +41,7 @@ public static class Timers
     public static void SetEverySecond(string name, Action callback)
     {
         Clear(name);
-        var timer = Swiftly.Core.Scheduler.DelayAndRepeatBySeconds(0, 1, callback);
+        var timer = Swiftly.Core.Scheduler.DelayAndRepeatBySeconds(0.001f, 1, callback);
         Swiftly.Core.Scheduler.StopOnMapChange(timer);
         _timers[name] = timer;
     }

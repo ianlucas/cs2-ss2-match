@@ -62,7 +62,7 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        if (Game.State is not ReadyUpWarmupState)
+        if (Game.State is not ReadyupWarmupState)
             return;
         if (!Game.IsLoadedFromFile)
         {
@@ -158,7 +158,7 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        if (Game.State is not ReadyUpWarmupState)
+        if (Game.State is not ReadyupWarmupState)
             return;
         if (context.Args.Length != 2)
             return;
@@ -226,7 +226,7 @@ public partial class Match
         Swiftly.Core.Scheduler.NextWorldUpdate(() =>
         {
             Game.Setup();
-            Game.SetState(new ReadyUpWarmupState());
+            Game.SetState(new ReadyupWarmupState());
         });
     }
 }

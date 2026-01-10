@@ -10,7 +10,7 @@ using SwiftlyS2.Shared.Players;
 
 namespace Match;
 
-public class KnifeRoundState : ReadyUpWarmupState
+public class KnifeRoundState : ReadyupWarmupState
 {
     public override string Name => "knife";
 
@@ -18,8 +18,11 @@ public class KnifeRoundState : ReadyUpWarmupState
     {
         Game.KnifeRoundWinner = null;
         HookGameEvent<EventRoundStart>(OnRoundStart);
-        Natives.CCSPlayerPawnBase_IncrementNumMVPs.AddHook(OnIncrementNumMVPs);
-        Natives.CCSGameRules_TerminateRound.AddHook(OnTerminateRound);
+        AddHook(Natives.CCSPlayerPawnBase_IncrementNumMVPs, OnIncrementNumMVPs);
+        if (OperatingSystem.IsWindows())
+            AddHook(Natives.CCSGameRules_TerminateRoundWindows, OnTerminateRoundWindows);
+        else
+            AddHook(Natives.CCSGameRules_TerminateRoundLinux, OnTerminateRoundLinux);
         Game.Log("Execing Knife Round");
         Config.ExecKnife();
         Cstv.Record(Game.DemoFilename);
@@ -47,8 +50,8 @@ public class KnifeRoundState : ReadyUpWarmupState
         return (a1, a2) => 0;
     }
 
-    public Natives.CCSGameRules_TerminateRoundDelegate OnTerminateRound(
-        Func<Natives.CCSGameRules_TerminateRoundDelegate> next
+    public Natives.CCSGameRules_TerminateRoundWindowsDelegate OnTerminateRoundWindows(
+        Func<Natives.CCSGameRules_TerminateRoundWindowsDelegate> next
     )
     {
         return (a1, a2, a3, a4, a5) =>
@@ -60,10 +63,26 @@ public class KnifeRoundState : ReadyUpWarmupState
                 var reason = (uint)(
                     winner == Team.T ? RoundEndReason.TerroristsWin : RoundEndReason.CTsWin
                 );
-                if (OperatingSystem.IsWindows())
-                    a5 = reason;
-                else
-                    a2 = reason;
+                a5 = reason;
+            }
+            next()(a1, a2, a3, a4, a5);
+        };
+    }
+
+    public Natives.CCSGameRules_TerminateRoundLinuxDelegate OnTerminateRoundLinux(
+        Func<Natives.CCSGameRules_TerminateRoundLinuxDelegate> next
+    )
+    {
+        return (a1, a2, a3, a4, a5) =>
+        {
+            var winner = Swiftly.Core.EntitySystem.GetGameRules()?.DetermineWinnerBySurvival();
+            if (winner != null)
+            {
+                Game.KnifeRoundWinner = Game.GetTeam(winner.Value);
+                var reason = (uint)(
+                    winner == Team.T ? RoundEndReason.TerroristsWin : RoundEndReason.CTsWin
+                );
+                a2 = reason;
             }
             next()(a1, a2, a3, a4, a5);
         };

@@ -6,6 +6,7 @@
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.GameEvents;
+using SwiftlyS2.Shared.Memory;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
@@ -20,6 +21,7 @@ public class BaseState
     private readonly List<Guid> _commands = [];
     private readonly List<Guid> _gameEvents = [];
     private readonly List<Action> _coreEvents = [];
+    private readonly List<Action> _nativeHooks = [];
 
     public virtual void Load() { }
 
@@ -27,6 +29,8 @@ public class BaseState
     {
         Timers.ClearAll();
         foreach (var cleanup in _coreEvents)
+            cleanup();
+        foreach (var cleanup in _nativeHooks)
             cleanup();
         foreach (var guid in _commands)
             Swiftly.Core.Command.UnregisterCommand(guid);
@@ -67,6 +71,16 @@ public class BaseState
             );
         eventInfo.AddEventHandler(eventSource, handler);
         _coreEvents.Add(() => eventInfo.RemoveEventHandler(eventSource, handler));
+    }
+
+    protected void AddHook<TDelegate>(
+        IUnmanagedFunction<TDelegate> fn,
+        Func<Func<TDelegate>, TDelegate> handler
+    )
+        where TDelegate : Delegate
+    {
+        var guid = fn.AddHook(handler);
+        _nativeHooks.Add(() => fn.RemoveHook(guid));
     }
 
     public HookResult OnRoundPrestart(EventRoundPrestart _)
@@ -229,6 +243,6 @@ public class BaseState
             Game.Reset();
             Game.EvaluateMatchmakingCondicion();
         }
-        Game.SetState(isSeriesOver ? new NoneState() : new ReadyUpWarmupState());
+        Game.SetState(isSeriesOver ? new NoneState() : new ReadyupWarmupState());
     }
 }

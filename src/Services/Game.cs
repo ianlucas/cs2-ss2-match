@@ -55,7 +55,7 @@ public static class Game
 
     public static void SetState(BaseState newState)
     {
-        if (newState is not ReadyUpWarmupState && State.GetType() == newState.GetType())
+        if (newState is not ReadyupWarmupState && State.GetType() == newState.GetType())
             return;
         SendEvent(Get5.OnGameStateChanged(oldState: State, newState));
         State.Unload();
@@ -145,7 +145,7 @@ public static class Game
 
     public static bool AreTeamsLocked()
     {
-        return IsLoadedFromFile || State is not ReadyUpWarmupState;
+        return IsLoadedFromFile || State is not ReadyupWarmupState;
     }
 
     public static int GetNeededPlayersCount()

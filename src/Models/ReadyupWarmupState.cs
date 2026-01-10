@@ -10,7 +10,7 @@ using SwiftlyS2.Shared.Misc;
 
 namespace Match;
 
-public class ReadyUpWarmupState : StateWarmup
+public class ReadyupWarmupState : WarmupState
 {
     public override string Name => "warmup";
     public static readonly List<string> ReadyCmds = ["sw_ready", "sw_r", "sw_pronto"];

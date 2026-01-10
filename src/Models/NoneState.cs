@@ -5,7 +5,7 @@
 
 namespace Match;
 
-public class NoneState : ReadyUpWarmupState
+public class NoneState : ReadyupWarmupState
 {
     public override string Name => "none";
 }

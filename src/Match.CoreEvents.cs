@@ -42,7 +42,7 @@ public partial class Match
     {
         HandleBotsChanged();
         HandleIsMatchmakingChanged();
-        Game.SetState(Game.IsSeriesStarted ? new ReadyUpWarmupState() : new NoneState());
+        Game.SetState(Game.IsSeriesStarted ? new ReadyupWarmupState() : new NoneState());
     }
 
     public void OnClientSteamAuthorize(IOnClientSteamAuthorizeEvent @event)

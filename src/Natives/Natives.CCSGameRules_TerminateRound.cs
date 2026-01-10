@@ -9,20 +9,37 @@ namespace Match;
 
 public static partial class Natives
 {
-    public delegate void CCSGameRules_TerminateRoundDelegate(
+    public delegate void CCSGameRules_TerminateRoundWindowsDelegate(
         nint a1,
-        uint a2,
+        float a2,
         uint a3,
         nint a4,
         uint a5
     );
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSGameRules_TerminateRoundDelegate>
-    > _lazyTerminateRound = new(() =>
-        FromSignature<CCSGameRules_TerminateRoundDelegate>("CGameRules::TerminateRound")
+    public delegate void CCSGameRules_TerminateRoundLinuxDelegate(
+        nint a1,
+        uint a2,
+        nint a3,
+        uint a4,
+        float a5
     );
 
-    public static IUnmanagedFunction<CCSGameRules_TerminateRoundDelegate> CCSGameRules_TerminateRound =>
-        _lazyTerminateRound.Value;
+    private static readonly Lazy<
+        IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate>
+    > _lazyTerminateRoundWindows = new(() =>
+        FromSignature<CCSGameRules_TerminateRoundWindowsDelegate>("CGameRules::TerminateRound")
+    );
+
+    public static IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate> CCSGameRules_TerminateRoundWindows =>
+        _lazyTerminateRoundWindows.Value;
+
+    private static readonly Lazy<
+        IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate>
+    > _lazyTerminateRoundLinux = new(() =>
+        FromSignature<CCSGameRules_TerminateRoundLinuxDelegate>("CGameRules::TerminateRound")
+    );
+
+    public static IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate> CCSGameRules_TerminateRoundLinux =>
+        _lazyTerminateRoundLinux.Value;
 }

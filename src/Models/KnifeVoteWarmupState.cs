@@ -9,7 +9,7 @@ using SwiftlyS2.Shared.Misc;
 
 namespace Match;
 
-public class KnifeVoteWarmupState : ReadyUpWarmupState
+public class KnifeVoteWarmupState : WarmupState
 {
     public override string Name => "waiting_for_knife_decision";
     public static readonly List<string> StayCmds = ["sw_stay", "sw_ficar"];

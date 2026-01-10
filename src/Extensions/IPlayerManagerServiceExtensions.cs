@@ -24,13 +24,13 @@ public static class IPlayerManagerServiceExtensions
 
         public IEnumerable<IPlayer> GetPlayersInTeams()
         {
-            return self.GetAllPlayers()
+            return self.GetAllValidPlayers()
                 .Where(p => p.Pawn?.TeamNum == (int)Team.CT || p.Pawn?.TeamNum == (int)Team.T);
         }
 
         public IEnumerable<IPlayer> GetActualPlayers()
         {
-            return self.GetAllPlayers().Where(p => !p.IsFakeClient);
+            return self.GetAllValidPlayers().Where(p => !p.IsFakeClient);
         }
 
         public void UpdateScoreboards()
