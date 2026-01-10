@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
@@ -151,7 +152,7 @@ public class ReadyupWarmupState : WarmupState
             if (state != null)
             {
                 state.IsReady = true;
-                Game.SendEvent(Game.Get5.OnTeamReadyStatusChanged(team: state.Team));
+                Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: state.Team));
                 TryStartMatch();
             }
         }
@@ -165,7 +166,7 @@ public class ReadyupWarmupState : WarmupState
         if (state != null)
         {
             state.IsReady = false;
-            Game.SendEvent(Game.Get5.OnTeamReadyStatusChanged(team: state.Team));
+            Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: state.Team));
         }
     }
 

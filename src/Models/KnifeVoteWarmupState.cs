@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
@@ -131,8 +132,8 @@ public class KnifeVoteWarmupState : WarmupState
                 team.StartingTeam = TeamHelper.ToggleTeam(team.StartingTeam);
             Swiftly.Core.EntitySystem.GetGameRules()?.HandleSwapTeams();
         }
-        Game.SendEvent(Game.Get5.OnSidePicked(team: winnerTeam));
-        Game.SendEvent(Game.Get5.OnKnifeRoundWon(team: winnerTeam, decision));
+        Game.SendEvent(OnSidePickedEvent.Create(team: winnerTeam));
+        Game.SendEvent(OnKnifeRoundWonEvent.Create(team: winnerTeam, decision));
         Game.SetState(new LiveState());
     }
 }

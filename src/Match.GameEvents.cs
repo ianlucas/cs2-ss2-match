@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 
@@ -16,7 +17,7 @@ public partial class Match
         if (message.Length == 0)
             return HookResult.Continue;
         Game.SendEvent(
-            Game.Get5.OnPlayerSay(
+            OnPlayerSayEvent.Create(
                 player: @event.UserIdPlayer,
                 @event.TeamOnly ? "say_team" : "team",
                 message

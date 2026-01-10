@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 
 namespace Match;
@@ -64,7 +65,7 @@ public partial class LiveState
                 // Because we increment at OnRoundStart.
                 Round = roundAsInt - 1;
                 _thrownMolotovs.Clear();
-                Game.SendEvent(Game.Get5.OnBackupRestore(filename));
+                Game.SendEvent(OnBackupRestoreEvent.Create(filename));
                 Swiftly.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file {filenameAsArg}");
             }
             else

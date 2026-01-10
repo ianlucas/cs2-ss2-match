@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
@@ -63,7 +64,7 @@ public partial class LiveState : BaseState
         HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
         HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
         Game.Log("Execing Live");
-        Game.SendEvent(Game.Get5.OnGoingLive());
+        Game.SendEvent(OnGoingLiveEvent.Create());
         Config.ExecLive(
             maxRounds: ConVars.MaxRounds.Value,
             otMaxRounds: ConVars.OtMaxRounds.Value,
@@ -109,7 +110,7 @@ public partial class LiveState : BaseState
         _lastThrownSmokegrenade = 0;
         _utilityVictims.Clear();
         _didSmokeExtinguishMolotov.Clear();
-        Game.SendEvent(Game.Get5.OnRoundStart());
+        Game.SendEvent(OnRoundStartEvent.Create());
         return HookResult.Continue;
     }
 
@@ -117,7 +118,7 @@ public partial class LiveState : BaseState
     {
         var playerState = @event.UserIdPlayer.GetState();
         if (playerState != null)
-            Game.SendEvent(Game.Get5.OnGrenadeThrown(playerState, weapon: @event.Weapon));
+            Game.SendEvent(OnGrenadeThrownEvent.Create(playerState, weapon: @event.Weapon));
         return HookResult.Continue;
     }
 
@@ -125,7 +126,7 @@ public partial class LiveState : BaseState
     {
         var playerState = @event.UserIdPlayer.GetState();
         if (playerState != null)
-            Game.SendEvent(Game.Get5.OnDecoyStarted(playerState, weapon: "weapon_decoy"));
+            Game.SendEvent(OnDecoyStartedEvent.Create(playerState, weapon: "weapon_decoy"));
         return HookResult.Continue;
     }
 
@@ -143,7 +144,7 @@ public partial class LiveState : BaseState
                 {
                     var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
                     Game.SendEvent(
-                        Game.Get5.OnHEGrenadeDetonated(
+                        OnHEGrenadeDetonatedEvent.Create(
                             roundNumber,
                             roundTime,
                             playerState,
@@ -172,12 +173,12 @@ public partial class LiveState : BaseState
                 () =>
                 {
                     Game.SendEvent(
-                        Game.Get5.OnSmokeGrenadeDetonated(
+                        OnSmokeGrenadeDetonatedEvent.Create(
                             roundNumber,
                             roundTime,
                             playerState,
                             weapon: "weapon_smokegrenade",
-                            didExtingishMolotovs: _didSmokeExtinguishMolotov.ContainsKey(entityId)
+                            didExtinguishMolotovs: _didSmokeExtinguishMolotov.ContainsKey(entityId)
                         )
                     );
                 }
@@ -227,7 +228,7 @@ public partial class LiveState : BaseState
                 {
                     var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
                     Game.SendEvent(
-                        Game.Get5.OnFlashbangDetonated(
+                        OnFlashbangDetonatedEvent.Create(
                             roundNumber,
                             roundTime,
                             playerState,
@@ -299,7 +300,7 @@ public partial class LiveState : BaseState
 
     public HookResult OnBombExploded(EventBombExploded _)
     {
-        Game.SendEvent(Game.Get5.OnBombExploded(_lastPlantedBombZone));
+        Game.SendEvent(OnBombExplodedEvent.Create(_lastPlantedBombZone));
         return HookResult.Continue;
     }
 
@@ -347,7 +348,7 @@ public partial class LiveState : BaseState
         {
             var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
             Game.SendEvent(
-                Game.Get5.OnMolotovDetonated(
+                OnMolotovDetonatedEvent.Create(
                     thrown.RoundNumber,
                     thrown.RoundTime,
                     thrown.Player,

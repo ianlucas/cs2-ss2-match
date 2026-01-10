@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Players;
 
@@ -50,15 +51,15 @@ public partial class LiveState
                             teamWhichPaused.FormattedName
                         ]
                     );
-                Game.SendEvent(Game.Get5.OnMatchPaused(team: teamWhichPaused, pauseType));
-                Game.SendEvent(Game.Get5.OnPauseBegan(team: teamWhichPaused, pauseType));
+                Game.SendEvent(OnMatchPausedEvent.Create(team: teamWhichPaused, pauseType));
+                Game.SendEvent(OnPauseBeganEvent.Create(team: teamWhichPaused, pauseType));
 
                 _teamWhichPaused = teamWhichPaused;
                 _wasPausedType = pauseType;
             }
             else
                 Game.SendEvent(
-                    Game.Get5.OnMatchUnpaused(team: _teamWhichPaused, pauseType: _wasPausedType)
+                    OnMatchUnpausedEvent.Create(team: _teamWhichPaused, pauseType: _wasPausedType)
                 );
         }
         _wasPaused = isPaused;
@@ -85,7 +86,7 @@ public partial class LiveState
                 );
                 Swiftly.Core.Engine.ExecuteCommand("mp_pause_match");
                 Game.SendEvent(
-                    Game.Get5.OnMatchPaused(team: playerState.Team, pauseType: "tactical")
+                    OnMatchPausedEvent.Create(team: playerState.Team, pauseType: "tactical")
                 );
                 return;
             }

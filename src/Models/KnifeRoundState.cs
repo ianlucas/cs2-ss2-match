@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Natives;
@@ -38,7 +39,7 @@ public class KnifeRoundState : ReadyupWarmupState
             Swiftly.Core.PlayerManager.SendChatRepeat(
                 Swiftly.Core.Localizer["match.knife", Game.GetChatPrefix()]
             );
-            Game.SendEvent(Game.Get5.OnKnifeRoundStarted());
+            Game.SendEvent(OnKnifeRoundStartedEvent.Create());
         }
         return HookResult.Continue;
     }

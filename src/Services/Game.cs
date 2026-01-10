@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using Match.Get5.Events;
 using Microsoft.Extensions.Logging;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.ProtobufDefinitions;
@@ -13,7 +14,6 @@ namespace Match;
 
 public static class Game
 {
-    public static readonly Get5 Get5 = new();
     public static readonly List<PlayerTeam> Teams = [];
     public static readonly List<Map> Maps = [];
     public static readonly PlayerTeam Team1;
@@ -55,7 +55,7 @@ public static class Game
     {
         if (newState is not ReadyupWarmupState && State.GetType() == newState.GetType())
             return;
-        SendEvent(Get5.OnGameStateChanged(oldState: State, newState));
+        SendEvent(OnGameStateChangedEvent.Create(oldState: State, newState));
         State.Unload();
         Log($"Unloaded {State.GetType().FullName}");
         State = newState;
@@ -95,7 +95,7 @@ public static class Game
         }
         IsSeriesStarted = true;
         CreateMatchFolder();
-        SendEvent(Get5.OnSeriesInit());
+        SendEvent(OnSeriesInitEvent.Create());
     }
 
     public static bool CheckCurrentMap()

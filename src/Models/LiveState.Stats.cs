@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
@@ -243,7 +244,7 @@ public partial class LiveState
             }
         }
         Game.SendEvent(
-            Game.Get5.OnPlayerDeath(
+            OnPlayerDeathEvent.Create(
                 player: victim,
                 attacker,
                 assister,
@@ -270,7 +271,7 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.BombPlants += 1;
-            Game.SendEvent(Game.Get5.OnBombPlanted(playerState, site: _lastPlantedBombZone));
+            Game.SendEvent(OnBombPlantedEvent.Create(playerState, site: _lastPlantedBombZone));
         }
         return HookResult.Continue;
     }
@@ -291,7 +292,11 @@ public partial class LiveState
                 bombTimeRemaining = 0;
             }
             Game.SendEvent(
-                Game.Get5.OnBombDefused(playerState, site: _lastPlantedBombZone, bombTimeRemaining)
+                OnBombDefusedEvent.Create(
+                    playerState,
+                    site: _lastPlantedBombZone,
+                    bombTimeRemaining
+                )
             );
         }
         return HookResult.Continue;
@@ -303,7 +308,7 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.MVPs += 1;
-            Game.SendEvent(Game.Get5.OnPlayerBecameMVP(playerState, reason: @event.Reason));
+            Game.SendEvent(OnPlayerBecameMVPEvent.Create(playerState, reason: @event.Reason));
         }
         return HookResult.Continue;
     }
@@ -385,8 +390,8 @@ public partial class LiveState
                 _statsBackup[gameRules.TotalRoundsPlayed].Add((player, player.Stats.Clone()));
             }
         }
-        Game.SendEvent(Game.Get5.OnRoundEnd(winner: winnerTeam, reason: @event.Reason));
-        Game.SendEvent(Game.Get5.OnRoundStatsUpdated());
+        Game.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
+        Game.SendEvent(OnRoundStatsUpdatedEvent.Create());
         return HookResult.Continue;
     }
 }

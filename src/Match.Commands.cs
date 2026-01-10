@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5;
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Players;
 
@@ -165,11 +167,11 @@ public partial class Match
         var name = context.Args[1].Trim();
         var file = Get5Match.Read(name);
         if (file.Error != null)
-            Game.SendEvent(Game.Get5.OnLoadMatchConfigFailed(reason: file.Error));
+            Game.SendEvent(OnLoadMatchConfigFailedEvent.Create(reason: file.Error));
         var match = file.Contents;
         if (match == null || file.Path == null)
             return;
-        Game.SendEvent(Game.Get5.OnPreLoadMatchConfig(filename: file.Path));
+        Game.SendEvent(OnPreLoadMatchConfigEvent.Create(filename: file.Path));
         Game.Reset();
         Game.IsLoadedFromFile = true;
         Game.Id = match.Matchid;

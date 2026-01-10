@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.GameEvents;
@@ -174,7 +175,7 @@ public class BaseState
         {
             var filename = Game.DemoFilename;
             if (filename != null)
-                Game.SendEvent(Game.Get5.OnDemoFinished(filename));
+                Game.SendEvent(OnDemoFinishedEvent.Create(filename));
         }
         Cstv.Stop();
     }
@@ -219,10 +220,10 @@ public class BaseState
         // Even with Get5 Events, we still store results in json for further debugging.
         // @todo Maybe only save if `match_verbose` is enabled in the future.
         IoHelper.WriteJson(Swiftly.Core.GetConfigPath($"{Game.MatchFolder}/results.json"), maps);
-        Game.SendEvent(Game.Get5.OnMapResult(map));
+        Game.SendEvent(OnMapResultEvent.Create(map));
         if (isSeriesOver)
         {
-            Game.SendEvent(Game.Get5.OnSeriesResult(winner, map));
+            Game.SendEvent(OnSeriesResultEvent.Create(winner, map));
             Game.Reset();
             Game.EvaluateMatchmakingCondicion();
         }
