@@ -24,6 +24,7 @@ public static class Game
     public static BaseState State { get; set; } = new();
     public static bool IsLoadedFromFile { get; set; } = false;
     public static bool IsSeriesStarted { get; set; } = false;
+    public static bool DidRestartFirstMap { get; set; } = false;
     public static PlayerTeam? KnifeRoundWinner { get; set; }
     public static MapEndResult? MapEndResult { get; set; } = null;
 
@@ -101,8 +102,12 @@ public static class Game
     public static bool CheckCurrentMap()
     {
         var currentMap = GetMap();
-        if (currentMap != null && (Swiftly.Core.Engine.GlobalVars.MapName != currentMap.MapName))
+        if (
+            (currentMap != null && (Swiftly.Core.Engine.GlobalVars.MapName != currentMap.MapName))
+            || (ConVars.IsRestartFirstMap.Value && !DidRestartFirstMap)
+        )
         {
+            DidRestartFirstMap = true;
             var currentMapName = currentMap?.MapName ?? Swiftly.Core.Engine.GlobalVars.MapName;
             Log($"Need to change map to {currentMapName}");
             Swiftly.Core.Engine.ExecuteCommand($"changelevel {currentMapName}");
