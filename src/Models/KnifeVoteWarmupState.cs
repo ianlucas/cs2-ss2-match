@@ -32,7 +32,7 @@ public class KnifeVoteWarmupState : WarmupState
         // TODO Place this somewhere else.
         foreach (var player in Game.Teams.SelectMany(t => t.Players))
             player.KnifeRoundVote = KnifeRoundVote.None;
-        Game.Log("Execing Knife Vote");
+        Game.Log("Executing knife vote warmup");
         Config.ExecWarmup(warmupTime: ConVars.KnifeVoteTimeout.Value, isLockTeams: true);
     }
 
@@ -91,7 +91,7 @@ public class KnifeVoteWarmupState : WarmupState
                     )
                 )
                 {
-                    Game.Log("Leader has decided a side.");
+                    Game.Log("Team leader has chosen a side.");
                     ProcessKnifeVote(vote);
                     return;
                 }
@@ -99,13 +99,13 @@ public class KnifeVoteWarmupState : WarmupState
 
     public void OnKnifeVoteTimeout()
     {
-        Game.Log("Knive vote has timed out");
+        Game.Log("Knife vote timed out");
         ProcessKnifeVote(KnifeRoundVote.None);
     }
 
     public void ProcessKnifeVote(KnifeRoundVote decision)
     {
-        Game.Log($"decision={decision}");
+        Game.Log($"Processing knife vote decision: {decision}");
         var winnerTeam = Game.KnifeRoundWinner;
         if (winnerTeam == null)
             return;

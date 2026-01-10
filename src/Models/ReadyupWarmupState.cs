@@ -20,7 +20,7 @@ public class ReadyupWarmupState : WarmupState
 
     public override void Load()
     {
-        Game.Log($"matchmaking={Game.IsMatchmaking()}");
+        Game.Log($"Matchmaking mode: {Game.IsMatchmaking()}");
         Cstv.Stop();
         Cstv.Set(ConVars.IsTvRecord.Value);
         if (Game.CheckCurrentMap())

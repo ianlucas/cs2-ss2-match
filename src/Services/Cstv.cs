@@ -31,7 +31,7 @@ public static class Cstv
         if (!IsEnabled() || IsRecording() || filename == null)
             return;
         _filename = filename;
-        Game.Log($"Demo is being recorded at {filename}.");
+        Game.Log($"Demo recording started: {filename}");
         Swiftly.Core.Engine.ExecuteCommand($"tv_record {filename}");
     }
 
@@ -40,7 +40,7 @@ public static class Cstv
         if (IsRecording())
         {
             _filename = null;
-            Game.Log($"Demo is no longer being recorded.");
+            Game.Log("Demo recording stopped.");
             Swiftly.Core.Engine.ExecuteCommand("tv_stoprecord");
         }
     }

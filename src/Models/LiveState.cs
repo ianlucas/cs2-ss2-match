@@ -63,7 +63,7 @@ public partial class LiveState : BaseState
         HookGameEvent<EventRoundEnd>(Stats_OnRoundEnd);
         HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
         HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
-        Game.Log("Execing Live");
+        Game.Log("Executing live match configuration");
         Game.SendEvent(OnGoingLiveEvent.Create());
         Config.ExecLive(
             maxRounds: ConVars.MaxRounds.Value,

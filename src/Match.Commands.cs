@@ -222,7 +222,7 @@ public partial class Match
             foreach (var (key, value) in match.Cvars)
             {
                 var cmd = $"{key} {value}";
-                Game.Log($"Execing {cmd}");
+                Game.Log($"Executing command: {cmd}");
                 Core.Engine.ExecuteCommand(cmd);
             }
         Swiftly.Core.Scheduler.NextWorldUpdate(() =>

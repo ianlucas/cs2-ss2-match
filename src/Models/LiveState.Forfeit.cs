@@ -30,7 +30,7 @@ public partial class LiveState
         {
             _isForfeiting = false;
             Timers.Clear("ForfeitMatch");
-            Game.Log("We are no longer forfeiting the match.");
+            Game.Log("Match forfeit cancelled");
         }
     }
 

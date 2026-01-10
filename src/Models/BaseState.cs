@@ -96,7 +96,7 @@ public class BaseState
 
     public void OnMatchCancelled()
     {
-        Game.Log("Match was cancelled.");
+        Game.Log("Match cancelled.");
         _matchCancelled = true;
         Timers.ClearAll();
         var winners = Game.Teams.Where(t => t.Players.Any(p => p.Handle != null));
@@ -105,7 +105,9 @@ public class BaseState
             var winner = winners.First();
             var loser = winner.Opposition;
             loser.IsSurrended = true;
-            Game.Log($"Terminating by Cancelled, winner={winner.Index}, forfeited={loser.Index}");
+            Game.Log(
+                $"Terminating match due to cancellation: winner={winner.Index}, forfeited={loser.Index}"
+            );
             Swiftly
                 .Core.EntitySystem.GetGameRules()
                 ?.TerminateRound(
@@ -124,7 +126,7 @@ public class BaseState
 
     public void OnMapResult(MapResult result = MapResult.None, PlayerTeam? winner = null)
     {
-        Game.Log($"Computing map end, result={result}.");
+        Game.Log($"Computing map result: {result}");
         var map = Game.GetMap() ?? new(Swiftly.Core.Engine.GlobalVars.MapName);
         var stats = Game.Teams.Select(t => t.Players.Select(p => p.Stats).ToList()).ToList();
         var demoFilename = Cstv.GetFilename();
@@ -191,14 +193,14 @@ public class BaseState
             {
                 result = MapResult.Forfeited;
                 winner = team.Opposition;
-                Game.Log($"forfeited, result={result}, winner={winner.Index}");
+                Game.Log($"Map forfeited: result={result}, winner={winner.Index}");
                 break;
             }
             if (team.Score > team.Opposition.Score)
             {
                 result = MapResult.Completed;
                 winner = team;
-                Game.Log($"completed, result={result}, winner={winner.Index}");
+                Game.Log($"Map completed: result={result}, winner={winner.Index}");
             }
         }
         OnMapResult(result, winner);
@@ -209,7 +211,7 @@ public class BaseState
     {
         if (Game.MapEndResult == null)
         {
-            Game.Log("Map result not found, defaulting to state none.");
+            Game.Log("Map result not found, defaulting to None state.");
             Game.SetState(new NoneState());
             return;
         }
