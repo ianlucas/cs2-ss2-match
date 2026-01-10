@@ -14,7 +14,7 @@ namespace Match;
     Version = "1.0.0",
     Name = "Match",
     Author = "Ian Lucas",
-    Description = "A match coordinator plugin."
+    Description = "Matches with Get5 compatibility."
 )]
 public partial class Match(ISwiftlyCore core) : BasePlugin(core)
 {

@@ -14,7 +14,7 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSPlayerPawnBase_IncrementNumMVPsDelegate>
     > _lazyIncrementNumMVPs = new(() =>
-        FromSignature<CCSPlayerPawnBase_IncrementNumMVPsDelegate>(
+        GetFunctionBySignature<CCSPlayerPawnBase_IncrementNumMVPsDelegate>(
             "CCSPlayerPawnBase::IncrementNumMVPs"
         )
     );

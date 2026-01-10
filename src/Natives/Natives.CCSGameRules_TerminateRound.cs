@@ -28,7 +28,9 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate>
     > _lazyTerminateRoundWindows = new(() =>
-        FromSignature<CCSGameRules_TerminateRoundWindowsDelegate>("CGameRules::TerminateRound")
+        GetFunctionBySignature<CCSGameRules_TerminateRoundWindowsDelegate>(
+            "CGameRules::TerminateRound"
+        )
     );
 
     public static IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate> CCSGameRules_TerminateRoundWindows =>
@@ -37,7 +39,9 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate>
     > _lazyTerminateRoundLinux = new(() =>
-        FromSignature<CCSGameRules_TerminateRoundLinuxDelegate>("CGameRules::TerminateRound")
+        GetFunctionBySignature<CCSGameRules_TerminateRoundLinuxDelegate>(
+            "CGameRules::TerminateRound"
+        )
     );
 
     public static IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate> CCSGameRules_TerminateRoundLinux =>

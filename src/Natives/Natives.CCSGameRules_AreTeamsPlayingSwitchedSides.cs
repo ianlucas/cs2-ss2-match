@@ -14,7 +14,7 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>
     > _lazyAreTeamsPlayingSwitchedSides = new(() =>
-        FromSignature<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>(
+        GetFunctionBySignature<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>(
             "CCSGameRules::AreTeamsPlayingSwitchedSides"
         )
     );

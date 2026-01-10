@@ -14,7 +14,7 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>
     > _lazyIsLastRoundBeforeHalfTime = new(() =>
-        FromSignature<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>(
+        GetFunctionBySignature<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>(
             "CCSGameRules::IsLastRoundBeforeHalfTime"
         )
     );

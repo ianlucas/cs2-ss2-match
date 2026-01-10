@@ -14,7 +14,7 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSPlayerController_ChangeTeamDelegate>
     > _lazyChangeTeam = new(() =>
-        FromOffset<CCSPlayerController_ChangeTeamDelegate>(
+        GetFunctionByOffset<CCSPlayerController_ChangeTeamDelegate>(
             "CCSPlayerController",
             "CCSPlayerController::ChangeTeam"
         )

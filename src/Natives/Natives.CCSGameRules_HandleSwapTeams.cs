@@ -14,7 +14,9 @@ public static partial class Natives
     private static readonly Lazy<
         IUnmanagedFunction<CCSGameRules_HandleSwapTeamsDelegate>
     > _lazyHandleSwapTeams = new(() =>
-        FromSignature<CCSGameRules_HandleSwapTeamsDelegate>("CCSGameRules::HandleSwapTeams")
+        GetFunctionBySignature<CCSGameRules_HandleSwapTeamsDelegate>(
+            "CCSGameRules::HandleSwapTeams"
+        )
     );
 
     public static IUnmanagedFunction<CCSGameRules_HandleSwapTeamsDelegate> CCSGameRules_HandleSwapTeams =>
