@@ -44,7 +44,7 @@ public partial class LiveState
                 playerState.Team.IsSurrended = true;
                 playerState.Team.Score = 0;
                 playerState.Team.Opposition.Score = 1;
-                Game.Log("Terminating match due to team surrender");
+                Swiftly.Log("Terminating match due to team surrender");
                 Swiftly
                     .Core.EntitySystem.GetGameRules()
                     ?.TerminateRound(

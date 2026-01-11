@@ -95,8 +95,8 @@ public partial class Match
         else
             foreach (var player in Game.Teams.SelectMany(t => t.Players))
                 player.IsReady = true;
-        Game.Log(
-            printToChat: true,
+        Swiftly.Log(
+            sendToChat: true,
             message: Core.Localizer[
                 "match.admin_start",
                 Game.GetChatPrefix(true),
@@ -121,8 +121,8 @@ public partial class Match
             return;
         if (Game.AreTeamsLocked())
             return;
-        Game.Log(
-            printToChat: true,
+        Swiftly.Log(
+            sendToChat: true,
             message: Core.Localizer[
                 "match.admin_map",
                 Game.GetChatPrefix(true),
@@ -140,8 +140,8 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        Game.Log(
-            printToChat: true,
+        Swiftly.Log(
+            sendToChat: true,
             message: Core.Localizer[
                 "match.admin_restart",
                 Game.GetChatPrefix(true),
@@ -222,7 +222,7 @@ public partial class Match
             foreach (var (key, value) in match.Cvars)
             {
                 var cmd = $"{key} {value}";
-                Game.Log($"Executing command: {cmd}");
+                Swiftly.Log($"Executing command: {cmd}");
                 Core.Engine.ExecuteCommand(cmd);
             }
         Swiftly.Core.Scheduler.NextWorldUpdate(() =>

@@ -144,8 +144,8 @@ public partial class LiveState
             )
         )
         {
-            Game.Log(
-                printToChat: true,
+            Swiftly.Log(
+                sendToChat: true,
                 message: Swiftly.Core.Localizer[
                     "match.admin_unpause",
                     Game.GetChatPrefix(true),

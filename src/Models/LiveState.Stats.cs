@@ -290,7 +290,7 @@ public partial class LiveState
             var bombTimeRemaining = c4Timer - timeToDefuse;
             if (bombTimeRemaining < 0)
             {
-                Game.Log($"bombTimeRemaining={bombTimeRemaining} is negative!");
+                Swiftly.Log($"bombTimeRemaining={bombTimeRemaining} is negative!");
                 bombTimeRemaining = 0;
             }
             Game.SendEvent(

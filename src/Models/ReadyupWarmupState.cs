@@ -20,7 +20,7 @@ public class ReadyupWarmupState : WarmupState
 
     public override void Load()
     {
-        Game.Log($"Matchmaking mode: {Game.IsMatchmaking()}");
+        Swiftly.Log($"Matchmaking mode: {Game.IsMatchmaking()}");
         Cstv.Stop();
         Cstv.Set(ConVars.IsTvRecord.Value);
         if (Game.CheckCurrentMap())
@@ -46,7 +46,7 @@ public class ReadyupWarmupState : WarmupState
             );
         }
         Timers.SetEveryChatInterval("PrintWarmupCommands", OnPrintWarmupCommands);
-        Game.Log("Executing warm-up commands...");
+        Swiftly.Log("Executing warm-up commands...");
         Config.ExecWarmup(
             warmupTime: Game.IsMatchmaking() ? ConVars.MatchmakingReadyTimeout.Value : -1,
             isLockTeams: Game.AreTeamsLocked()
@@ -138,7 +138,7 @@ public class ReadyupWarmupState : WarmupState
         var player = context.Sender;
         if (player != null && !_matchCancelled)
         {
-            Game.Log($"{player.Controller.PlayerName} sent !ready.");
+            Swiftly.Log($"{player.Controller.PlayerName} sent !ready.");
             var playerState = player.GetState();
             if (playerState == null && !Game.IsLoadedFromFile)
             {
@@ -161,7 +161,7 @@ public class ReadyupWarmupState : WarmupState
     public void OnUnreadyCommand(ICommandContext context)
     {
         var player = context.Sender;
-        Game.Log($"{player?.Controller.PlayerName} sent !unready.");
+        Swiftly.Log($"{player?.Controller.PlayerName} sent !unready.");
         var playerState = player?.GetState();
         if (playerState != null)
         {

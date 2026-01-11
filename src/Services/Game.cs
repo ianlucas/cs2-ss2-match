@@ -3,10 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using System.Diagnostics;
 using System.Reflection;
 using Match.Get5.Events;
-using Microsoft.Extensions.Logging;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.ProtobufDefinitions;
 
@@ -57,10 +55,10 @@ public static class Game
             return;
         SendEvent(OnGameStateChangedEvent.Create(oldState: State, newState));
         State.Unload();
-        Log($"Unloaded {State.GetType().FullName}");
+        Swiftly.Log($"Unloaded {State.GetType().FullName}");
         State = newState;
         State.Load();
-        Log($"Loaded {State.GetType().FullName}");
+        Swiftly.Log($"Loaded {State.GetType().FullName}");
     }
 
     public static void Setup()
@@ -108,7 +106,7 @@ public static class Game
         {
             DidRestartFirstMap = true;
             var currentMapName = currentMap?.MapName ?? Swiftly.Core.Engine.GlobalVars.MapName;
-            Log($"Need to change map to {currentMapName}");
+            Swiftly.Log($"Need to change map to {currentMapName}");
             Swiftly.Core.Engine.ExecuteCommand($"changelevel {currentMapName}");
             return true;
         }
@@ -233,7 +231,7 @@ public static class Game
     {
         var url = ConVars.RemoteLogUrl.Value;
         PropertyInfo? propertyInfo = data.GetType().GetProperty("event");
-        Log($"RemoteLogUrl='{url}' event='{propertyInfo?.GetValue(data)}'");
+        Swiftly.Log($"RemoteLogUrl='{url}' event='{propertyInfo?.GetValue(data)}'");
         if (url != "")
         {
             var headers = new Dictionary<string, string>();
@@ -243,21 +241,5 @@ public static class Game
                 headers.Add(ConVars.RemoteLogHeaderKey.Value, ConVars.RemoteLogHeaderValue.Value);
             HttpHelper.SendJson(url, data, headers);
         }
-    }
-
-    public static void Log(string message, bool printToChat = false)
-    {
-        if (printToChat)
-            Swiftly.Core.PlayerManager.SendChat(message);
-        if (!ConVars.IsVerbose.Value)
-            return;
-        var stackTrace = new StackTrace();
-        var frame = stackTrace.GetFrame(1);
-        var method = frame?.GetMethod();
-        var className = method?.DeclaringType?.Name;
-        var methodName = method?.Name;
-        var prefix =
-            className != null && methodName != null ? $"{className}::{methodName}" : "Match";
-        Swiftly.Core.Logger.LogInformation("{Prefix} {Message}", prefix, message);
     }
 }

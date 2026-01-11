@@ -30,7 +30,7 @@ public partial class LiveState
         {
             _isForfeiting = false;
             Timers.Clear("ForfeitMatch");
-            Game.Log("Match forfeit cancelled");
+            Swiftly.Log("Match forfeit cancelled");
         }
     }
 
@@ -55,7 +55,7 @@ public partial class LiveState
                 {
                     _isForfeiting = true;
                     Timers.Set("ForfeitMatch", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
-                    Game.Log("A team is forfeiting the match.");
+                    Swiftly.Log("A team is forfeiting the match.");
                     // @todo: Notify players a team is forfeiting.
                     return;
                 }

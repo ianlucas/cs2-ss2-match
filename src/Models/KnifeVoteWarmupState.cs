@@ -32,7 +32,7 @@ public class KnifeVoteWarmupState : WarmupState
         // TODO Place this somewhere else.
         foreach (var player in Game.Teams.SelectMany(t => t.Players))
             player.KnifeRoundVote = KnifeRoundVote.None;
-        Game.Log("Executing knife vote warmup");
+        Swiftly.Log("Executing knife vote warmup");
         Config.ExecWarmup(warmupTime: ConVars.KnifeVoteTimeout.Value, isLockTeams: true);
     }
 
@@ -62,7 +62,7 @@ public class KnifeVoteWarmupState : WarmupState
         var playerState = player?.GetState();
         if (playerState != null)
         {
-            Game.Log($"{player?.Controller.PlayerName} voted !stay.");
+            Swiftly.Log($"{player?.Controller.PlayerName} voted !stay.");
             playerState.KnifeRoundVote = KnifeRoundVote.Stay;
             CheckIfPlayersVoted();
         }
@@ -74,7 +74,7 @@ public class KnifeVoteWarmupState : WarmupState
         var playerState = player?.GetState();
         if (playerState != null)
         {
-            Game.Log($"{player?.Controller.PlayerName} voted !switch.");
+            Swiftly.Log($"{player?.Controller.PlayerName} voted !switch.");
             playerState.KnifeRoundVote = KnifeRoundVote.Switch;
             CheckIfPlayersVoted();
         }
@@ -91,7 +91,7 @@ public class KnifeVoteWarmupState : WarmupState
                     )
                 )
                 {
-                    Game.Log("Team leader has chosen a side.");
+                    Swiftly.Log("Team leader has chosen a side.");
                     ProcessKnifeVote(vote);
                     return;
                 }
@@ -99,13 +99,13 @@ public class KnifeVoteWarmupState : WarmupState
 
     public void OnKnifeVoteTimeout()
     {
-        Game.Log("Knife vote timed out");
+        Swiftly.Log("Knife vote timed out");
         ProcessKnifeVote(KnifeRoundVote.None);
     }
 
     public void ProcessKnifeVote(KnifeRoundVote decision)
     {
-        Game.Log($"Processing knife vote decision: {decision}");
+        Swiftly.Log($"Processing knife vote decision: {decision}");
         var winnerTeam = Game.KnifeRoundWinner;
         if (winnerTeam == null)
             return;

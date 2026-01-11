@@ -30,8 +30,8 @@ public partial class LiveState
         var filename = Swiftly.Core.GetCSGOPath(filenameAsArg);
         if (File.Exists(filename))
         {
-            Game.Log(
-                printToChat: true,
+            Swiftly.Log(
+                sendToChat: true,
                 message: Swiftly.Core.Localizer[
                     "match.admin_restore",
                     Game.GetChatPrefix(true),
