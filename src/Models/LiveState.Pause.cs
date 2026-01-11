@@ -53,7 +53,6 @@ public partial class LiveState
                     );
                 Game.SendEvent(OnMatchPausedEvent.Create(team: teamWhichPaused, pauseType));
                 Game.SendEvent(OnPauseBeganEvent.Create(team: teamWhichPaused, pauseType));
-
                 _teamWhichPaused = teamWhichPaused;
                 _wasPausedType = pauseType;
             }
@@ -111,7 +110,7 @@ public partial class LiveState
             {
                 if (!askedForUnpause)
                     Timers.SetEveryChatInterval(
-                        "PrintFriendlyUnpauseCommand",
+                        "FriendlyUnpauseInstructions",
                         () =>
                             Swiftly.Core.PlayerManager.SendChat(
                                 Swiftly.Core.Localizer[
@@ -132,7 +131,7 @@ public partial class LiveState
                         playerState.Team.FormattedName
                     ]
                 );
-            Timers.Clear("PrintFriendlyUnpauseCommand");
+            Timers.Clear("FriendlyUnpauseInstructions");
             Swiftly.Core.Engine.ExecuteCommand("mp_unpause_match");
             return;
         }
@@ -152,7 +151,7 @@ public partial class LiveState
                     player?.Controller.PlayerName ?? "Console"
                 ]
             );
-            Timers.Clear("PrintFriendlyUnpauseCommand");
+            Timers.Clear("FriendlyUnpauseInstructions");
             Swiftly.Core.Engine.ExecuteCommand("mp_unpause_match");
             return;
         }

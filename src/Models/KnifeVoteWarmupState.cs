@@ -27,7 +27,7 @@ public class KnifeVoteWarmupState : WarmupState
         HookGameEvent<EventPlayerTeam>(OnPlayerTeamPre, HookMode.Pre);
         RegisterCommand(StayCmds, OnStayCommand);
         RegisterCommand(SwitchCmds, OnSwitchCommand);
-        Timers.SetEveryChatInterval("PrintKnifeVoteCommands", OnPrintKnifeVoteCommands);
+        Timers.SetEveryChatInterval("KnifeVoteInstructions", SendKnifeVoteInstructions);
         Timers.Set("KnifeVoteTimeout", ConVars.KnifeVoteTimeout.Value - 1, OnKnifeVoteTimeout);
         // TODO Place this somewhere else.
         foreach (var player in Game.Teams.SelectMany(t => t.Players))
@@ -41,7 +41,7 @@ public class KnifeVoteWarmupState : WarmupState
         return HookResult.Stop;
     }
 
-    public void OnPrintKnifeVoteCommands()
+    public void SendKnifeVoteInstructions()
     {
         var team = Game.KnifeRoundWinner;
         var leader = team?.InGameLeader;
@@ -64,7 +64,7 @@ public class KnifeVoteWarmupState : WarmupState
         {
             Swiftly.Log($"{player?.Controller.PlayerName} voted !stay.");
             playerState.KnifeRoundVote = KnifeRoundVote.Stay;
-            CheckIfPlayersVoted();
+            CheckLeaderVote();
         }
     }
 
@@ -76,11 +76,11 @@ public class KnifeVoteWarmupState : WarmupState
         {
             Swiftly.Log($"{player?.Controller.PlayerName} voted !switch.");
             playerState.KnifeRoundVote = KnifeRoundVote.Switch;
-            CheckIfPlayersVoted();
+            CheckLeaderVote();
         }
     }
 
-    public void CheckIfPlayersVoted()
+    public void CheckLeaderVote()
     {
         var team = Game.KnifeRoundWinner;
         if (team != null)

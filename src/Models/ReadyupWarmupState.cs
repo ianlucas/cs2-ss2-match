@@ -38,14 +38,14 @@ public class ReadyupWarmupState : WarmupState
         if (ConVars.IsMatchmaking.Value)
         {
             _warmupStart = TimeHelper.Now();
-            Timers.SetEverySecond("PrintWaitingPlayersReady", OnPrintMatchmakingReady);
+            Timers.SetEverySecond("ReadyStatusReminder", SendReadyStatusReminder);
             Timers.Set(
                 "MatchmakingReadyTimeout",
                 ConVars.MatchmakingReadyTimeout.Value,
                 OnMatchCancelled
             );
         }
-        Timers.SetEveryChatInterval("PrintWarmupCommands", OnPrintWarmupCommands);
+        Timers.SetEveryChatInterval("WarmupInstructions", SendWarmupInstructions);
         Swiftly.Log("Executing warm-up commands...");
         Config.ExecWarmup(
             warmupTime: Game.IsMatchmaking() ? ConVars.MatchmakingReadyTimeout.Value : -1,
@@ -71,7 +71,7 @@ public class ReadyupWarmupState : WarmupState
             Swiftly.Core.PlayerManager.UpdateScoreboards();
     }
 
-    public void OnPrintWarmupCommands()
+    public void SendWarmupInstructions()
     {
         var needed = Game.GetNeededPlayersCount() - Game.GetReadyPlayersCount();
         foreach (var player in Swiftly.Core.PlayerManager.GetPlayersInTeams())
@@ -87,7 +87,7 @@ public class ReadyupWarmupState : WarmupState
         }
     }
 
-    public void OnPrintMatchmakingReady()
+    public void SendReadyStatusReminder()
     {
         var timeleft = Math.Max(
             0,
@@ -98,7 +98,7 @@ public class ReadyupWarmupState : WarmupState
         var formattedTimeleft = TimeHelper.FormatMmSs(timeleft);
         var unreadyTeams = Game.Teams.Where(t => t.Players.Any(p => !p.IsReady));
         if (timeleft == 0)
-            Timers.Clear("PrintWaitingPlayersReady");
+            Timers.Clear("ReadyStatusReminder");
         else
             switch (unreadyTeams.Count())
             {

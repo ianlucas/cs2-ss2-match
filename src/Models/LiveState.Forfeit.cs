@@ -29,7 +29,7 @@ public partial class LiveState
         if (playerState != null && Game.Teams.All(t => t.Players.Any(p => p.Handle != null)))
         {
             _isForfeiting = false;
-            Timers.Clear("ForfeitMatch");
+            Timers.Clear("ForfeitTimeout");
             Swiftly.Log("Match forfeit cancelled");
         }
     }
@@ -54,7 +54,7 @@ public partial class LiveState
                 )
                 {
                     _isForfeiting = true;
-                    Timers.Set("ForfeitMatch", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
+                    Timers.Set("ForfeitTimeout", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
                     Swiftly.Log("A team is forfeiting the match.");
                     // @todo: Notify players a team is forfeiting.
                     return;
