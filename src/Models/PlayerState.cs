@@ -29,29 +29,4 @@ public class PlayerState(ulong steamId, string name, PlayerTeam team, IPlayer? h
     {
         Team.RemovePlayer(this);
     }
-
-    public void SendChatMessage(string message)
-    {
-        Handle?.SendChat(message);
-    }
-
-    public bool IsConnected()
-    {
-        return Handle != null;
-    }
-
-    public Team GetCurrentTeam()
-    {
-        return Team.CurrentTeam;
-    }
-
-    public bool IsAlive()
-    {
-        return Handle?.GetHealth() > 0;
-    }
-
-    public int GetHealth()
-    {
-        return Handle?.GetHealth() ?? 0;
-    }
 }

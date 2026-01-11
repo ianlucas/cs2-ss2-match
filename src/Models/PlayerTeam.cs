@@ -113,34 +113,4 @@ public class PlayerTeam(Team startingTeam)
         foreach (var player in Players)
             player.Handle?.SendChat(message);
     }
-
-    public bool IsFullyDisconnected()
-    {
-        return Players.Count > 0 && Players.All(p => p.Handle == null);
-    }
-
-    public bool HasAnyConnectedPlayer()
-    {
-        return Players.Any(p => p.Handle != null);
-    }
-
-    public int GetConnectedPlayerCount()
-    {
-        return Players.Count(p => p.Handle != null);
-    }
-
-    public int GetAlivePlayerCount()
-    {
-        return Players.Count(p => p.Handle?.GetHealth() > 0);
-    }
-
-    public bool AreAllPlayersReady()
-    {
-        return Players.All(p => p.IsReady);
-    }
-
-    public bool HasAnyUnreadyPlayer()
-    {
-        return Players.Any(p => !p.IsReady);
-    }
 }

@@ -88,7 +88,6 @@ public partial class LiveState
                 );
                 return;
             }
-            // TODO Test this.
             player?.ExecuteCommand("callvote StartTimeOut");
         }
     }
