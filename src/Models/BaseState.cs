@@ -174,7 +174,7 @@ public class BaseState
         };
         if (Cstv.IsRecording())
         {
-            var filename = Game.DemoFilename;
+            var filename = Game.GetDemoFilename();
             if (filename != null)
                 Game.SendEvent(OnDemoFinishedEvent.Create(filename));
         }
@@ -222,7 +222,10 @@ public class BaseState
         );
         // Even with Get5 Events, we still store results in json for further debugging.
         // @todo Maybe only save if `match_verbose` is enabled in the future.
-        IoHelper.WriteJson(Swiftly.Core.GetConfigPath($"{Game.MatchFolder}/results.json"), maps);
+        IoHelper.WriteJson(
+            Swiftly.Core.GetConfigPath($"{Game.GetMatchFolder()}/results.json"),
+            maps
+        );
         Game.SendEvent(OnMapResultEvent.Create(map));
         if (isSeriesOver)
         {

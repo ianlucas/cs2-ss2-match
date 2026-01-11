@@ -26,7 +26,7 @@ public partial class LiveState
             return;
         }
         var round = context.Args[1].ToLower().Trim().PadLeft(2, '0');
-        var filenameAsArg = $"{Game.BackupPrefix}_round{round}.txt";
+        var filenameAsArg = $"{Game.GetBackupPrefix()}_round{round}.txt";
         var filename = Swiftly.Core.GetCSGOPath(filenameAsArg);
         if (File.Exists(filename))
         {

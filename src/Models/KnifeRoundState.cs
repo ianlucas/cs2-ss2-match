@@ -26,7 +26,7 @@ public class KnifeRoundState : ReadyupWarmupState
             AddHook(Natives.CCSGameRules_TerminateRoundLinux, OnTerminateRoundLinux);
         Swiftly.Log("Executing knife round configuration");
         Config.ExecKnife();
-        Cstv.Record(Game.DemoFilename);
+        Cstv.Record(Game.GetDemoFilename());
         Swiftly.Core.PlayerManager.RemovePlayerClans();
     }
 

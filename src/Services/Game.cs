@@ -49,18 +49,6 @@ public static class Game
             team.Reset();
     }
 
-    public static void SetState(BaseState newState)
-    {
-        if (newState is not ReadyupWarmupState && State.GetType() == newState.GetType())
-            return;
-        SendEvent(OnGameStateChangedEvent.Create(oldState: State, newState));
-        State.Unload();
-        Swiftly.Log($"Unloaded {State.GetType().FullName}");
-        State = newState;
-        State.Load();
-        Swiftly.Log($"Loaded {State.GetType().FullName}");
-    }
-
     public static void Setup()
     {
         if (Id == "" || !IsLoadedFromFile)
@@ -96,6 +84,18 @@ public static class Game
         SendEvent(OnSeriesInitEvent.Create());
     }
 
+    public static void SetState(BaseState newState)
+    {
+        if (newState is not ReadyupWarmupState && State.GetType() == newState.GetType())
+            return;
+        SendEvent(OnGameStateChangedEvent.Create(oldState: State, newState));
+        State.Unload();
+        Swiftly.Log($"Unloaded {State.GetType().FullName}");
+        State = newState;
+        State.Load();
+        Swiftly.Log($"Loaded {State.GetType().FullName}");
+    }
+
     public static bool EnsureCorrectMap()
     {
         var currentMap = GetMap();
@@ -115,166 +115,17 @@ public static class Game
 
     public static void EnforceMatchmakingRestrictions()
     {
-        if (ConVars.IsMatchmaking.Value)
-            foreach (var player in Swiftly.Core.PlayerManager.GetActualPlayers())
-                if (player.GetState() == null)
-                    if (Swiftly.Core.Permission.PlayerHasPermission(player.SteamID, "@css/root"))
-                        player.ChangeTeam(Team.Spectator);
-                    else
-                        player.Kick(
-                            "Match is reserved for a lobby.",
-                            ENetworkDisconnectionReason.NETWORK_DISCONNECT_REJECT_RESERVED_FOR_LOBBY
-                        );
-    }
-
-    public static string GetChatPrefix(bool stripColors = false)
-    {
-        return stripColors
-            ? ConVars.ChatPrefix.Value.StripColors()
-            : ConVars.ChatPrefix.Value.ApplyColors();
-    }
-
-    public static bool IsMatchmaking()
-    {
-        return IsLoadedFromFile && ConVars.IsMatchmaking.Value;
-    }
-
-    public static bool AreTeamsLocked()
-    {
-        return IsLoadedFromFile || State is not ReadyupWarmupState;
-    }
-
-    public static int GetNeededPlayersCount()
-    {
-        return IsLoadedFromFile ? GetAllPlayers().Count() : ConVars.PlayersNeeded.Value;
-    }
-
-    public static int GetReadyPlayersCount()
-    {
-        return GetAllPlayers().Count(p => p.IsReady);
-    }
-
-    public static PlayerTeam? GetTeam(Team team)
-    {
-        return Teams.FirstOrDefault(t => t.StartingTeam == team);
-    }
-
-    public static Map? GetMap()
-    {
-        return Maps.FirstOrDefault(m => m.Result == MapResult.None);
-    }
-
-    public static int FindMapIndex(Map? map)
-    {
-        return map != null ? Maps.IndexOf(map) : 0;
-    }
-
-    public static int GetMapIndex()
-    {
-        var map = GetMap();
-        if (map == null)
-            return 0;
-        return Maps.IndexOf(map);
-    }
-
-    public static long GetRoundTime()
-    {
-        return State is LiveState state ? TimeHelper.Now() - state.RoundStartedAt : 0;
-    }
-
-    public static int GetRoundNumber() =>
-        State is LiveState state
-            ? state.Round > -1
-                ? state.Round
-                : 0
-            : 0;
-
-    public static void ResetTeamsForNewMatch()
-    {
-        foreach (var team in Teams)
-        {
-            team.Stats = new();
-            foreach (var player in team.Players)
-            {
-                player.IsReady = false;
-                player.Stats = new(player.SteamID);
-            }
-        }
-    }
-
-    public static PlayerState? GetPlayerStateFromSteamID(ulong steamId)
-    {
-        return GetAllPlayers().FirstOrDefault(p => p.SteamID == steamId);
-    }
-
-    public static string MatchFolder =>
-        Id != null ? $"/{(IsLoadedFromFile ? "Matches" : "Scrims")}/{Id}" : "";
-
-    public static DirectoryInfo CreateMatchFolder() =>
-        Directory.CreateDirectory(Swiftly.Core.GetConfigPath(MatchFolder));
-
-    public static string? BackupPrefix =>
-        Id != null
-            ? Swiftly.Core.GetConfigPath($"{MatchFolder}/{Swiftly.Core.Engine.GlobalVars.MapName}")
-            : null;
-
-    public static string? DemoFilename =>
-        Id != null
-            ? Swiftly.Core.GetConfigPath(
-                $"{MatchFolder}/{Swiftly.Core.Engine.GlobalVars.MapName}.dem"
-            )
-            : null;
-
-    public static IEnumerable<PlayerState> GetAllPlayers()
-    {
-        return Teams.SelectMany(t => t.Players);
-    }
-
-    public static bool AreAllPlayersReady()
-    {
-        return GetAllPlayers().All(p => p.IsReady);
-    }
-
-    public static bool HasTeamsWithAnyPlayerConnected()
-    {
-        return Teams.All(t => t.Players.Any(p => p.Handle != null));
-    }
-
-    public static IEnumerable<PlayerTeam> GetUnreadyTeams()
-    {
-        return Teams.Where(t => t.Players.Any(p => !p.IsReady));
-    }
-
-    public static IEnumerable<PlayerTeam> GetTeamsWithConnectedPlayers()
-    {
-        return Teams.Where(t => t.Players.Any(p => p.Handle != null));
-    }
-
-    public static bool AreAllTeamsReadyToUnpause()
-    {
-        return Teams.All(team => team.IsUnpauseMatch);
-    }
-
-    public static void ClearAllTeamUnpauseFlags()
-    {
-        foreach (var team in Teams)
-            team.IsUnpauseMatch = false;
-    }
-
-    public static void AddMap(string mapName)
-    {
-        Maps.Add(new Map(mapName));
-    }
-
-    public static int GetTotalMapCount()
-    {
-        return Maps.Count;
-    }
-
-    public static IEnumerable<Map> GetCompletedMaps()
-    {
-        var maps = Maps.Count > 0 ? Maps : new List<Map>();
-        return maps.Where(m => m.Result != MapResult.None);
+        if (!ConVars.IsMatchmaking.Value)
+            return;
+        foreach (var player in Swiftly.Core.PlayerManager.GetActualPlayers())
+            if (player.GetState() == null)
+                if (Swiftly.Core.Permission.PlayerHasPermission(player.SteamID, "@css/root"))
+                    player.ChangeTeam(Team.Spectator);
+                else
+                    player.Kick(
+                        "Match is reserved for a lobby.",
+                        ENetworkDisconnectionReason.NETWORK_DISCONNECT_REJECT_RESERVED_FOR_LOBBY
+                    );
     }
 
     public static void ConfigureTeamFromSchema(
@@ -316,10 +167,164 @@ public static class Game
         }
     }
 
+    public static bool IsMatchmaking()
+    {
+        return IsLoadedFromFile && ConVars.IsMatchmaking.Value;
+    }
+
+    public static bool AreTeamsLocked()
+    {
+        return IsLoadedFromFile || State is not ReadyupWarmupState;
+    }
+
+    public static string GetChatPrefix(bool stripColors = false)
+    {
+        return stripColors
+            ? ConVars.ChatPrefix.Value.StripColors()
+            : ConVars.ChatPrefix.Value.ApplyColors();
+    }
+
+    public static IEnumerable<PlayerState> GetAllPlayers()
+    {
+        return Teams.SelectMany(t => t.Players);
+    }
+
+    public static PlayerState? GetPlayerStateFromSteamID(ulong steamId)
+    {
+        return GetAllPlayers().FirstOrDefault(p => p.SteamID == steamId);
+    }
+
+    public static int GetNeededPlayersCount()
+    {
+        return IsLoadedFromFile ? GetAllPlayers().Count() : ConVars.PlayersNeeded.Value;
+    }
+
+    public static int GetReadyPlayersCount()
+    {
+        return GetAllPlayers().Count(p => p.IsReady);
+    }
+
+    public static bool AreAllPlayersReady()
+    {
+        return GetAllPlayers().All(p => p.IsReady);
+    }
+
+    public static PlayerTeam? GetTeam(Team team)
+    {
+        return Teams.FirstOrDefault(t => t.StartingTeam == team);
+    }
+
+    public static bool HasTeamsWithAnyPlayerConnected()
+    {
+        return Teams.All(t => t.Players.Any(p => p.Handle != null));
+    }
+
+    public static IEnumerable<PlayerTeam> GetUnreadyTeams()
+    {
+        return Teams.Where(t => t.Players.Any(p => !p.IsReady));
+    }
+
+    public static IEnumerable<PlayerTeam> GetTeamsWithConnectedPlayers()
+    {
+        return Teams.Where(t => t.Players.Any(p => p.Handle != null));
+    }
+
+    public static bool AreAllTeamsReadyToUnpause()
+    {
+        return Teams.All(team => team.IsUnpauseMatch);
+    }
+
+    public static Map? GetMap()
+    {
+        return Maps.FirstOrDefault(m => m.Result == MapResult.None);
+    }
+
+    public static int GetMapIndex()
+    {
+        var map = GetMap();
+        if (map == null)
+            return 0;
+        return Maps.IndexOf(map);
+    }
+
+    public static int FindMapIndex(Map? map)
+    {
+        return map != null ? Maps.IndexOf(map) : 0;
+    }
+
+    public static void AddMap(string mapName)
+    {
+        Maps.Add(new Map(mapName));
+    }
+
+    public static int GetTotalMapCount()
+    {
+        return Maps.Count;
+    }
+
+    public static IEnumerable<Map> GetCompletedMaps()
+    {
+        var maps = Maps.Count > 0 ? Maps : new List<Map>();
+        return maps.Where(m => m.Result != MapResult.None);
+    }
+
+    public static long GetRoundTime()
+    {
+        return State is LiveState state ? TimeHelper.Now() - state.RoundStartedAt : 0;
+    }
+
+    public static int GetRoundNumber() =>
+        State is LiveState state
+            ? state.Round > -1
+                ? state.Round
+                : 0
+            : 0;
+
+    public static string GetMatchFolder()
+    {
+        return Id != null ? $"/{(IsLoadedFromFile ? "Matches" : "Scrims")}/{Id}" : "";
+    }
+
+    public static DirectoryInfo CreateMatchFolder()
+    {
+        return Directory.CreateDirectory(Swiftly.Core.GetConfigPath(GetMatchFolder()));
+    }
+
+    public static string? GetBackupPrefix()
+    {
+        return Id != null
+            ? Swiftly.Core.GetConfigPath(
+                $"{GetMatchFolder()}/{Swiftly.Core.Engine.GlobalVars.MapName}"
+            )
+            : null;
+    }
+
+    public static string? GetDemoFilename()
+    {
+        return Id != null
+            ? Swiftly.Core.GetConfigPath(
+                $"{GetMatchFolder()}/{Swiftly.Core.Engine.GlobalVars.MapName}.dem"
+            )
+            : null;
+    }
+
     public static void SwapTeamSides()
     {
         foreach (var team in Teams)
             team.StartingTeam = team.StartingTeam.Toggle();
+    }
+
+    public static void ResetTeamsForNewMatch()
+    {
+        foreach (var team in Teams)
+        {
+            team.Stats = new();
+            foreach (var player in team.Players)
+            {
+                player.IsReady = false;
+                player.Stats = new(player.SteamID);
+            }
+        }
     }
 
     public static void ResetAllPlayerAndTeamStats()
@@ -329,6 +334,12 @@ public static class Game
 
         foreach (var team in Teams)
             team.Stats = new();
+    }
+
+    public static void ClearAllTeamUnpauseFlags()
+    {
+        foreach (var team in Teams)
+            team.IsUnpauseMatch = false;
     }
 
     public static void ClearAllSurrenderFlags()

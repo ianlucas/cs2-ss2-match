@@ -69,7 +69,7 @@ public partial class LiveState : BaseState
             maxRounds: ConVars.MaxRounds.Value,
             otMaxRounds: ConVars.OtMaxRounds.Value,
             isFriendlyPause: ConVars.IsFriendlyPause.Value,
-            backupPath: Game.BackupPrefix
+            backupPath: Game.GetBackupPrefix()
         );
         var localize = Swiftly.Core.Localizer;
         Swiftly.Core.PlayerManager.SendChatRepeat(localize["match.live", Game.GetChatPrefix()]);
@@ -78,7 +78,7 @@ public partial class LiveState : BaseState
         );
         Game.ClearAllSurrenderFlags();
         if (!ConVars.IsKnifeRoundEnabled.Value)
-            Cstv.Record(Game.DemoFilename);
+            Cstv.Record(Game.GetDemoFilename());
         Swiftly.Core.PlayerManager.RemovePlayerClans();
         TryForfeitMatch();
     }
