@@ -49,7 +49,7 @@ public class PlayerTeam(Team startingTeam)
     {
         get =>
             Swiftly.Core.EntitySystem.GetGameRules()?.AreTeamsPlayingSwitchedSides() == true
-                ? TeamHelper.ToggleTeam(StartingTeam)
+                ? StartingTeam.Toggle()
                 : StartingTeam;
     }
 

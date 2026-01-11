@@ -95,7 +95,7 @@ public class ReadyupWarmupState : WarmupState
         );
         if (timeleft % 30 != 0)
             return;
-        var formattedTimeleft = TimeHelper.Format(timeleft);
+        var formattedTimeleft = TimeHelper.FormatMmSs(timeleft);
         var unreadyTeams = Game.Teams.Where(t => t.Players.Any(p => !p.IsReady));
         if (timeleft == 0)
             Timers.Clear("PrintWaitingPlayersReady");

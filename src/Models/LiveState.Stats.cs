@@ -157,7 +157,7 @@ public partial class LiveState
             var clutcher = Swiftly.Core.PlayerManager.GetAliveInTeam(victimTeam).FirstOrDefault();
             if (clutcher != null)
                 _roundClutchingCount[clutcher.SteamID] = Swiftly
-                    .Core.PlayerManager.GetAliveInTeam(TeamHelper.ToggleTeam(victimTeam))
+                    .Core.PlayerManager.GetAliveInTeam(victimTeam.Toggle())
                     .Count();
         }
         var killedByBomb = @event.Weapon == "planted_c4";

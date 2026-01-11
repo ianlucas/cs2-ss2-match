@@ -129,7 +129,7 @@ public class KnifeVoteWarmupState : WarmupState
         if (decision == KnifeRoundVote.Switch)
         {
             foreach (var team in Game.Teams)
-                team.StartingTeam = TeamHelper.ToggleTeam(team.StartingTeam);
+                team.StartingTeam = team.StartingTeam.Toggle();
             Swiftly.Core.EntitySystem.GetGameRules()?.HandleSwapTeams();
         }
         Game.SendEvent(OnSidePickedEvent.Create(team: winnerTeam));
