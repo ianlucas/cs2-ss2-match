@@ -5,9 +5,9 @@
 
 namespace Match;
 
-public class ThrownMolotov(int roundNumber, long roundTime, Player player)
+public class ThrownMolotov(int roundNumber, long roundTime, PlayerState player)
 {
     public int RoundNumber = roundNumber;
     public long RoundTime = roundTime;
-    public Player Player = player;
+    public PlayerState Player = player;
 }

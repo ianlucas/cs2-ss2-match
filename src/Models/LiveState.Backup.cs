@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 
 namespace Match;
@@ -29,8 +30,8 @@ public partial class LiveState
         var filename = Swiftly.Core.GetCSGOPath(filenameAsArg);
         if (File.Exists(filename))
         {
-            Game.Log(
-                printToChat: true,
+            Swiftly.Log(
+                sendToChat: true,
                 message: Swiftly.Core.Localizer[
                     "match.admin_restore",
                     Game.GetChatPrefix(true),
@@ -40,17 +41,14 @@ public partial class LiveState
             // We load the stats before trying to restore the round. Most cases should work as
             // `mp_backup_restore_load_file` can only fail when the file is not found, but we already had a check
             // for that.
-            var players = Game.Teams.SelectMany(t => t.Players);
+            var players = Game.GetAllPlayers();
             foreach (var report in players.SelectMany(p => p.DamageReport.Values))
                 report.Reset();
             if (int.TryParse(round, out var roundAsInt))
             {
                 if (roundAsInt == 0)
                 {
-                    foreach (var p in players)
-                        p.Stats = new(p.SteamID);
-                    foreach (var t in Game.Teams)
-                        t.Stats = new();
+                    Game.ResetAllPlayerAndTeamStats();
                 }
                 else
                 {
@@ -64,7 +62,7 @@ public partial class LiveState
                 // Because we increment at OnRoundStart.
                 Round = roundAsInt - 1;
                 _thrownMolotovs.Clear();
-                Game.SendEvent(Game.Get5.OnBackupRestore(filename));
+                Game.SendEvent(OnBackupRestoreEvent.Create(filename));
                 Swiftly.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file {filenameAsArg}");
             }
             else

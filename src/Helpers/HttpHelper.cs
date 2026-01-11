@@ -10,6 +10,8 @@ namespace Match;
 
 public static class HttpHelper
 {
+    private static readonly HttpClient _httpClient = new();
+
     public static async void SendJson(
         string url,
         object data,
@@ -18,13 +20,16 @@ public static class HttpHelper
     {
         try
         {
-            using HttpClient client = new();
+            using var content = new StringContent(
+                JsonSerializer.Serialize(data),
+                Encoding.UTF8,
+                "application/json"
+            );
+            using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
             if (headers != null)
                 foreach (var header in headers)
-                    client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            var json = JsonSerializer.Serialize(data);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            await client.PostAsync(url, content);
+                    request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            using var response = await _httpClient.SendAsync(request);
         }
         catch { }
     }

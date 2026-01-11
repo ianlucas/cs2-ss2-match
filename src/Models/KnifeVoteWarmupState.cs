@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
@@ -26,12 +27,10 @@ public class KnifeVoteWarmupState : WarmupState
         HookGameEvent<EventPlayerTeam>(OnPlayerTeamPre, HookMode.Pre);
         RegisterCommand(StayCmds, OnStayCommand);
         RegisterCommand(SwitchCmds, OnSwitchCommand);
-        Timers.SetEveryChatInterval("PrintKnifeVoteCommands", OnPrintKnifeVoteCommands);
+        Timers.SetEveryChatInterval("KnifeVoteInstructions", SendKnifeVoteInstructions);
         Timers.Set("KnifeVoteTimeout", ConVars.KnifeVoteTimeout.Value - 1, OnKnifeVoteTimeout);
-        // TODO Place this somewhere else.
-        foreach (var player in Game.Teams.SelectMany(t => t.Players))
-            player.KnifeRoundVote = KnifeRoundVote.None;
-        Game.Log("Execing Knife Vote");
+        Game.ResetAllKnifeRoundVotes();
+        Swiftly.Log("Executing knife vote warmup");
         Config.ExecWarmup(warmupTime: ConVars.KnifeVoteTimeout.Value, isLockTeams: true);
     }
 
@@ -40,7 +39,7 @@ public class KnifeVoteWarmupState : WarmupState
         return HookResult.Stop;
     }
 
-    public void OnPrintKnifeVoteCommands()
+    public void SendKnifeVoteInstructions()
     {
         var team = Game.KnifeRoundWinner;
         var leader = team?.InGameLeader;
@@ -58,28 +57,28 @@ public class KnifeVoteWarmupState : WarmupState
     public void OnStayCommand(ICommandContext context)
     {
         var player = context.Sender;
-        var state = player?.GetState();
-        if (state != null)
+        var playerState = player?.GetState();
+        if (playerState != null)
         {
-            Game.Log($"{player?.Controller.PlayerName} voted !stay.");
-            state.KnifeRoundVote = KnifeRoundVote.Stay;
-            CheckIfPlayersVoted();
+            Swiftly.Log($"{player?.Controller.PlayerName} voted !stay.");
+            playerState.KnifeRoundVote = KnifeRoundVote.Stay;
+            CheckLeaderVote();
         }
     }
 
     public void OnSwitchCommand(ICommandContext context)
     {
         var player = context.Sender;
-        var state = player?.GetState();
-        if (state != null)
+        var playerState = player?.GetState();
+        if (playerState != null)
         {
-            Game.Log($"{player?.Controller.PlayerName} voted !switch.");
-            state.KnifeRoundVote = KnifeRoundVote.Switch;
-            CheckIfPlayersVoted();
+            Swiftly.Log($"{player?.Controller.PlayerName} voted !switch.");
+            playerState.KnifeRoundVote = KnifeRoundVote.Switch;
+            CheckLeaderVote();
         }
     }
 
-    public void CheckIfPlayersVoted()
+    public void CheckLeaderVote()
     {
         var team = Game.KnifeRoundWinner;
         if (team != null)
@@ -90,7 +89,7 @@ public class KnifeVoteWarmupState : WarmupState
                     )
                 )
                 {
-                    Game.Log("Leader has decided a side.");
+                    Swiftly.Log("Team leader has chosen a side.");
                     ProcessKnifeVote(vote);
                     return;
                 }
@@ -98,13 +97,13 @@ public class KnifeVoteWarmupState : WarmupState
 
     public void OnKnifeVoteTimeout()
     {
-        Game.Log("Knive vote has timed out");
+        Swiftly.Log("Knife vote timed out");
         ProcessKnifeVote(KnifeRoundVote.None);
     }
 
     public void ProcessKnifeVote(KnifeRoundVote decision)
     {
-        Game.Log($"decision={decision}");
+        Swiftly.Log($"Processing knife vote decision: {decision}");
         var winnerTeam = Game.KnifeRoundWinner;
         if (winnerTeam == null)
             return;
@@ -127,12 +126,11 @@ public class KnifeVoteWarmupState : WarmupState
         }
         if (decision == KnifeRoundVote.Switch)
         {
-            foreach (var team in Game.Teams)
-                team.StartingTeam = TeamHelper.ToggleTeam(team.StartingTeam);
+            Game.SwapTeamSides();
             Swiftly.Core.EntitySystem.GetGameRules()?.HandleSwapTeams();
         }
-        Game.SendEvent(Game.Get5.OnSidePicked(team: winnerTeam));
-        Game.SendEvent(Game.Get5.OnKnifeRoundWon(team: winnerTeam, decision));
+        Game.SendEvent(OnSidePickedEvent.Create(team: winnerTeam));
+        Game.SendEvent(OnKnifeRoundWonEvent.Create(team: winnerTeam, decision));
         Game.SetState(new LiveState());
     }
 }

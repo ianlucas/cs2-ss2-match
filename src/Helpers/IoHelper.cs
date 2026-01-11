@@ -11,19 +11,25 @@ public static class IoHelper
 {
     public static void WriteJson(string filename, object contents)
     {
-        if (File.Exists(filename))
+        try
         {
-            int version = 1;
-            string backupPath;
-            do
+            if (File.Exists(filename))
             {
-                backupPath = $"{filename}.{version}";
-                version++;
-            } while (File.Exists(backupPath));
-
-            File.Copy(filename, backupPath);
+                int version = 1;
+                string backupPath;
+                do
+                {
+                    backupPath = $"{filename}.{version}";
+                    version++;
+                } while (File.Exists(backupPath));
+                File.Copy(filename, backupPath);
+            }
+            using var stream = File.Create(filename);
+            JsonSerializer.Serialize(stream, contents);
         }
-        string jsonString = JsonSerializer.Serialize(contents);
-        File.WriteAllText(filename, jsonString);
+        catch (Exception ex)
+        {
+            Swiftly.Log($"Error writing JSON to {filename}: {ex.Message}");
+        }
     }
 }

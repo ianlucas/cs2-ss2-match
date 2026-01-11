@@ -10,42 +10,53 @@ namespace Match;
 
 public static class Cstv
 {
-    private static string? _filename;
+    public static string? Filename { get; set; }
 
-    static Cstv()
+    public static void Initialize()
     {
         Swiftly.Core.Event.OnCommandExecuteHook += OnCommandExecuteHook;
+    }
+
+    public static void Shutdown()
+    {
+        Swiftly.Core.Event.OnCommandExecuteHook -= OnCommandExecuteHook;
     }
 
     public static void OnCommandExecuteHook(IOnCommandExecuteHookEvent @event)
     {
         if (@event.HookMode == HookMode.Pre && @event.Command.Arg(0) == "changelevel")
             if (IsRecording())
+            {
                 Stop();
+                @event.Result = HookResult.Stop;
+                var commandString = @event.Command.GetCommandString;
+                if (commandString != null)
+                    Swiftly.Core.Engine.ExecuteCommand(commandString);
+            }
     }
 
-    public static bool IsRecording() => _filename != null;
+    public static bool IsRecording() => Filename != null;
 
     public static void Record(string? filename)
     {
         if (!IsEnabled() || IsRecording() || filename == null)
             return;
-        _filename = filename;
-        Game.Log($"Demo is being recorded at {filename}.");
+        Filename = filename;
         Swiftly.Core.Engine.ExecuteCommand($"tv_record {filename}");
+        Swiftly.Log($"Demo recording started: {filename}");
     }
 
     public static void Stop()
     {
         if (IsRecording())
         {
-            _filename = null;
-            Game.Log($"Demo is no longer being recorded.");
+            Filename = null;
             Swiftly.Core.Engine.ExecuteCommand("tv_stoprecord");
+            Swiftly.Log("Demo recording stopped.");
         }
     }
 
-    public static string? GetFilename() => _filename;
+    public static string? GetFilename() => Filename;
 
     public static bool IsEnabled() => Swiftly.Core.ConVar.Find<bool>("tv_enable")?.Value == true;
 

@@ -7,12 +7,17 @@ using SwiftlyS2.Shared.Players;
 
 namespace Match;
 
-public static class TeamHelper
+public static partial class TeamExtensions
 {
-    public static Team ToggleTeam(Team team) =>
-        team > Team.Spectator
-            ? team == Team.T
-                ? Team.CT
-                : Team.T
-            : team;
+    extension(Team self)
+    {
+        public Team Toggle()
+        {
+            return self > Team.Spectator
+                ? self == Team.T
+                    ? Team.CT
+                    : Team.T
+                : self;
+        }
+    }
 }

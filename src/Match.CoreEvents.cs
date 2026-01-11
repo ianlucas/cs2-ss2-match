@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.ProtobufDefinitions;
 
@@ -67,7 +68,7 @@ public partial class Match
                     "Match is reserved for a lobby.",
                     ENetworkDisconnectionReason.NETWORK_DISCONNECT_REJECT_RESERVED_FOR_LOBBY
                 );
-            Game.SendEvent(Game.Get5.OnPlayerConnected(player));
+            Game.SendEvent(OnPlayerConnectedEvent.Create(player));
         }
     }
 
@@ -77,7 +78,7 @@ public partial class Match
         if (player != null && !player.IsFakeClient)
         {
             player.GetState()?.Handle = null;
-            Game.SendEvent(Game.Get5.OnPlayerDisconnected(player));
+            Game.SendEvent(OnPlayerDisconnectedEvent.Create(player));
         }
     }
 }

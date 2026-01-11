@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5;
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Players;
 
@@ -91,10 +93,10 @@ public partial class Match
             Game.Setup();
         }
         else
-            foreach (var player in Game.Teams.SelectMany(t => t.Players))
+            foreach (var player in Game.GetAllPlayers())
                 player.IsReady = true;
-        Game.Log(
-            printToChat: true,
+        Swiftly.Log(
+            sendToChat: true,
             message: Core.Localizer[
                 "match.admin_start",
                 Game.GetChatPrefix(true),
@@ -119,8 +121,8 @@ public partial class Match
             return;
         if (Game.AreTeamsLocked())
             return;
-        Game.Log(
-            printToChat: true,
+        Swiftly.Log(
+            sendToChat: true,
             message: Core.Localizer[
                 "match.admin_map",
                 Game.GetChatPrefix(true),
@@ -138,8 +140,8 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        Game.Log(
-            printToChat: true,
+        Swiftly.Log(
+            sendToChat: true,
             message: Core.Localizer[
                 "match.admin_restart",
                 Game.GetChatPrefix(true),
@@ -165,11 +167,11 @@ public partial class Match
         var name = context.Args[1].Trim();
         var file = Get5Match.Read(name);
         if (file.Error != null)
-            Game.SendEvent(Game.Get5.OnLoadMatchConfigFailed(reason: file.Error));
+            Game.SendEvent(OnLoadMatchConfigFailedEvent.Create(reason: file.Error));
         var match = file.Contents;
         if (match == null || file.Path == null)
             return;
-        Game.SendEvent(Game.Get5.OnPreLoadMatchConfig(filename: file.Path));
+        Game.SendEvent(OnPreLoadMatchConfigEvent.Create(filename: file.Path));
         Game.Reset();
         Game.IsLoadedFromFile = true;
         Game.Id = match.Matchid;
@@ -178,7 +180,7 @@ public partial class Match
         var maplist = match.Maplist.Get();
         if (maplist != null)
             foreach (var mapName in maplist)
-                Game.Maps.Add(new(mapName));
+                Game.AddMap(mapName);
         else
         {
             Game.Reset();
@@ -189,38 +191,17 @@ public partial class Match
         Game.Team2.StartingTeam = Team.CT;
         for (var index = 0; index < Game.Teams.Count; index++)
         {
-            var team = Game.Teams[index];
             var teamSchema = (index == 0 ? match.Team1 : match.Team2)?.Get();
-            var players = teamSchema?.Players.Get();
-            if (teamSchema == null || players == null)
+            if (teamSchema == null)
                 continue;
-            var electedInGameLeader = false;
             ulong? leaderId = ulong.TryParse(teamSchema.Leaderid, out ulong li) ? li : null;
-            team.Id = teamSchema.Id ?? "";
-            team.Name = teamSchema.Name ?? "";
-            team.SeriesScore = teamSchema.SeriesScore ?? 0;
-            foreach (var playerSchema in players)
-            {
-                var steamId = playerSchema.Key;
-                var player = new Player(
-                    steamId,
-                    playerSchema.Value,
-                    team,
-                    Core.PlayerManager.GetPlayerFromSteamID(steamId)
-                );
-                team.AddPlayer(player);
-                if (!electedInGameLeader && (leaderId == null || steamId == leaderId))
-                {
-                    electedInGameLeader = true;
-                    team.InGameLeader = player;
-                }
-            }
+            Game.ConfigureTeamFromSchema(index, teamSchema, leaderId);
         }
         if (match.Cvars != null)
             foreach (var (key, value) in match.Cvars)
             {
                 var cmd = $"{key} {value}";
-                Game.Log($"Execing {cmd}");
+                Swiftly.Log($"Executing command: {cmd}");
                 Core.Engine.ExecuteCommand(cmd);
             }
         Swiftly.Core.Scheduler.NextWorldUpdate(() =>

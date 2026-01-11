@@ -28,7 +28,7 @@ public partial class LiveState
             _surrendingTeam = playerState.Team;
             playerState.Team.SurrenderVotes.Add(playerState.SteamID);
             var neededVotes = playerState.Team.Players.Count(p => p.Handle != null);
-            var timerName = $"surrender{playerState.Team.Index}";
+            var timerName = $"SurrenderTimeout_Team{playerState.Team.Index}";
             if (playerState.Team.SurrenderVotes.Count >= neededVotes)
             {
                 if (!_canSurrender)
@@ -44,7 +44,7 @@ public partial class LiveState
                 playerState.Team.IsSurrended = true;
                 playerState.Team.Score = 0;
                 playerState.Team.Opposition.Score = 1;
-                Game.Log("Terminating by Surrender");
+                Swiftly.Log("Terminating match due to team surrender");
                 Swiftly
                     .Core.EntitySystem.GetGameRules()
                     ?.TerminateRound(

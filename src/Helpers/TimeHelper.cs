@@ -11,7 +11,7 @@ public static class TimeHelper
 
     public static long NowSeconds() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-    public static string Format(long seconds)
+    public static string FormatMmSs(long seconds)
     {
         return $"{seconds / 60}:{seconds % 60:D2}";
     }

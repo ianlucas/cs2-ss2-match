@@ -18,5 +18,10 @@ public static class CCSPlayerControllerExtensions
                 0
             );
         }
+
+        public PlayerState? GetState()
+        {
+            return Game.GetPlayerStateFromSteamID(self.SteamID);
+        }
     }
 }

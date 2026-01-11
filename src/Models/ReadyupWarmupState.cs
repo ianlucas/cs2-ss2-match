@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
@@ -19,10 +20,10 @@ public class ReadyupWarmupState : WarmupState
 
     public override void Load()
     {
-        Game.Log($"matchmaking={Game.IsMatchmaking()}");
+        Swiftly.Log($"Matchmaking mode: {Game.IsMatchmaking()}");
         Cstv.Stop();
         Cstv.Set(ConVars.IsTvRecord.Value);
-        if (Game.CheckCurrentMap())
+        if (Game.EnsureCorrectMap())
             return /* Map will be changed. */
             ;
         base.Load();
@@ -37,15 +38,15 @@ public class ReadyupWarmupState : WarmupState
         if (ConVars.IsMatchmaking.Value)
         {
             _warmupStart = TimeHelper.Now();
-            Timers.SetEverySecond("PrintWaitingPlayersReady", OnPrintMatchmakingReady);
+            Timers.SetEverySecond("ReadyStatusReminder", SendReadyStatusReminder);
             Timers.Set(
                 "MatchmakingReadyTimeout",
                 ConVars.MatchmakingReadyTimeout.Value,
                 OnMatchCancelled
             );
         }
-        Timers.SetEveryChatInterval("PrintWarmupCommands", OnPrintWarmupCommands);
-        Game.Log("Executing warm-up commands...");
+        Timers.SetEveryChatInterval("WarmupInstructions", SendWarmupInstructions);
+        Swiftly.Log("Executing warm-up commands...");
         Config.ExecWarmup(
             warmupTime: Game.IsMatchmaking() ? ConVars.MatchmakingReadyTimeout.Value : -1,
             isLockTeams: Game.AreTeamsLocked()
@@ -70,23 +71,23 @@ public class ReadyupWarmupState : WarmupState
             Swiftly.Core.PlayerManager.UpdateScoreboards();
     }
 
-    public void OnPrintWarmupCommands()
+    public void SendWarmupInstructions()
     {
         var needed = Game.GetNeededPlayersCount() - Game.GetReadyPlayersCount();
         foreach (var player in Swiftly.Core.PlayerManager.GetPlayersInTeams())
         {
             var localize = Swiftly.Core.Localizer;
-            var state = player.GetState();
+            var playerState = player.GetState();
             player.SendChat(localize["match.commands", Game.GetChatPrefix()]);
             if (needed > 0)
                 player.SendChat(localize["match.commands_needed", needed]);
-            if (state?.IsReady != true)
+            if (playerState?.IsReady != true)
                 player.SendChat(localize["match.commands_ready"]);
             player.SendChat(localize["match.commands_gg"]);
         }
     }
 
-    public void OnPrintMatchmakingReady()
+    public void SendReadyStatusReminder()
     {
         var timeleft = Math.Max(
             0,
@@ -94,10 +95,10 @@ public class ReadyupWarmupState : WarmupState
         );
         if (timeleft % 30 != 0)
             return;
-        var formattedTimeleft = TimeHelper.Format(timeleft);
-        var unreadyTeams = Game.Teams.Where(t => t.Players.Any(p => !p.IsReady));
+        var formattedTimeleft = TimeHelper.FormatMmSs(timeleft);
+        var unreadyTeams = Game.GetUnreadyTeams();
         if (timeleft == 0)
-            Timers.Clear("PrintWaitingPlayersReady");
+            Timers.Clear("ReadyStatusReminder");
         else
             switch (unreadyTeams.Count())
             {
@@ -137,21 +138,21 @@ public class ReadyupWarmupState : WarmupState
         var player = context.Sender;
         if (player != null && !_matchCancelled)
         {
-            Game.Log($"{player.Controller.PlayerName} sent !ready.");
-            var state = player.GetState();
-            if (state == null && !Game.IsLoadedFromFile)
+            Swiftly.Log($"{player.Controller.PlayerName} sent !ready.");
+            var playerState = player.GetState();
+            if (playerState == null && !Game.IsLoadedFromFile)
             {
                 var team = Game.GetTeam(player.Controller.Team);
                 if (team != null && team.CanAddPlayer())
                 {
-                    state = new(player.SteamID, player.Controller.PlayerName, team, player);
-                    team.AddPlayer(state);
+                    playerState = new(player.SteamID, player.Controller.PlayerName, team, player);
+                    team.AddPlayer(playerState);
                 }
             }
-            if (state != null)
+            if (playerState != null)
             {
-                state.IsReady = true;
-                Game.SendEvent(Game.Get5.OnTeamReadyStatusChanged(team: state.Team));
+                playerState.IsReady = true;
+                Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
                 TryStartMatch();
             }
         }
@@ -160,19 +161,19 @@ public class ReadyupWarmupState : WarmupState
     public void OnUnreadyCommand(ICommandContext context)
     {
         var player = context.Sender;
-        Game.Log($"{player?.Controller.PlayerName} sent !unready.");
-        var state = player?.GetState();
-        if (state != null)
+        Swiftly.Log($"{player?.Controller.PlayerName} sent !unready.");
+        var playerState = player?.GetState();
+        if (playerState != null)
         {
-            state.IsReady = false;
-            Game.SendEvent(Game.Get5.OnTeamReadyStatusChanged(team: state.Team));
+            playerState.IsReady = false;
+            Game.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
         }
     }
 
     public void TryStartMatch()
     {
-        var players = Game.Teams.SelectMany(t => t.Players);
-        if (players.Count() == Game.GetNeededPlayersCount() && players.All(p => p.IsReady))
+        var players = Game.GetAllPlayers();
+        if (players.Count() == Game.GetNeededPlayersCount() && Game.AreAllPlayersReady())
         {
             if (!Game.IsLoadedFromFile)
                 Game.Setup();

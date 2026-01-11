@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.GameEvents;
@@ -42,8 +43,7 @@ public class BaseState
         ICommandService.CommandListener handler
     )
     {
-        foreach (var name in commandNames)
-            _commands.Add(Swiftly.Core.Command.RegisterCommand(name, handler, registerRaw: true));
+        _commands.AddRange(Swiftly.Core.Command.Register(commandNames, handler));
     }
 
     protected void HookGameEvent<T>(
@@ -95,16 +95,18 @@ public class BaseState
 
     public void OnMatchCancelled()
     {
-        Game.Log("Match was cancelled.");
+        Swiftly.Log("Match cancelled.");
         _matchCancelled = true;
         Timers.ClearAll();
-        var winners = Game.Teams.Where(t => t.Players.Any(p => p.Handle != null));
+        var winners = Game.GetTeamsWithConnectedPlayers();
         if (winners.Count() == 1)
         {
             var winner = winners.First();
             var loser = winner.Opposition;
             loser.IsSurrended = true;
-            Game.Log($"Terminating by Cancelled, winner={winner.Index}, forfeited={loser.Index}");
+            Swiftly.Log(
+                $"Terminating match due to cancellation: winner={winner.Index}, forfeited={loser.Index}"
+            );
             Swiftly
                 .Core.EntitySystem.GetGameRules()
                 ?.TerminateRound(
@@ -123,7 +125,7 @@ public class BaseState
 
     public void OnMapResult(MapResult result = MapResult.None, PlayerTeam? winner = null)
     {
-        Game.Log($"Computing map end, result={result}.");
+        Swiftly.Log($"Computing map result: {result}");
         var map = Game.GetMap() ?? new(Swiftly.Core.Engine.GlobalVars.MapName);
         var stats = Game.Teams.Select(t => t.Players.Select(p => p.Stats).ToList()).ToList();
         var demoFilename = Cstv.GetFilename();
@@ -138,7 +140,7 @@ public class BaseState
         map.Scores = scores;
         if (winner != null)
             winner.SeriesScore += 1;
-        var mapCount = Game.Maps.Count;
+        var mapCount = Game.GetTotalMapCount();
         if (mapCount % 2 == 0)
             mapCount += 1;
         var seriesScoreToWin = (int)Math.Round(mapCount / 2.0, MidpointRounding.AwayFromZero);
@@ -174,7 +176,7 @@ public class BaseState
         {
             var filename = Game.DemoFilename;
             if (filename != null)
-                Game.SendEvent(Game.Get5.OnDemoFinished(filename));
+                Game.SendEvent(OnDemoFinishedEvent.Create(filename));
         }
         Cstv.Stop();
     }
@@ -190,14 +192,14 @@ public class BaseState
             {
                 result = MapResult.Forfeited;
                 winner = team.Opposition;
-                Game.Log($"forfeited, result={result}, winner={winner.Index}");
+                Swiftly.Log($"Map forfeited: result={result}, winner={winner.Index}");
                 break;
             }
             if (team.Score > team.Opposition.Score)
             {
                 result = MapResult.Completed;
                 winner = team;
-                Game.Log($"completed, result={result}, winner={winner.Index}");
+                Swiftly.Log($"Map completed: result={result}, winner={winner.Index}");
             }
         }
         OnMapResult(result, winner);
@@ -208,23 +210,25 @@ public class BaseState
     {
         if (Game.MapEndResult == null)
         {
-            Game.Log("Map result not found, defaulting to state none.");
+            Swiftly.Log("Map result not found, defaulting to None state.");
             Game.SetState(new NoneState());
             return;
         }
         var map = Game.MapEndResult.Map;
         var isSeriesOver = Game.MapEndResult.IsSeriesOver;
         var winner = Game.MapEndResult.Winner;
-        var maps = (Game.Maps.Count > 0 ? Game.Maps : [map]).Where(m => m.Result != MapResult.None);
+        var maps = (Game.GetTotalMapCount() > 0 ? Game.Maps : [map]).Where(m =>
+            m.Result != MapResult.None
+        );
         // Even with Get5 Events, we still store results in json for further debugging.
         // @todo Maybe only save if `match_verbose` is enabled in the future.
         IoHelper.WriteJson(Swiftly.Core.GetConfigPath($"{Game.MatchFolder}/results.json"), maps);
-        Game.SendEvent(Game.Get5.OnMapResult(map));
+        Game.SendEvent(OnMapResultEvent.Create(map));
         if (isSeriesOver)
         {
-            Game.SendEvent(Game.Get5.OnSeriesResult(winner, map));
+            Game.SendEvent(OnSeriesResultEvent.Create(winner, map));
             Game.Reset();
-            Game.EvaluateMatchmakingCondicion();
+            Game.EnforceMatchmakingRestrictions();
         }
         else
             Game.MapEndResult = null;

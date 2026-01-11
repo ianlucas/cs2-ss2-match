@@ -38,17 +38,21 @@ public static class CCSGameRulesExtensions
             if (ctAlive != tAlive)
             {
                 var winner = ctAlive > tAlive ? Team.CT : Team.T;
-                Game.Log($"(Alive ct={ctAlive} t={tAlive}) winner={winner}");
+                Swiftly.Log(
+                    $"Knife round winner determined by alive count: CT={ctAlive}, T={tAlive}, Winner={winner}"
+                );
                 return winner;
             }
             if (ctHealth != tHealth)
             {
                 var winner = ctHealth > tHealth ? Team.CT : Team.T;
-                Game.Log($"(Health ct={ctHealth} t={tHealth}) winner={winner}");
+                Swiftly.Log(
+                    $"Knife round winner determined by health: CT={ctHealth}, T={tHealth}, Winner={winner}"
+                );
                 return winner;
             }
             var randomWinner = (Team)new Random().Next(2, 4);
-            Game.Log($"(Random) randomWinner={randomWinner}");
+            Swiftly.Log($"Knife round winner determined randomly: {randomWinner}");
             return randomWinner;
             static bool CountAlive(IPlayer player) => player.GetHealth() > 0;
             static int SumHealth(IPlayer player) => player.GetHealth();

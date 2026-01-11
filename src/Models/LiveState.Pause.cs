@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Players;
 
@@ -50,15 +51,14 @@ public partial class LiveState
                             teamWhichPaused.FormattedName
                         ]
                     );
-                Game.SendEvent(Game.Get5.OnMatchPaused(team: teamWhichPaused, pauseType));
-                Game.SendEvent(Game.Get5.OnPauseBegan(team: teamWhichPaused, pauseType));
-
+                Game.SendEvent(OnMatchPausedEvent.Create(team: teamWhichPaused, pauseType));
+                Game.SendEvent(OnPauseBeganEvent.Create(team: teamWhichPaused, pauseType));
                 _teamWhichPaused = teamWhichPaused;
                 _wasPausedType = pauseType;
             }
             else
                 Game.SendEvent(
-                    Game.Get5.OnMatchUnpaused(team: _teamWhichPaused, pauseType: _wasPausedType)
+                    OnMatchUnpausedEvent.Create(team: _teamWhichPaused, pauseType: _wasPausedType)
                 );
         }
         _wasPaused = isPaused;
@@ -74,8 +74,7 @@ public partial class LiveState
             {
                 if (Swiftly.Core.EntitySystem.GetGameRules()?.MatchWaitingForResume == true)
                     return;
-                foreach (var team in Game.Teams)
-                    team.IsUnpauseMatch = false;
+                Game.ClearAllTeamUnpauseFlags();
                 Swiftly.Core.PlayerManager.SendChat(
                     Swiftly.Core.Localizer[
                         "match.pause_start",
@@ -85,11 +84,10 @@ public partial class LiveState
                 );
                 Swiftly.Core.Engine.ExecuteCommand("mp_pause_match");
                 Game.SendEvent(
-                    Game.Get5.OnMatchPaused(team: playerState.Team, pauseType: "tactical")
+                    OnMatchPausedEvent.Create(team: playerState.Team, pauseType: "tactical")
                 );
                 return;
             }
-            // TODO Test this.
             player?.ExecuteCommand("callvote StartTimeOut");
         }
     }
@@ -106,11 +104,11 @@ public partial class LiveState
         {
             var askedForUnpause = playerState.Team.IsUnpauseMatch;
             playerState.Team.IsUnpauseMatch = true;
-            if (!Game.Teams.All(team => team.IsUnpauseMatch))
+            if (!Game.AreAllTeamsReadyToUnpause())
             {
                 if (!askedForUnpause)
                     Timers.SetEveryChatInterval(
-                        "PrintFriendlyUnpauseCommand",
+                        "FriendlyUnpauseInstructions",
                         () =>
                             Swiftly.Core.PlayerManager.SendChat(
                                 Swiftly.Core.Localizer[
@@ -131,7 +129,7 @@ public partial class LiveState
                         playerState.Team.FormattedName
                     ]
                 );
-            Timers.Clear("PrintFriendlyUnpauseCommand");
+            Timers.Clear("FriendlyUnpauseInstructions");
             Swiftly.Core.Engine.ExecuteCommand("mp_unpause_match");
             return;
         }
@@ -143,15 +141,15 @@ public partial class LiveState
             )
         )
         {
-            Game.Log(
-                printToChat: true,
+            Swiftly.Log(
+                sendToChat: true,
                 message: Swiftly.Core.Localizer[
                     "match.admin_unpause",
                     Game.GetChatPrefix(true),
                     player?.Controller.PlayerName ?? "Console"
                 ]
             );
-            Timers.Clear("PrintFriendlyUnpauseCommand");
+            Timers.Clear("FriendlyUnpauseInstructions");
             Swiftly.Core.Engine.ExecuteCommand("mp_unpause_match");
             return;
         }

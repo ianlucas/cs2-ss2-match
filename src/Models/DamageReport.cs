@@ -5,11 +5,11 @@
 
 namespace Match;
 
-public class DamageReport(Player player)
+public class DamageReport(PlayerState player)
 {
     public Damage To = new();
     public Damage From = new();
-    public Player Player = player;
+    public PlayerState Player = player;
 
     public void Reset()
     {

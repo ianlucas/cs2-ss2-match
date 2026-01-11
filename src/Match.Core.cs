@@ -15,6 +15,6 @@ public partial class Match
 
     public void HandleIsMatchmakingChanged()
     {
-        Game.EvaluateMatchmakingCondicion();
+        Game.EnforceMatchmakingRestrictions();
     }
 }

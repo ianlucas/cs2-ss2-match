@@ -26,11 +26,11 @@ public partial class LiveState
     public void OnPlayerConnected(IPlayer player)
     {
         var playerState = player.GetState();
-        if (playerState != null && Game.Teams.All(t => t.Players.Any(p => p.Handle != null)))
+        if (playerState != null && Game.HasTeamsWithAnyPlayerConnected())
         {
             _isForfeiting = false;
-            Timers.Clear("ForfeitMatch");
-            Game.Log("We are no longer forfeiting the match.");
+            Timers.Clear("ForfeitTimeout");
+            Swiftly.Log("Match forfeit cancelled");
         }
     }
 
@@ -42,7 +42,7 @@ public partial class LiveState
         return HookResult.Continue;
     }
 
-    public void TryForfeitMatch(Player? disconnecting = null)
+    public void TryForfeitMatch(PlayerState? disconnecting = null)
     {
         if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && Game.MapEndResult == null)
             foreach (var team in Game.Teams)
@@ -54,8 +54,8 @@ public partial class LiveState
                 )
                 {
                     _isForfeiting = true;
-                    Timers.Set("ForfeitMatch", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
-                    Game.Log("A team is forfeiting the match.");
+                    Timers.Set("ForfeitTimeout", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
+                    Swiftly.Log("A team is forfeiting the match.");
                     // @todo: Notify players a team is forfeiting.
                     return;
                 }

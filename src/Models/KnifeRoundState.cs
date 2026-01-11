@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using Match.Get5.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Natives;
@@ -23,7 +24,7 @@ public class KnifeRoundState : ReadyupWarmupState
             AddHook(Natives.CCSGameRules_TerminateRoundWindows, OnTerminateRoundWindows);
         else
             AddHook(Natives.CCSGameRules_TerminateRoundLinux, OnTerminateRoundLinux);
-        Game.Log("Execing Knife Round");
+        Swiftly.Log("Executing knife round configuration");
         Config.ExecKnife();
         Cstv.Record(Game.DemoFilename);
         Swiftly.Core.PlayerManager.RemovePlayerClans();
@@ -38,7 +39,7 @@ public class KnifeRoundState : ReadyupWarmupState
             Swiftly.Core.PlayerManager.SendChatRepeat(
                 Swiftly.Core.Localizer["match.knife", Game.GetChatPrefix()]
             );
-            Game.SendEvent(Game.Get5.OnKnifeRoundStarted());
+            Game.SendEvent(OnKnifeRoundStartedEvent.Create());
         }
         return HookResult.Continue;
     }

@@ -12,7 +12,7 @@ public class PlayerTeam(Team startingTeam)
 {
     private PlayerTeam? _opposition;
 
-    public readonly List<Player> Players = [];
+    public readonly List<PlayerState> Players = [];
 
     public readonly List<ulong> SurrenderVotes = [];
 
@@ -20,7 +20,7 @@ public class PlayerTeam(Team startingTeam)
 
     public Team StartingTeam = startingTeam;
 
-    public Player? InGameLeader = null;
+    public PlayerState? InGameLeader = null;
 
     public string Name = "";
 
@@ -49,7 +49,7 @@ public class PlayerTeam(Team startingTeam)
     {
         get =>
             Swiftly.Core.EntitySystem.GetGameRules()?.AreTeamsPlayingSwitchedSides() == true
-                ? TeamHelper.ToggleTeam(StartingTeam)
+                ? StartingTeam.Toggle()
                 : StartingTeam;
     }
 
@@ -90,7 +90,7 @@ public class PlayerTeam(Team startingTeam)
         Stats = new();
     }
 
-    public void AddPlayer(Player player)
+    public void AddPlayer(PlayerState player)
     {
         Players.Add(player);
         InGameLeader ??= player;
@@ -101,7 +101,7 @@ public class PlayerTeam(Team startingTeam)
         return Players.Count < ConVars.PlayersNeededPerTeam.Value;
     }
 
-    public void RemovePlayer(Player player)
+    public void RemovePlayer(PlayerState player)
     {
         Players.Remove(player);
         if (InGameLeader == player)
