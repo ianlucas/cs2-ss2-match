@@ -42,8 +42,8 @@ public static class Cstv
         if (!IsEnabled() || IsRecording() || filename == null)
             return;
         Filename = filename;
-        Swiftly.Log($"Demo recording started: {filename}");
         Swiftly.Core.Engine.ExecuteCommand($"tv_record {filename}");
+        Swiftly.Log($"Demo recording started: {filename}");
     }
 
     public static void Stop()
@@ -51,8 +51,8 @@ public static class Cstv
         if (IsRecording())
         {
             Filename = null;
-            Swiftly.Log("Demo recording stopped.");
             Swiftly.Core.Engine.ExecuteCommand("tv_stoprecord");
+            Swiftly.Log("Demo recording stopped.");
         }
     }
 
