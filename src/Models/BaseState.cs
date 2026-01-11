@@ -98,7 +98,7 @@ public class BaseState
         Swiftly.Log("Match cancelled.");
         _matchCancelled = true;
         Timers.ClearAll();
-        var winners = Game.Teams.Where(t => t.Players.Any(p => p.Handle != null));
+        var winners = Game.GetTeamsWithConnectedPlayers();
         if (winners.Count() == 1)
         {
             var winner = winners.First();
@@ -140,7 +140,7 @@ public class BaseState
         map.Scores = scores;
         if (winner != null)
             winner.SeriesScore += 1;
-        var mapCount = Game.Maps.Count;
+        var mapCount = Game.GetTotalMapCount();
         if (mapCount % 2 == 0)
             mapCount += 1;
         var seriesScoreToWin = (int)Math.Round(mapCount / 2.0, MidpointRounding.AwayFromZero);
@@ -217,7 +217,9 @@ public class BaseState
         var map = Game.MapEndResult.Map;
         var isSeriesOver = Game.MapEndResult.IsSeriesOver;
         var winner = Game.MapEndResult.Winner;
-        var maps = (Game.Maps.Count > 0 ? Game.Maps : [map]).Where(m => m.Result != MapResult.None);
+        var maps = (Game.GetTotalMapCount() > 0 ? Game.Maps : [map]).Where(m =>
+            m.Result != MapResult.None
+        );
         // Even with Get5 Events, we still store results in json for further debugging.
         // @todo Maybe only save if `match_verbose` is enabled in the future.
         IoHelper.WriteJson(Swiftly.Core.GetConfigPath($"{Game.MatchFolder}/results.json"), maps);
@@ -226,7 +228,7 @@ public class BaseState
         {
             Game.SendEvent(OnSeriesResultEvent.Create(winner, map));
             Game.Reset();
-            Game.EvaluateMatchmakingCondicion();
+            Game.EnforceMatchmakingRestrictions();
         }
         else
             Game.MapEndResult = null;

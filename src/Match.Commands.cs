@@ -93,7 +93,7 @@ public partial class Match
             Game.Setup();
         }
         else
-            foreach (var player in Game.Teams.SelectMany(t => t.Players))
+            foreach (var player in Game.GetAllPlayers())
                 player.IsReady = true;
         Swiftly.Log(
             sendToChat: true,
@@ -180,7 +180,7 @@ public partial class Match
         var maplist = match.Maplist.Get();
         if (maplist != null)
             foreach (var mapName in maplist)
-                Game.Maps.Add(new(mapName));
+                Game.AddMap(mapName);
         else
         {
             Game.Reset();
@@ -191,32 +191,11 @@ public partial class Match
         Game.Team2.StartingTeam = Team.CT;
         for (var index = 0; index < Game.Teams.Count; index++)
         {
-            var team = Game.Teams[index];
             var teamSchema = (index == 0 ? match.Team1 : match.Team2)?.Get();
-            var players = teamSchema?.Players.Get();
-            if (teamSchema == null || players == null)
+            if (teamSchema == null)
                 continue;
-            var electedInGameLeader = false;
             ulong? leaderId = ulong.TryParse(teamSchema.Leaderid, out ulong li) ? li : null;
-            team.Id = teamSchema.Id ?? "";
-            team.Name = teamSchema.Name ?? "";
-            team.SeriesScore = teamSchema.SeriesScore ?? 0;
-            foreach (var playerSchema in players)
-            {
-                var steamId = playerSchema.Key;
-                var player = new PlayerState(
-                    steamId,
-                    playerSchema.Value,
-                    team,
-                    Core.PlayerManager.GetPlayerFromSteamID(steamId)
-                );
-                team.AddPlayer(player);
-                if (!electedInGameLeader && (leaderId == null || steamId == leaderId))
-                {
-                    electedInGameLeader = true;
-                    team.InGameLeader = player;
-                }
-            }
+            Game.ConfigureTeamFromSchema(index, teamSchema, leaderId);
         }
         if (match.Cvars != null)
             foreach (var (key, value) in match.Cvars)

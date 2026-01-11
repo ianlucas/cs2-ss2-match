@@ -41,17 +41,14 @@ public partial class LiveState
             // We load the stats before trying to restore the round. Most cases should work as
             // `mp_backup_restore_load_file` can only fail when the file is not found, but we already had a check
             // for that.
-            var players = Game.Teams.SelectMany(t => t.Players);
+            var players = Game.GetAllPlayers();
             foreach (var report in players.SelectMany(p => p.DamageReport.Values))
                 report.Reset();
             if (int.TryParse(round, out var roundAsInt))
             {
                 if (roundAsInt == 0)
                 {
-                    foreach (var p in players)
-                        p.Stats = new(p.SteamID);
-                    foreach (var t in Game.Teams)
-                        t.Stats = new();
+                    Game.ResetAllPlayerAndTeamStats();
                 }
                 else
                 {

@@ -29,9 +29,7 @@ public class KnifeVoteWarmupState : WarmupState
         RegisterCommand(SwitchCmds, OnSwitchCommand);
         Timers.SetEveryChatInterval("KnifeVoteInstructions", SendKnifeVoteInstructions);
         Timers.Set("KnifeVoteTimeout", ConVars.KnifeVoteTimeout.Value - 1, OnKnifeVoteTimeout);
-        // TODO Place this somewhere else.
-        foreach (var player in Game.Teams.SelectMany(t => t.Players))
-            player.KnifeRoundVote = KnifeRoundVote.None;
+        Game.ResetAllKnifeRoundVotes();
         Swiftly.Log("Executing knife vote warmup");
         Config.ExecWarmup(warmupTime: ConVars.KnifeVoteTimeout.Value, isLockTeams: true);
     }
@@ -128,8 +126,7 @@ public class KnifeVoteWarmupState : WarmupState
         }
         if (decision == KnifeRoundVote.Switch)
         {
-            foreach (var team in Game.Teams)
-                team.StartingTeam = team.StartingTeam.Toggle();
+            Game.SwapTeamSides();
             Swiftly.Core.EntitySystem.GetGameRules()?.HandleSwapTeams();
         }
         Game.SendEvent(OnSidePickedEvent.Create(team: winnerTeam));

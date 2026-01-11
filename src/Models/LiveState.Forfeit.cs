@@ -26,7 +26,7 @@ public partial class LiveState
     public void OnPlayerConnected(IPlayer player)
     {
         var playerState = player.GetState();
-        if (playerState != null && Game.Teams.All(t => t.Players.Any(p => p.Handle != null)))
+        if (playerState != null && Game.HasTeamsWithAnyPlayerConnected())
         {
             _isForfeiting = false;
             Timers.Clear("ForfeitTimeout");

@@ -67,7 +67,7 @@ public static class Game
             Id = Guid.NewGuid().ToString();
         if (!IsLoadedFromFile)
             Maps.Add(new(Swiftly.Core.Engine.GlobalVars.MapName));
-        var idsInMatch = Teams.SelectMany(t => t.Players).Select(p => p.SteamID);
+        var idsInMatch = GetAllPlayers().Select(p => p.SteamID);
         foreach (var player in Swiftly.Core.PlayerManager.GetActualPlayers())
             if (!idsInMatch.Contains(player.SteamID))
                 if (
@@ -96,7 +96,7 @@ public static class Game
         SendEvent(OnSeriesInitEvent.Create());
     }
 
-    public static bool CheckCurrentMap()
+    public static bool EnsureCorrectMap()
     {
         var currentMap = GetMap();
         if (
@@ -113,7 +113,7 @@ public static class Game
         return false;
     }
 
-    public static void EvaluateMatchmakingCondicion()
+    public static void EnforceMatchmakingRestrictions()
     {
         if (ConVars.IsMatchmaking.Value)
             foreach (var player in Swiftly.Core.PlayerManager.GetActualPlayers())
@@ -146,14 +146,12 @@ public static class Game
 
     public static int GetNeededPlayersCount()
     {
-        return IsLoadedFromFile
-            ? Teams.SelectMany(t => t.Players).Count()
-            : ConVars.PlayersNeeded.Value;
+        return IsLoadedFromFile ? GetAllPlayers().Count() : ConVars.PlayersNeeded.Value;
     }
 
     public static int GetReadyPlayersCount()
     {
-        return Teams.SelectMany(t => t.Players).Count(p => p.IsReady);
+        return GetAllPlayers().Count(p => p.IsReady);
     }
 
     public static PlayerTeam? GetTeam(Team team)
@@ -206,7 +204,7 @@ public static class Game
 
     public static PlayerState? GetPlayerStateFromSteamID(ulong steamId)
     {
-        return Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.SteamID == steamId);
+        return GetAllPlayers().FirstOrDefault(p => p.SteamID == steamId);
     }
 
     public static string MatchFolder =>
@@ -226,6 +224,124 @@ public static class Game
                 $"{MatchFolder}/{Swiftly.Core.Engine.GlobalVars.MapName}.dem"
             )
             : null;
+
+    public static IEnumerable<PlayerState> GetAllPlayers()
+    {
+        return Teams.SelectMany(t => t.Players);
+    }
+
+    public static bool AreAllPlayersReady()
+    {
+        return GetAllPlayers().All(p => p.IsReady);
+    }
+
+    public static bool HasTeamsWithAnyPlayerConnected()
+    {
+        return Teams.All(t => t.Players.Any(p => p.Handle != null));
+    }
+
+    public static IEnumerable<PlayerTeam> GetUnreadyTeams()
+    {
+        return Teams.Where(t => t.Players.Any(p => !p.IsReady));
+    }
+
+    public static IEnumerable<PlayerTeam> GetTeamsWithConnectedPlayers()
+    {
+        return Teams.Where(t => t.Players.Any(p => p.Handle != null));
+    }
+
+    public static bool AreAllTeamsReadyToUnpause()
+    {
+        return Teams.All(team => team.IsUnpauseMatch);
+    }
+
+    public static void ClearAllTeamUnpauseFlags()
+    {
+        foreach (var team in Teams)
+            team.IsUnpauseMatch = false;
+    }
+
+    public static void AddMap(string mapName)
+    {
+        Maps.Add(new Map(mapName));
+    }
+
+    public static int GetTotalMapCount()
+    {
+        return Maps.Count;
+    }
+
+    public static IEnumerable<Map> GetCompletedMaps()
+    {
+        var maps = Maps.Count > 0 ? Maps : new List<Map>();
+        return maps.Where(m => m.Result != MapResult.None);
+    }
+
+    public static void ConfigureTeamFromSchema(
+        int teamIndex,
+        Get5.Get5MatchTeam schema,
+        ulong? leaderId = null
+    )
+    {
+        if (teamIndex < 0 || teamIndex >= Teams.Count)
+            return;
+
+        var team = Teams[teamIndex];
+        team.Id = schema.Id ?? "";
+        team.Name = schema.Name ?? "";
+        team.SeriesScore = schema.SeriesScore ?? 0;
+
+        var players = schema.Players.Get();
+        if (players == null)
+            return;
+
+        bool electedInGameLeader = false;
+
+        foreach (var playerSchema in players)
+        {
+            var steamId = playerSchema.Key;
+            var player = new PlayerState(
+                steamId,
+                playerSchema.Value,
+                team,
+                Swiftly.Core.PlayerManager.GetPlayerFromSteamID(steamId)
+            );
+            team.AddPlayer(player);
+
+            if (!electedInGameLeader && (leaderId == null || steamId == leaderId))
+            {
+                electedInGameLeader = true;
+                team.InGameLeader = player;
+            }
+        }
+    }
+
+    public static void SwapTeamSides()
+    {
+        foreach (var team in Teams)
+            team.StartingTeam = team.StartingTeam.Toggle();
+    }
+
+    public static void ResetAllPlayerAndTeamStats()
+    {
+        foreach (var player in GetAllPlayers())
+            player.Stats = new(player.SteamID);
+
+        foreach (var team in Teams)
+            team.Stats = new();
+    }
+
+    public static void ClearAllSurrenderFlags()
+    {
+        foreach (var team in Teams)
+            team.IsSurrended = false;
+    }
+
+    public static void ResetAllKnifeRoundVotes()
+    {
+        foreach (var player in GetAllPlayers())
+            player.KnifeRoundVote = KnifeRoundVote.None;
+    }
 
     public static void SendEvent(object data)
     {

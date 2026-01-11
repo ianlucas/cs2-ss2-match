@@ -23,7 +23,7 @@ public class ReadyupWarmupState : WarmupState
         Swiftly.Log($"Matchmaking mode: {Game.IsMatchmaking()}");
         Cstv.Stop();
         Cstv.Set(ConVars.IsTvRecord.Value);
-        if (Game.CheckCurrentMap())
+        if (Game.EnsureCorrectMap())
             return /* Map will be changed. */
             ;
         base.Load();
@@ -96,7 +96,7 @@ public class ReadyupWarmupState : WarmupState
         if (timeleft % 30 != 0)
             return;
         var formattedTimeleft = TimeHelper.FormatMmSs(timeleft);
-        var unreadyTeams = Game.Teams.Where(t => t.Players.Any(p => !p.IsReady));
+        var unreadyTeams = Game.GetUnreadyTeams();
         if (timeleft == 0)
             Timers.Clear("ReadyStatusReminder");
         else
@@ -172,8 +172,8 @@ public class ReadyupWarmupState : WarmupState
 
     public void TryStartMatch()
     {
-        var players = Game.Teams.SelectMany(t => t.Players);
-        if (players.Count() == Game.GetNeededPlayersCount() && players.All(p => p.IsReady))
+        var players = Game.GetAllPlayers();
+        if (players.Count() == Game.GetNeededPlayersCount() && Game.AreAllPlayersReady())
         {
             if (!Game.IsLoadedFromFile)
                 Game.Setup();

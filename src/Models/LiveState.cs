@@ -76,8 +76,7 @@ public partial class LiveState : BaseState
         Swiftly.Core.PlayerManager.SendChat(
             localize["match.live_disclaimer", Game.GetChatPrefix()]
         );
-        foreach (var team in Game.Teams)
-            team.IsSurrended = false;
+        Game.ClearAllSurrenderFlags();
         if (!ConVars.IsKnifeRoundEnabled.Value)
             Cstv.Record(Game.DemoFilename);
         Swiftly.Core.PlayerManager.RemovePlayerClans();
@@ -88,7 +87,7 @@ public partial class LiveState : BaseState
     {
         CheckPauseEvents();
         if (ConVars.ServerGraphicUrl.Value != "")
-            foreach (var player in Game.Teams.SelectMany(t => t.Players))
+            foreach (var player in Game.GetAllPlayers())
             {
                 var deathTime = player.Handle?.PlayerPawn?.DeathTime?.Value;
                 if (

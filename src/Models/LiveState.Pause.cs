@@ -74,8 +74,7 @@ public partial class LiveState
             {
                 if (Swiftly.Core.EntitySystem.GetGameRules()?.MatchWaitingForResume == true)
                     return;
-                foreach (var team in Game.Teams)
-                    team.IsUnpauseMatch = false;
+                Game.ClearAllTeamUnpauseFlags();
                 Swiftly.Core.PlayerManager.SendChat(
                     Swiftly.Core.Localizer[
                         "match.pause_start",
@@ -106,7 +105,7 @@ public partial class LiveState
         {
             var askedForUnpause = playerState.Team.IsUnpauseMatch;
             playerState.Team.IsUnpauseMatch = true;
-            if (!Game.Teams.All(team => team.IsUnpauseMatch))
+            if (!Game.AreAllTeamsReadyToUnpause())
             {
                 if (!askedForUnpause)
                     Timers.SetEveryChatInterval(

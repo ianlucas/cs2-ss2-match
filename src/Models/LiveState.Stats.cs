@@ -37,7 +37,7 @@ public partial class LiveState
         _playerDied.Clear();
         _playerKilledOrAssistedOrTradedKill.Clear();
         _playerPlayedRound.Clear();
-        foreach (var player in Game.Teams.SelectMany(t => t.Players))
+        foreach (var player in Game.GetAllPlayers())
         {
             _roundKills[player.SteamID] = 0;
             if (player.Handle != null)
