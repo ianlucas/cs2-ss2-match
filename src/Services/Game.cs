@@ -206,8 +206,13 @@ public static class Game
         }
     }
 
+    public static PlayerState? GetPlayerStateFromSteamID(ulong steamId)
+    {
+        return Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.SteamID == steamId);
+    }
+
     public static string MatchFolder =>
-        Id != null ? $"/{(IsLoadedFromFile ? "M_" : "S_")}{Id}" : "";
+        Id != null ? $"/{(IsLoadedFromFile ? "Matches" : "Scrims")}/{Id}" : "";
 
     public static DirectoryInfo CreateMatchFolder() =>
         Directory.CreateDirectory(Swiftly.Core.GetConfigPath(MatchFolder));

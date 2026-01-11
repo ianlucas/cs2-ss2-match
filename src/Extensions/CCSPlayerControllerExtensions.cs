@@ -21,9 +21,7 @@ public static class CCSPlayerControllerExtensions
 
         public PlayerState? GetState()
         {
-            return Game
-                .Teams.SelectMany(t => t.Players)
-                .FirstOrDefault(p => p.SteamID == self.SteamID);
+            return Game.GetPlayerStateFromSteamID(self.SteamID);
         }
     }
 }
