@@ -8,7 +8,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>Match</AssemblyName>
     <OutputPath>$(MSBuildThisFileDirectory)build/</OutputPath>
-    <PublishDir>$(OutputPath)publish/Match</PublishDir>
+    <PublishDir>$(OutputPath)publish/addons/swiftlys2/plugins/Match</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,7 +36,7 @@
     </ItemGroup>
 
     <ZipDirectory
-      SourceDirectory="$(PublishDir)../"
+      SourceDirectory="$(PublishDir)../../../../"
       DestinationFile="$(OutputPath)../$(AssemblyName).zip"
       Overwrite="true"
     />
