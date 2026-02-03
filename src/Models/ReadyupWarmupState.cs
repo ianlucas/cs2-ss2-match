@@ -37,7 +37,7 @@ public class ReadyupWarmupState : WarmupState
         Game.ResetTeamsForNewMatch();
         if (ConVars.IsMatchmaking.Value)
         {
-            _warmupStart = TimeHelper.Now();
+            _warmupStart = TimeHelper.NowSeconds();
             Timers.SetEverySecond("ReadyStatusReminder", SendReadyStatusReminder);
             Timers.Set(
                 "MatchmakingReadyTimeout",

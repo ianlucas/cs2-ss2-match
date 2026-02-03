@@ -18,16 +18,15 @@ public partial class LiveState
             && !Swiftly.Core.Permission.PlayerHasPermissions(player.SteamID, ["@css/config"])
         )
             return;
-        if (context.Args.Count() != 2)
+        if (context.Args.Length != 1)
         {
             player?.SendChat(
                 Swiftly.Core.Localizer["match.admin_restore_syntax", Game.GetChatPrefix(true)]
             );
             return;
         }
-        var round = context.Args[1].ToLower().Trim().PadLeft(2, '0');
-        var filenameAsArg = $"{Game.GetBackupPrefix()}_round{round}.txt";
-        var filename = Swiftly.Core.GetCSGOPath(filenameAsArg);
+        var round = context.Args[0].ToLower().Trim().PadLeft(2, '0');
+        var filename = $"{Game.GetBackupPrefix()}_round{round}.txt";
         if (File.Exists(filename))
         {
             Swiftly.Log(
@@ -63,7 +62,7 @@ public partial class LiveState
                 Round = roundAsInt - 1;
                 _thrownMolotovs.Clear();
                 Game.SendEvent(OnBackupRestoreEvent.Create(filename));
-                Swiftly.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file {filenameAsArg}");
+                Swiftly.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file {filename}");
             }
             else
                 player?.SendChat(

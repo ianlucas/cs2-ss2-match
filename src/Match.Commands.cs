@@ -114,9 +114,9 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        if (context.Args.Length != 2)
+        if (context.Args.Length != 1)
             return;
-        var mapname = context.Args[1].ToLower().Trim();
+        var mapname = context.Args[0].ToLower().Trim();
         if (!mapname.StartsWith("de_"))
             return;
         if (Game.AreTeamsLocked())
@@ -162,9 +162,9 @@ public partial class Match
             return;
         if (Game.State is not ReadyupWarmupState)
             return;
-        if (context.Args.Length != 2)
+        if (context.Args.Length != 1)
             return;
-        var name = context.Args[1].Trim();
+        var name = context.Args[0].Trim();
         var file = Get5Match.Read(name);
         if (file.Error != null)
             Game.SendEvent(OnLoadMatchConfigFailedEvent.Create(reason: file.Error));

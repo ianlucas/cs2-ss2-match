@@ -18,16 +18,19 @@ public partial class Match
         return (thisPtr, team) =>
         {
             var controller = Core.Memory.ToSchemaClass<CCSPlayerController>(thisPtr);
-            var playerState = controller.GetState();
-            if (Game.AreTeamsLocked())
-                if (playerState != null)
-                {
-                    var currentTeam = (int)playerState.Team.CurrentTeam;
-                    if (team != currentTeam)
-                        team = currentTeam;
-                }
-                else
-                    team = (int)Team.Spectator;
+            if (controller.ToPlayer()?.IsFakeClient == false)
+            {
+                var playerState = controller.GetState();
+                if (Game.AreTeamsLocked())
+                    if (playerState != null)
+                    {
+                        var currentTeam = (int)playerState.Team.CurrentTeam;
+                        if (team != currentTeam)
+                            team = currentTeam;
+                    }
+                    else
+                        team = (int)Team.Spectator;
+            }
             next()(thisPtr, team);
         };
     }
@@ -72,7 +75,7 @@ public partial class Match
                         humans++;
                 if (bots + humans > neededPerTeam && botToKick != null)
                     botToKick.Kick(
-                        "Kicked by match_bots' ConVar.",
+                        $"Kicked by match_bots' ConVar.",
                         ENetworkDisconnectionReason.NETWORK_DISCONNECT_KICKED
                     );
                 if (bots + humans < neededPerTeam)

@@ -357,7 +357,7 @@ public static class Game
     public static void SendEvent(object data)
     {
         var url = ConVars.RemoteLogUrl.Value;
-        PropertyInfo? propertyInfo = data.GetType().GetProperty("event");
+        PropertyInfo? propertyInfo = data.GetType().GetProperty("EventName");
         Swiftly.Log($"RemoteLogUrl='{url}' event='{propertyInfo?.GetValue(data)}'");
         if (url != "")
         {
