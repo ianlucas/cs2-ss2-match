@@ -11,7 +11,7 @@ using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace Match;
 
-public partial class LiveState : BaseState
+public partial class LiveState : ActiveMatchState
 {
     public override string Name => "live";
     public static readonly List<string> PauseCmds = ["sw_pause", "sw_p", "sw_pausar"];
