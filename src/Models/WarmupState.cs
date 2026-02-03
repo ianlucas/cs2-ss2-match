@@ -8,7 +8,7 @@ using SwiftlyS2.Shared.Misc;
 
 namespace Match;
 
-public class WarmupState : BaseState
+public class WarmupState : ActiveMatchState
 {
     public override void Load()
     {
