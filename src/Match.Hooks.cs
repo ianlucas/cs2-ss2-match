@@ -45,13 +45,14 @@ public partial class Match
             {
                 if (DidKickBots)
                     return 0;
-                foreach (var player in Core.PlayerManager.GetAllValidPlayers())
-                    if (player.IsFakeClient)
-                        player.Kick(
-                            "Kicked by match_bots' ConVar.",
-                            ENetworkDisconnectionReason.NETWORK_DISCONNECT_KICKED
-                        );
+                Core.PlayerManager.KickAllBots("Kicked by match_bots' ConVar.");
                 DidKickBots = true;
+                return 0;
+            }
+            var connectedHumans = Core.PlayerManager.GetActualPlayers();
+            if (!connectedHumans.Any() && Game.State is ReadyupWarmupState)
+            {
+                Core.PlayerManager.KickAllBots("Kicked by match_bots' ConVar.");
                 return 0;
             }
             var neededPerTeam = ConVars.PlayersNeededPerTeam.Value;

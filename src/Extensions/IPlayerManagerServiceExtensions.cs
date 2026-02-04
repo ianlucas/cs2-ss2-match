@@ -5,6 +5,7 @@
 
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Players;
+using SwiftlyS2.Shared.ProtobufDefinitions;
 
 namespace Match;
 
@@ -31,6 +32,13 @@ public static class IPlayerManagerServiceExtensions
         public IEnumerable<IPlayer> GetActualPlayers()
         {
             return self.GetAllValidPlayers().Where(p => !p.IsFakeClient);
+        }
+
+        public void KickAllBots(string reason)
+        {
+            foreach (var player in self.GetAllValidPlayers())
+                if (player.IsFakeClient)
+                    player.Kick(reason, ENetworkDisconnectionReason.NETWORK_DISCONNECT_KICKED);
         }
 
         public void UpdateScoreboards()
