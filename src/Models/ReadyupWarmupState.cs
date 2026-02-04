@@ -28,6 +28,7 @@ public class ReadyupWarmupState : WarmupState
             ;
         base.Load();
         HookCoreEvent<EventDelegates.OnTick>(OnTick);
+        HookGameEvent<EventPlayerSpawn>(OnPlayerSpawn);
         HookGameEvent<EventPlayerTeam>(OnPlayerTeam);
         HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
         HookGameEvent<EventRoundPrestart>(OnRoundPrestart);
@@ -37,6 +38,8 @@ public class ReadyupWarmupState : WarmupState
         Game.ResetTeamsForNewMatch();
         if (ConVars.IsMatchmaking.Value)
         {
+            var nextMap = Game.GetNextMap();
+            Swiftly.Core.ConVar.Find<string>("nextlevel")?.Value = nextMap?.MapName ?? "";
             _warmupStart = TimeHelper.NowSeconds();
             Timers.SetEverySecond("ReadyStatusReminder", SendReadyStatusReminder);
             Timers.Set(
@@ -130,6 +133,24 @@ public class ReadyupWarmupState : WarmupState
     {
         if (!Game.IsLoadedFromFile)
             @event.UserIdPlayer.GetState()?.LeaveTeam();
+        return HookResult.Continue;
+    }
+
+    public HookResult OnPlayerSpawn(EventPlayerSpawn @event)
+    {
+        // This fixes warmup time not matching the actual warmup time when the
+        // first player connects.
+        if (
+            !@event.UserIdPlayer.IsFakeClient
+            && ConVars.IsMatchmaking.Value
+            && Swiftly.Core.PlayerManager.GetActualPlayers().Count() == 1
+        )
+            Swiftly.Core.Engine.ExecuteCommand(
+                $"mp_warmuptime {Math.Max(
+                1,
+                ConVars.MatchmakingReadyTimeout.Value - (TimeHelper.NowSeconds() - _warmupStart)
+            )}"
+            );
         return HookResult.Continue;
     }
 

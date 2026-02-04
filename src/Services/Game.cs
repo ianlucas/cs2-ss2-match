@@ -98,14 +98,18 @@ public static class Game
 
     public static bool EnsureCorrectMap()
     {
+        var currentInGameMap = Swiftly.Core.Engine.GlobalVars.MapName;
         var currentMap = GetMap();
         if (
-            (currentMap != null && (Swiftly.Core.Engine.GlobalVars.MapName != currentMap.MapName))
+            (currentMap != null && (currentInGameMap != currentMap.MapName))
             || (ConVars.IsRestartFirstMap.Value && !DidRestartFirstMap)
         )
         {
+            // Next level change will be handled by the game.
+            if (Swiftly.Core.ConVar.Find<string>("nextlevel")?.Value != "")
+                return true;
             DidRestartFirstMap = true;
-            var currentMapName = currentMap?.MapName ?? Swiftly.Core.Engine.GlobalVars.MapName;
+            var currentMapName = currentMap?.MapName ?? currentInGameMap;
             Swiftly.Log($"Need to change map to {currentMapName}");
             Swiftly.Core.Engine.ExecuteCommand($"changelevel {currentMapName}");
             return true;
@@ -237,6 +241,14 @@ public static class Game
     public static Map? GetMap()
     {
         return Maps.FirstOrDefault(m => m.Result == MapResult.None);
+    }
+
+    public static Map? GetNextMap()
+    {
+        var maps = Maps.Where(m => m.Result == MapResult.None).ToList();
+        if (maps.Count > 1)
+            return maps[1];
+        return null;
     }
 
     public static int GetMapIndex()
