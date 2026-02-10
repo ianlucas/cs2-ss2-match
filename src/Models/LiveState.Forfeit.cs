@@ -13,13 +13,17 @@ public partial class LiveState
 {
     public HookResult OnPlayerConnect(EventPlayerConnect @event)
     {
-        OnPlayerConnected(@event.UserIdPlayer);
+        var player = @event.UserIdPlayer;
+        if (player != null)
+            OnPlayerConnected(player);
         return HookResult.Continue;
     }
 
     public HookResult OnPlayerConnectFull(EventPlayerConnectFull @event)
     {
-        OnPlayerConnected(@event.UserIdPlayer);
+        var player = @event.UserIdPlayer;
+        if (player != null)
+            OnPlayerConnected(player);
         return HookResult.Continue;
     }
 
@@ -36,7 +40,7 @@ public partial class LiveState
 
     public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
             TryForfeitMatch(playerState);
         return HookResult.Continue;

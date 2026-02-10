@@ -51,7 +51,7 @@ public partial class LiveState
 
     public HookResult Stats_OnWeaponFire(EventWeaponFire @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (
             playerState != null
             && @event.Weapon != "world"
@@ -68,7 +68,7 @@ public partial class LiveState
     public HookResult Stats_OnPlayerBlind(EventPlayerBlind @event)
     {
         var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victimState = @event.UserIdPlayer.GetState();
+        var victimState = @event.UserIdPlayer?.GetState();
         if (attackerState != null && victimState != null)
         {
             var friendlyFire = attackerState.Team == victimState.Team;
@@ -94,7 +94,7 @@ public partial class LiveState
     public void Stats_OnPlayerHurt(EventPlayerHurt @event, int damage)
     {
         var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victimState = @event.UserIdPlayer.GetState();
+        var victimState = @event.UserIdPlayer?.GetState();
         if (attackerState != null && victimState != null && attackerState != victimState)
         {
             attackerState.Stats.Damage += damage;
@@ -144,7 +144,7 @@ public partial class LiveState
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
         var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victimState = @event.UserIdPlayer.GetState();
+        var victimState = @event.UserIdPlayer?.GetState();
         if (victimState == null)
             return HookResult.Continue;
         var victimTeam = victimState.Team.CurrentTeam;
@@ -269,7 +269,7 @@ public partial class LiveState
     {
         _bombPlantedAt = TimeHelper.Now();
         _lastPlantedBombZone = @event.UserIdPawn.WhichBombZone;
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
         {
             playerState.Stats.BombPlants += 1;
@@ -280,7 +280,7 @@ public partial class LiveState
 
     public HookResult Stats_OnBombDefused(EventBombDefused @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
         {
             playerState.Stats.BombDefuses += 1;
@@ -306,7 +306,7 @@ public partial class LiveState
 
     public HookResult Stats_OnRoundMvp(EventRoundMvp @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
         {
             playerState.Stats.MVPs += 1;

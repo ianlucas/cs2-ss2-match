@@ -115,7 +115,7 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnGrenadeThrown(EventGrenadeThrown @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
             Game.SendEvent(OnGrenadeThrownEvent.Create(playerState, weapon: @event.Weapon));
         return HookResult.Continue;
@@ -123,7 +123,7 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnDecoyStarted(EventDecoyStarted @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
             Game.SendEvent(OnDecoyStartedEvent.Create(playerState, weapon: "weapon_decoy"));
         return HookResult.Continue;
@@ -131,7 +131,7 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnHegrenadeDetonate(EventHegrenadeDetonate @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
@@ -160,7 +160,7 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnSmokegrenadeDetonate(EventSmokegrenadeDetonate @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
@@ -215,7 +215,7 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnFlashbangDetonate(EventFlashbangDetonate @event)
     {
-        var playerState = @event.UserIdPlayer.GetState();
+        var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
@@ -245,7 +245,7 @@ public partial class LiveState : ActiveMatchState
     public HookResult OnPlayerHurt(EventPlayerHurt @event)
     {
         var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victimState = @event.UserIdPlayer.GetState();
+        var victimState = @event.UserIdPlayer?.GetState();
         if (attackerState != null && victimState != null)
         {
             var damage = Math.Max(
