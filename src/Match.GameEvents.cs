@@ -13,15 +13,14 @@ public partial class Match
 {
     public HookResult OnPlayerChat(EventPlayerChat @event)
     {
+        var player = @event.UserIdPlayer;
+        if (player == null)
+            return HookResult.Continue;
         var message = @event.Text.Trim();
         if (message.Length == 0)
             return HookResult.Continue;
         Game.SendEvent(
-            OnPlayerSayEvent.Create(
-                player: @event.UserIdPlayer,
-                @event.TeamOnly ? "say_team" : "team",
-                message
-            )
+            OnPlayerSayEvent.Create(player, @event.TeamOnly ? "say_team" : "team", message)
         );
         return HookResult.Continue;
     }

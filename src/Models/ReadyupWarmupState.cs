@@ -131,17 +131,20 @@ public class ReadyupWarmupState : WarmupState
 
     public HookResult OnPlayerTeam(EventPlayerTeam @event)
     {
-        if (!Game.IsLoadedFromFile)
-            @event.UserIdPlayer.GetState()?.LeaveTeam();
+        var player = @event.UserIdPlayer;
+        if (!Game.IsLoadedFromFile && player != null)
+            player.GetState()?.LeaveTeam();
         return HookResult.Continue;
     }
 
     public HookResult OnPlayerSpawn(EventPlayerSpawn @event)
     {
+        var player = @event.UserIdPlayer;
         // This fixes warmup time not matching the actual warmup time when the
         // first player connects.
         if (
-            !@event.UserIdPlayer.IsFakeClient
+            player != null
+            && !player.IsFakeClient
             && ConVars.IsMatchmaking.Value
             && Swiftly.Core.PlayerManager.GetActualPlayers().Count() == 1
         )
@@ -206,8 +209,9 @@ public class ReadyupWarmupState : WarmupState
 
     public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event)
     {
-        if (!Game.IsLoadedFromFile)
-            @event.UserIdPlayer.GetState()?.LeaveTeam();
+        var player = @event.UserIdPlayer;
+        if (!Game.IsLoadedFromFile && player != null)
+            player.GetState()?.LeaveTeam();
         return HookResult.Continue;
     }
 }
