@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnTeamReadyStatusChangedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "team_ready_status_changed";
 
     [JsonPropertyName("team")]

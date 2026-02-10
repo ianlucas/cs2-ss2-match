@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnMatchPausedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "game_paused";
 
     [JsonPropertyName("map_number")]

@@ -21,7 +21,7 @@ public static class HttpHelper
         try
         {
             using var content = new StringContent(
-                JsonSerializer.Serialize(data),
+                JsonSerializer.Serialize(data, data.GetType()),
                 Encoding.UTF8,
                 "application/json"
             );

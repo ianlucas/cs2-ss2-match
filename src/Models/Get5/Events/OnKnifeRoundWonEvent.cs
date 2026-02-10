@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnKnifeRoundWonEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "knife_won";
 
     [JsonPropertyName("map_number")]

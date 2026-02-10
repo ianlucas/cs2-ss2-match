@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnSeriesInitEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "series_start";
 
     [JsonPropertyName("num_maps")]

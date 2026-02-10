@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnGameStateChangedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "game_state_changed";
 
     [JsonPropertyName("new_state")]

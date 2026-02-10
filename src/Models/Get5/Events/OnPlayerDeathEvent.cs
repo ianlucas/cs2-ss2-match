@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnPlayerDeathEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "player_death";
 
     [JsonPropertyName("map_number")]

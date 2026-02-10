@@ -10,6 +10,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnPlayerDisconnectedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "player_disconnect";
 
     [JsonPropertyName("player")]
