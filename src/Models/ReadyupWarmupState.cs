@@ -36,7 +36,7 @@ public class ReadyupWarmupState : WarmupState
         RegisterCommand(ReadyCmds, OnReadyCommand);
         RegisterCommand(UnreadyCmds, OnUnreadyCommand);
         Game.ResetTeamsForNewMatch();
-        if (ConVars.IsMatchmaking.Value)
+        if (this is not NoneState && ConVars.IsMatchmaking.Value)
         {
             var nextMap = Game.GetNextMap();
             Swiftly.Core.ConVar.Find<string>("nextlevel")?.Value = nextMap?.MapName ?? "";
