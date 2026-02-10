@@ -18,8 +18,8 @@ public class ActiveMatchState : BaseState
         var gameRules = Swiftly.Core.EntitySystem.GetGameRules();
         if (gameRules?.GamePhaseEnum == GamePhase.GAMEPHASE_MATCH_ENDED)
         {
-            gameRules.GamePhaseEnum = GamePhase.GAMEPHASE_WARMUP_ROUND;
             OnMapEnd(); // Map result should be computed at State::OnCsWinPanelRound.
+            gameRules.GamePhaseEnum = GamePhase.GAMEPHASE_WARMUP_ROUND;
         }
         return HookResult.Continue;
     }
