@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnPauseBeganEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "pause_began";
 
     [JsonPropertyName("map_number")]

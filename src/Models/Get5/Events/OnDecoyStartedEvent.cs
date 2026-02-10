@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnDecoyStartedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "decoygrenade_started";
 
     [JsonPropertyName("map_number")]

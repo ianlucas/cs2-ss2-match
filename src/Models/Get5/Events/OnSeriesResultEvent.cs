@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnSeriesResultEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "series_end";
 
     [JsonPropertyName("team1_series_score")]

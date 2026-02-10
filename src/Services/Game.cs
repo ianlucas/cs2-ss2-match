@@ -366,11 +366,10 @@ public static class Game
             player.KnifeRoundVote = KnifeRoundVote.None;
     }
 
-    public static void SendEvent(object data)
+    public static void SendEvent(Get5Event data)
     {
         var url = ConVars.RemoteLogUrl.Value;
-        PropertyInfo? propertyInfo = data.GetType().GetProperty("EventName");
-        Swiftly.Log($"RemoteLogUrl='{url}' event='{propertyInfo?.GetValue(data)}'");
+        Swiftly.Log($"RemoteLogUrl='{url}' event='{data.EventName}'");
         if (url != "")
         {
             var headers = new Dictionary<string, string>();

@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnPlayerBecameMVPEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "round_mvp";
 
     [JsonPropertyName("map_number")]

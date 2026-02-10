@@ -10,6 +10,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnPlayerSayEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "player_say";
 
     [JsonPropertyName("map_number")]

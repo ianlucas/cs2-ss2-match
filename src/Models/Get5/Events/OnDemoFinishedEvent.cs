@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnDemoFinishedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "demo_finished";
 
     [JsonPropertyName("map_number")]

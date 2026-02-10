@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnLoadMatchConfigFailedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "match_config_load_fail";
 
     [JsonPropertyName("reason")]

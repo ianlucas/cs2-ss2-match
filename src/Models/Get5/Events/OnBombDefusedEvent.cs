@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnBombDefusedEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "bomb_defused";
 
     [JsonPropertyName("map_number")]

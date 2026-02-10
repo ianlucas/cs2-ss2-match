@@ -9,6 +9,7 @@ namespace Match.Get5.Events;
 
 public sealed class OnBackupRestoreEvent : Get5Event
 {
+    [JsonPropertyName("event")]
     public override string EventName => "backup_loaded";
 
     [JsonPropertyName("map_number")]
