@@ -25,25 +25,17 @@ public static partial class Natives
         float a5
     );
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate>
-    > _lazyTerminateRoundWindows = new(() =>
-        GetFunctionBySignature<CCSGameRules_TerminateRoundWindowsDelegate>(
-            "CGameRules::TerminateRound"
-        )
-    );
+    public static readonly IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate> CCSGameRules_TerminateRoundWindows =
+        OperatingSystem.IsWindows()
+            ? GetFunctionBySignature<CCSGameRules_TerminateRoundWindowsDelegate>(
+                "CGameRules::TerminateRound"
+            )
+            : null!;
 
-    public static IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate> CCSGameRules_TerminateRoundWindows =>
-        _lazyTerminateRoundWindows.Value;
-
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate>
-    > _lazyTerminateRoundLinux = new(() =>
-        GetFunctionBySignature<CCSGameRules_TerminateRoundLinuxDelegate>(
-            "CGameRules::TerminateRound"
-        )
-    );
-
-    public static IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate> CCSGameRules_TerminateRoundLinux =>
-        _lazyTerminateRoundLinux.Value;
+    public static readonly IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate> CCSGameRules_TerminateRoundLinux =
+        !OperatingSystem.IsWindows()
+            ? GetFunctionBySignature<CCSGameRules_TerminateRoundLinuxDelegate>(
+                "CGameRules::TerminateRound"
+            )
+            : null!;
 }

@@ -11,15 +11,9 @@ public static partial class Natives
 {
     public delegate void CCSPlayerController_ChangeTeamDelegate(nint a1, int a2);
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSPlayerController_ChangeTeamDelegate>
-    > _lazyChangeTeam = new(() =>
+    public static readonly IUnmanagedFunction<CCSPlayerController_ChangeTeamDelegate> CCSGameRules_ChangeTeam =
         GetFunctionByOffset<CCSPlayerController_ChangeTeamDelegate>(
             "CCSPlayerController",
             "CCSPlayerController::ChangeTeam"
-        )
-    );
-
-    public static IUnmanagedFunction<CCSPlayerController_ChangeTeamDelegate> CCSGameRules_ChangeTeam =>
-        _lazyChangeTeam.Value;
+        );
 }

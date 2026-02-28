@@ -11,14 +11,8 @@ public static partial class Natives
 {
     public delegate bool CCSGameRules_IsLastRoundBeforeHalfTimeDelegate(nint thisPtr);
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>
-    > _lazyIsLastRoundBeforeHalfTime = new(() =>
+    public static readonly IUnmanagedFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate> CCSGameRules_IsLastRoundBeforeHalfTime =
         GetFunctionBySignature<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>(
             "CCSGameRules::IsLastRoundBeforeHalfTime"
-        )
-    );
-
-    public static IUnmanagedFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate> CCSGameRules_IsLastRoundBeforeHalfTime =>
-        _lazyIsLastRoundBeforeHalfTime.Value;
+        );
 }
