@@ -14,7 +14,7 @@ namespace Match;
     Version = "1.0.0",
     Name = "Match",
     Author = "Ian Lucas",
-    Description = "Matches with Get5 compatibility."
+    Description = "https://github.com/ianlucas/cs2-ss2-match"
 )]
 public partial class Match(ISwiftlyCore core) : BasePlugin(core)
 {
