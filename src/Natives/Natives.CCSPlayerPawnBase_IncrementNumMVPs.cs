@@ -11,14 +11,8 @@ public static partial class Natives
 {
     public delegate nint CCSPlayerPawnBase_IncrementNumMVPsDelegate(nint thisPtr, uint a2);
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSPlayerPawnBase_IncrementNumMVPsDelegate>
-    > _lazyIncrementNumMVPs = new(() =>
+    public static readonly IUnmanagedFunction<CCSPlayerPawnBase_IncrementNumMVPsDelegate> CCSPlayerPawnBase_IncrementNumMVPs =
         GetFunctionBySignature<CCSPlayerPawnBase_IncrementNumMVPsDelegate>(
             "CCSPlayerPawnBase::IncrementNumMVPs"
-        )
-    );
-
-    public static IUnmanagedFunction<CCSPlayerPawnBase_IncrementNumMVPsDelegate> CCSPlayerPawnBase_IncrementNumMVPs =>
-        _lazyIncrementNumMVPs.Value;
+        );
 }

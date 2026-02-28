@@ -11,14 +11,8 @@ public static partial class Natives
 {
     public delegate nint CCSGameRules_HandleSwapTeamsDelegate(nint thisPtr);
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSGameRules_HandleSwapTeamsDelegate>
-    > _lazyHandleSwapTeams = new(() =>
+    public static readonly IUnmanagedFunction<CCSGameRules_HandleSwapTeamsDelegate> CCSGameRules_HandleSwapTeams =
         GetFunctionBySignature<CCSGameRules_HandleSwapTeamsDelegate>(
             "CCSGameRules::HandleSwapTeams"
-        )
-    );
-
-    public static IUnmanagedFunction<CCSGameRules_HandleSwapTeamsDelegate> CCSGameRules_HandleSwapTeams =>
-        _lazyHandleSwapTeams.Value;
+        );
 }

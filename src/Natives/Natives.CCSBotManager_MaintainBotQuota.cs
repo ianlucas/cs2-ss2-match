@@ -11,14 +11,8 @@ public static partial class Natives
 {
     public delegate byte CCSBotManager_MaintainBotQuotaDelegate(nint thisPtr);
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSBotManager_MaintainBotQuotaDelegate>
-    > _lazyMaintainBotQuota = new(() =>
+    public static readonly IUnmanagedFunction<CCSBotManager_MaintainBotQuotaDelegate> CCSBotManager_MaintainBotQuota =
         GetFunctionBySignature<CCSBotManager_MaintainBotQuotaDelegate>(
             "CCSBotManager::MaintainBotQuota"
-        )
-    );
-
-    public static IUnmanagedFunction<CCSBotManager_MaintainBotQuotaDelegate> CCSBotManager_MaintainBotQuota =>
-        _lazyMaintainBotQuota.Value;
+        );
 }

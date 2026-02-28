@@ -11,14 +11,8 @@ public static partial class Natives
 {
     public delegate bool CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate(nint thisPtr);
 
-    private static readonly Lazy<
-        IUnmanagedFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>
-    > _lazyAreTeamsPlayingSwitchedSides = new(() =>
+    public static readonly IUnmanagedFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate> CCSGameRules_AreTeamsPlayingSwitchedSides =
         GetFunctionBySignature<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>(
             "CCSGameRules::AreTeamsPlayingSwitchedSides"
-        )
-    );
-
-    public static IUnmanagedFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate> CCSGameRules_AreTeamsPlayingSwitchedSides =>
-        _lazyAreTeamsPlayingSwitchedSides.Value;
+        );
 }

@@ -24,14 +24,15 @@ public static partial class Natives
 
     private static IUnmanagedFunction<TDelegate> GetFunctionByOffset<TDelegate>(
         string vtableName,
-        string offsetName
+        string offsetName,
+        string? library = null
     )
         where TDelegate : Delegate
     {
         var offset = Swiftly.Core.GameData.GetOffset(offsetName);
         var vtable =
-            Swiftly.Core.Memory.GetVTableAddress(Library.Server, vtableName)
-            ?? throw new InvalidOperationException("Failed to locate CCSPlayerController vtable.");
+            Swiftly.Core.Memory.GetVTableAddress(library ?? Library.Server, vtableName)
+            ?? throw new InvalidOperationException($"Failed to locate {vtableName} vtable.");
         return Swiftly.Core.Memory.GetUnmanagedFunctionByVTable<TDelegate>(vtable, offset);
     }
 }
