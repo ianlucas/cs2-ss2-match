@@ -26,7 +26,6 @@ public partial class Match
 
     public void OnMapLoad(IOnMapLoadEvent @event)
     {
-        Core.Engine.ExecuteCommand("sv_hibernate_when_empty 0");
         PendingInternalPush = true;
     }
 
