@@ -30,6 +30,15 @@ public class KnifeRoundState : ReadyupWarmupState
         Swiftly.Core.PlayerManager.RemovePlayerClans();
     }
 
+    private uint? TryGetKnifeWinnerReason()
+    {
+        var winner = Swiftly.Core.EntitySystem.GetGameRules()?.DetermineWinnerBySurvival();
+        if (winner == null)
+            return null;
+        Game.KnifeRoundWinner = Game.GetTeam(winner.Value);
+        return (uint)(winner == Team.T ? RoundEndReason.TerroristsWin : RoundEndReason.CTsWin);
+    }
+
     public HookResult OnRoundStart(EventRoundStart @event)
     {
         if (Game.KnifeRoundWinner != null)
@@ -46,46 +55,25 @@ public class KnifeRoundState : ReadyupWarmupState
 
     public Natives.CCSPlayerPawnBase_IncrementNumMVPsDelegate OnIncrementNumMVPs(
         Func<Natives.CCSPlayerPawnBase_IncrementNumMVPsDelegate> next
-    )
-    {
-        return (a1, a2) => 0;
-    }
+    ) => (a1, a2) => 0;
 
     public Natives.CCSGameRules_TerminateRoundWindowsDelegate OnTerminateRoundWindows(
         Func<Natives.CCSGameRules_TerminateRoundWindowsDelegate> next
-    )
-    {
-        return (a1, a2, a3, a4, a5) =>
+    ) =>
+        (a1, a2, a3, a4, a5) =>
         {
-            var winner = Swiftly.Core.EntitySystem.GetGameRules()?.DetermineWinnerBySurvival();
-            if (winner != null)
-            {
-                Game.KnifeRoundWinner = Game.GetTeam(winner.Value);
-                var reason = (uint)(
-                    winner == Team.T ? RoundEndReason.TerroristsWin : RoundEndReason.CTsWin
-                );
+            if (TryGetKnifeWinnerReason() is uint reason)
                 a5 = reason;
-            }
             next()(a1, a2, a3, a4, a5);
         };
-    }
 
     public Natives.CCSGameRules_TerminateRoundLinuxDelegate OnTerminateRoundLinux(
         Func<Natives.CCSGameRules_TerminateRoundLinuxDelegate> next
-    )
-    {
-        return (a1, a2, a3, a4, a5) =>
+    ) =>
+        (a1, a2, a3, a4, a5) =>
         {
-            var winner = Swiftly.Core.EntitySystem.GetGameRules()?.DetermineWinnerBySurvival();
-            if (winner != null)
-            {
-                Game.KnifeRoundWinner = Game.GetTeam(winner.Value);
-                var reason = (uint)(
-                    winner == Team.T ? RoundEndReason.TerroristsWin : RoundEndReason.CTsWin
-                );
+            if (TryGetKnifeWinnerReason() is uint reason)
                 a2 = reason;
-            }
             next()(a1, a2, a3, a4, a5);
         };
-    }
 }
