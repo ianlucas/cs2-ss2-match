@@ -23,6 +23,7 @@ public static class MatchCtx
     public static bool DidRestartFirstMap { get; set; } = false;
     public static PlayerTeam? KnifeRoundWinner { get; set; }
     public static MapEndResult? MapEndResult { get; set; } = null;
+    public static MatchEventStore? EventStore { get; private set; }
 
     static MatchCtx()
     {
@@ -37,6 +38,8 @@ public static class MatchCtx
 
     public static void Reset()
     {
+        EventStore?.Cancel();
+        EventStore = null;
         Id = null;
         IsClinchSeries = true;
         IsLoadedFromFile = false;
@@ -80,6 +83,8 @@ public static class MatchCtx
         }
         IsSeriesStarted = true;
         CreateMatchFolder();
+        if (ConVars.IsEventStore.Value)
+            EventStore = new MatchEventStore(GetMatchPath());
         SendEvent(OnSeriesInitEvent.Create());
     }
 
@@ -87,7 +92,8 @@ public static class MatchCtx
     {
         if (newState is not ReadyupWarmupState && State.GetType() == newState.GetType())
             return;
-        SendEvent(OnGameStateChangedEvent.Create(oldState: State, newState));
+        if (newState.Name != State.Name)
+            SendEvent(OnGameStateChangedEvent.Create(oldState: State, newState));
         State.Unload();
         Swiftly.Log($"Unloaded {State.GetType().FullName}");
         State = newState;
@@ -296,27 +302,28 @@ public static class MatchCtx
         return Id != null ? $"/{(IsLoadedFromFile ? "Matches" : "Scrims")}/{Id}" : "";
     }
 
+    public static string GetMatchPath(string filename = "") =>
+        Swiftly.Core.GetConfigPath($"{GetMatchFolder()}{(filename != "" ? $"/{filename}" : "")}");
+
     public static DirectoryInfo CreateMatchFolder()
     {
-        return Directory.CreateDirectory(Swiftly.Core.GetConfigPath(GetMatchFolder()));
+        return Directory.CreateDirectory(GetMatchPath());
     }
 
     public static string? GetBackupPrefix()
     {
-        return Id != null
-            ? Swiftly.Core.GetConfigPath(
-                $"{GetMatchFolder()}/{Swiftly.Core.Engine.GlobalVars.MapName}"
-            )
-            : null;
+        return Id != null ? GetMatchPath(Swiftly.Core.Engine.GlobalVars.MapName) : null;
     }
 
     public static string? GetDemoFilename()
     {
-        return Id != null
-            ? Swiftly.Core.GetConfigPath(
-                $"{GetMatchFolder()}/{Swiftly.Core.Engine.GlobalVars.MapName}.dem"
-            )
-            : null;
+        return Id != null ? GetMatchPath($"{Swiftly.Core.Engine.GlobalVars.MapName}.dem") : null;
+    }
+
+    public static void FinalizeEventLog()
+    {
+        EventStore?.Complete();
+        EventStore = null;
     }
 
     public static void SwapTeamSides()
@@ -378,5 +385,6 @@ public static class MatchCtx
                 headers.Add(ConVars.RemoteLogHeaderKey.Value, ConVars.RemoteLogHeaderValue.Value);
             HttpHelper.SendJson(url, data, headers);
         }
+        EventStore?.Enqueue(data);
     }
 }

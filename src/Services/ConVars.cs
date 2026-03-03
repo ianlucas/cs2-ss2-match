@@ -141,6 +141,12 @@ public static class ConVars
         30
     );
 
+    public static readonly IConVar<bool> IsEventStore = Swiftly.Core.ConVar.CreateOrFind(
+        "match_event_store",
+        "Store all emitted events to disk during a match.",
+        false
+    );
+
     public static readonly IConVar<string> RemoteLogUrl = Swiftly.Core.ConVar.CreateOrFind(
         "get5_remote_log_url",
         "URL endpoint for sending match events.",
@@ -183,6 +189,7 @@ public static class ConVars
         _ = IsForfeitEnabled;
         _ = ForfeitTimeout;
         _ = SurrenderTimeout;
+        _ = IsEventStore;
         _ = RemoteLogUrl;
         _ = RemoteLogHeaderKey;
         _ = RemoteLogHeaderValue;
