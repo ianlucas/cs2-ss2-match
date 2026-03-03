@@ -24,9 +24,9 @@ public sealed class OnBackupRestoreEvent : Get5Event
     public static OnBackupRestoreEvent Create(string filename) =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
-            RoundNumber = Game.GetRoundNumber(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
+            RoundNumber = MatchCtx.GetRoundNumber(),
             Filename = filename,
         };
 }

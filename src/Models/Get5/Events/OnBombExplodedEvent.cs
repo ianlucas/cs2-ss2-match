@@ -27,10 +27,10 @@ public sealed class OnBombExplodedEvent : Get5Event
     public static OnBombExplodedEvent Create(int? site) =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
-            RoundNumber = Game.GetRoundNumber(),
-            RoundTime = Game.GetRoundTime(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
+            RoundNumber = MatchCtx.GetRoundNumber(),
+            RoundTime = MatchCtx.GetRoundTime(),
             Site = Get5EventHelpers.ToSite(site),
         };
 }

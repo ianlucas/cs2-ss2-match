@@ -29,7 +29,7 @@ public class KnifeVoteWarmupState : WarmupState
         RegisterCommand(SwitchCmds, OnSwitchCommand);
         Timers.SetEveryChatInterval("KnifeVoteInstructions", SendKnifeVoteInstructions);
         Timers.Set("KnifeVoteTimeout", ConVars.KnifeVoteTimeout.Value - 1, OnKnifeVoteTimeout);
-        Game.ResetAllKnifeRoundVotes();
+        MatchCtx.ResetAllKnifeRoundVotes();
         Swiftly.Log("Executing knife vote warmup");
         Config.ExecWarmup(warmupTime: ConVars.KnifeVoteTimeout.Value, isLockTeams: true);
     }
@@ -41,13 +41,13 @@ public class KnifeVoteWarmupState : WarmupState
 
     public void SendKnifeVoteInstructions()
     {
-        var team = Game.KnifeRoundWinner;
+        var team = MatchCtx.KnifeRoundWinner;
         var leader = team?.InGameLeader;
         if (team != null && leader != null)
             Swiftly.Core.PlayerManager.SendChat(
                 Swiftly.Core.Localizer[
                     "match.knife_vote",
-                    Game.GetChatPrefix(),
+                    MatchCtx.GetChatPrefix(),
                     team.FormattedName,
                     leader.Name
                 ]
@@ -80,7 +80,7 @@ public class KnifeVoteWarmupState : WarmupState
 
     public void CheckLeaderVote()
     {
-        var team = Game.KnifeRoundWinner;
+        var team = MatchCtx.KnifeRoundWinner;
         if (team != null)
             foreach (var vote in KnifeRoundVotes)
                 if (
@@ -104,7 +104,7 @@ public class KnifeVoteWarmupState : WarmupState
     public void ProcessKnifeVote(KnifeRoundVote decision)
     {
         Swiftly.Log($"Processing knife vote decision: {decision}");
-        var winnerTeam = Game.KnifeRoundWinner;
+        var winnerTeam = MatchCtx.KnifeRoundWinner;
         if (winnerTeam == null)
             return;
         if (decision != KnifeRoundVote.None)
@@ -118,7 +118,7 @@ public class KnifeVoteWarmupState : WarmupState
             Swiftly.Core.PlayerManager.SendChat(
                 localize[
                     "match.knife_decision",
-                    Game.GetChatPrefix(),
+                    MatchCtx.GetChatPrefix(),
                     winnerTeam.FormattedName,
                     decisionLabel
                 ]
@@ -126,11 +126,11 @@ public class KnifeVoteWarmupState : WarmupState
         }
         if (decision == KnifeRoundVote.Switch)
         {
-            Game.SwapTeamSides();
+            MatchCtx.SwapTeamSides();
             Swiftly.Core.EntitySystem.GetGameRules()?.HandleSwapTeams();
         }
-        Game.SendEvent(OnSidePickedEvent.Create(team: winnerTeam));
-        Game.SendEvent(OnKnifeRoundWonEvent.Create(team: winnerTeam, decision));
-        Game.SetState(new LiveState());
+        MatchCtx.SendEvent(OnSidePickedEvent.Create(team: winnerTeam));
+        MatchCtx.SendEvent(OnKnifeRoundWonEvent.Create(team: winnerTeam, decision));
+        MatchCtx.SetState(new LiveState());
     }
 }

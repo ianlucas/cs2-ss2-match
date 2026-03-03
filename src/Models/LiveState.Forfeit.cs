@@ -30,7 +30,7 @@ public partial class LiveState
     public void OnPlayerConnected(IPlayer player)
     {
         var playerState = player.GetState();
-        if (playerState != null && Game.HasTeamsWithAnyPlayerConnected())
+        if (playerState != null && MatchCtx.HasTeamsWithAnyPlayerConnected())
         {
             _isForfeiting = false;
             Timers.Clear("ForfeitTimeout");
@@ -48,8 +48,8 @@ public partial class LiveState
 
     public void TryForfeitMatch(PlayerState? disconnecting = null)
     {
-        if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && Game.MapEndResult == null)
-            foreach (var team in Game.Teams)
+        if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && MatchCtx.MapEndResult == null)
+            foreach (var team in MatchCtx.Teams)
                 if (
                     team.Players.Count > 0
                     && team.Players.All(p =>

@@ -21,7 +21,7 @@ public partial class Match
             if (controller.ToPlayer()?.IsFakeClient == false)
             {
                 var playerState = controller.GetState();
-                if (Game.AreTeamsLocked())
+                if (MatchCtx.AreTeamsLocked())
                     if (playerState != null)
                     {
                         var currentTeam = (int)playerState.Team.CurrentTeam;
@@ -50,7 +50,7 @@ public partial class Match
                 return 0;
             }
             var connectedHumans = Core.PlayerManager.GetActualPlayers();
-            if (!connectedHumans.Any() && Game.State is ReadyupWarmupState)
+            if (!connectedHumans.Any() && MatchCtx.State is ReadyupWarmupState)
             {
                 Core.PlayerManager.KickAllBots("Kicked by match_bots' ConVar.");
                 return 0;

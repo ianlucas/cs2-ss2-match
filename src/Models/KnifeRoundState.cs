@@ -17,7 +17,7 @@ public class KnifeRoundState : ReadyupWarmupState
 
     public override void Load()
     {
-        Game.KnifeRoundWinner = null;
+        MatchCtx.KnifeRoundWinner = null;
         HookGameEvent<EventRoundStart>(OnRoundStart);
         AddHook(Natives.CCSPlayerPawnBase_IncrementNumMVPs, OnIncrementNumMVPs);
         if (OperatingSystem.IsWindows())
@@ -26,7 +26,7 @@ public class KnifeRoundState : ReadyupWarmupState
             AddHook(Natives.CCSGameRules_TerminateRoundLinux, OnTerminateRoundLinux);
         Swiftly.Log("Executing knife round configuration");
         Config.ExecKnife();
-        Cstv.Record(Game.GetDemoFilename());
+        Cstv.Record(MatchCtx.GetDemoFilename());
         Swiftly.Core.PlayerManager.RemovePlayerClans();
     }
 
@@ -35,20 +35,22 @@ public class KnifeRoundState : ReadyupWarmupState
         var winner = Swiftly.Core.EntitySystem.GetGameRules()?.DetermineWinnerBySurvival();
         if (winner == null)
             return null;
-        Game.KnifeRoundWinner = Game.GetTeam(winner.Value);
+        MatchCtx.KnifeRoundWinner = MatchCtx.GetTeam(winner.Value);
         return (uint)(winner == Team.T ? RoundEndReason.TerroristsWin : RoundEndReason.CTsWin);
     }
 
     public HookResult OnRoundStart(EventRoundStart @event)
     {
-        if (Game.KnifeRoundWinner != null)
-            Swiftly.Core.Scheduler.NextWorldUpdate(() => Game.SetState(new KnifeVoteWarmupState()));
+        if (MatchCtx.KnifeRoundWinner != null)
+            Swiftly.Core.Scheduler.NextWorldUpdate(() =>
+                MatchCtx.SetState(new KnifeVoteWarmupState())
+            );
         else
         {
             Swiftly.Core.PlayerManager.SendChatRepeat(
-                Swiftly.Core.Localizer["match.knife", Game.GetChatPrefix()]
+                Swiftly.Core.Localizer["match.knife", MatchCtx.GetChatPrefix()]
             );
-            Game.SendEvent(OnKnifeRoundStartedEvent.Create());
+            MatchCtx.SendEvent(OnKnifeRoundStartedEvent.Create());
         }
         return HookResult.Continue;
     }

@@ -37,7 +37,7 @@ public partial class LiveState
                 Swiftly.Core.PlayerManager.SendChat(
                     Swiftly.Core.Localizer[
                         "match.surrender_success",
-                        Game.GetChatPrefix(),
+                        MatchCtx.GetChatPrefix(),
                         playerState.Team.FormattedName
                     ]
                 );
@@ -59,7 +59,7 @@ public partial class LiveState
                 playerState.Team.SendChat(
                     Swiftly.Core.Localizer[
                         "match.surrender_start",
-                        Game.GetChatPrefix(),
+                        MatchCtx.GetChatPrefix(),
                         playerState.Name,
                         neededVotes,
                         ConVars.SurrenderTimeout.Value
@@ -79,7 +79,7 @@ public partial class LiveState
                                 hadAllSurrenderVotes
                                     ? "match.surrender_fail1"
                                     : "match.surrender_fail2",
-                                Game.GetChatPrefix()
+                                MatchCtx.GetChatPrefix()
                             ]
                         );
                     }

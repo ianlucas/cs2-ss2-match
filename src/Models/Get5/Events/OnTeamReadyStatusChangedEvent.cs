@@ -24,9 +24,9 @@ public sealed class OnTeamReadyStatusChangedEvent : Get5Event
     public static OnTeamReadyStatusChangedEvent Create(PlayerTeam team) =>
         new()
         {
-            MatchId = Game.Id,
+            MatchId = MatchCtx.Id,
             Team = Get5EventHelpers.ToTeamString(team),
             Ready = team.Players.All(p => p.IsReady),
-            GameState = Game.State.Name,
+            GameState = MatchCtx.State.Name,
         };
 }

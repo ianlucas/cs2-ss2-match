@@ -39,8 +39,8 @@ public sealed class OnFlashbangDetonatedEvent : Get5Event
     ) =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
             RoundNumber = roundNumber,
             RoundTime = roundTime,
             Player = Get5EventHelpers.ToPlayer(player),

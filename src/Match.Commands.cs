@@ -21,12 +21,12 @@ public partial class Match
         )
             return;
         var message = "[MatchPlugin Status]\n\n";
-        message += $"State: {Game.State.GetType().Name}\n";
-        message += $"Id: {Game.Id ?? "(No ID)"}\n";
-        message += $"Loaded from file?: {Game.IsLoadedFromFile}\n";
-        message += $"Is matchmaking?: {Game.IsMatchmaking()}\n";
+        message += $"State: {MatchCtx.State.GetType().Name}\n";
+        message += $"Id: {MatchCtx.Id ?? "(No ID)"}\n";
+        message += $"Loaded from file?: {MatchCtx.IsLoadedFromFile}\n";
+        message += $"Is matchmaking?: {MatchCtx.IsMatchmaking()}\n";
         message += "\n";
-        foreach (var team in Game.Teams)
+        foreach (var team in MatchCtx.Teams)
         {
             message += $"[Team {team.Index}]\n";
             if (team.Players.Count == 0)
@@ -64,16 +64,16 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        if (Game.State is not ReadyupWarmupState)
+        if (MatchCtx.State is not ReadyupWarmupState)
             return;
-        if (!Game.IsLoadedFromFile)
+        if (!MatchCtx.IsLoadedFromFile)
         {
             foreach (var player in Core.PlayerManager.GetPlayersInTeams())
             {
                 var playerState = player.GetState();
                 if (playerState == null)
                 {
-                    var team = Game.GetTeam(player.Controller.Team);
+                    var team = MatchCtx.GetTeam(player.Controller.Team);
                     if (team == null)
                         player.ChangeTeam(Team.Spectator);
                     else
@@ -90,20 +90,22 @@ public partial class Match
                 if (playerState != null)
                     playerState.IsReady = true;
             }
-            Game.Setup();
+            MatchCtx.Setup();
         }
         else
-            foreach (var player in Game.GetAllPlayers())
+            foreach (var player in MatchCtx.GetAllPlayers())
                 player.IsReady = true;
         Swiftly.Log(
             sendToChat: true,
             message: Core.Localizer[
                 "match.admin_start",
-                Game.GetChatPrefix(true),
+                MatchCtx.GetChatPrefix(true),
                 caller?.Controller.PlayerName ?? "Console"
             ]
         );
-        Game.SetState(ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new LiveState());
+        MatchCtx.SetState(
+            ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new LiveState()
+        );
     }
 
     public void OnMapCommand(ICommandContext context)
@@ -119,13 +121,13 @@ public partial class Match
         var mapname = context.Args[0].ToLower().Trim();
         if (!mapname.StartsWith("de_"))
             return;
-        if (Game.AreTeamsLocked())
+        if (MatchCtx.AreTeamsLocked())
             return;
         Swiftly.Log(
             sendToChat: true,
             message: Core.Localizer[
                 "match.admin_map",
-                Game.GetChatPrefix(true),
+                MatchCtx.GetChatPrefix(true),
                 caller?.Controller.PlayerName ?? "Console"
             ]
         );
@@ -144,12 +146,12 @@ public partial class Match
             sendToChat: true,
             message: Core.Localizer[
                 "match.admin_restart",
-                Game.GetChatPrefix(true),
+                MatchCtx.GetChatPrefix(true),
                 caller?.Controller.PlayerName ?? "Console"
             ]
         );
-        Game.Reset();
-        Game.SetState(new NoneState());
+        MatchCtx.Reset();
+        MatchCtx.SetState(new NoneState());
     }
 
     public void OnMatchLoadCommand(ICommandContext context)
@@ -160,42 +162,42 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        if (Game.State is not ReadyupWarmupState)
+        if (MatchCtx.State is not ReadyupWarmupState)
             return;
         if (context.Args.Length != 1)
             return;
         var name = context.Args[0].Trim();
         var file = Get5Match.Read(name);
         if (file.Error != null)
-            Game.SendEvent(OnLoadMatchConfigFailedEvent.Create(reason: file.Error));
+            MatchCtx.SendEvent(OnLoadMatchConfigFailedEvent.Create(reason: file.Error));
         var match = file.Contents;
         if (match == null || file.Path == null)
             return;
-        Game.SendEvent(OnPreLoadMatchConfigEvent.Create(filename: file.Path));
-        Game.Reset();
-        Game.IsLoadedFromFile = true;
-        Game.Id = match.Matchid;
-        Game.IsClinchSeries = match.ClinchSeries ?? true;
+        MatchCtx.SendEvent(OnPreLoadMatchConfigEvent.Create(filename: file.Path));
+        MatchCtx.Reset();
+        MatchCtx.IsLoadedFromFile = true;
+        MatchCtx.Id = match.Matchid;
+        MatchCtx.IsClinchSeries = match.ClinchSeries ?? true;
         // Maps
         var maplist = match.Maplist.Get();
         if (maplist != null)
             foreach (var mapName in maplist)
-                Game.AddMap(mapName);
+                MatchCtx.AddMap(mapName);
         else
         {
-            Game.Reset();
+            MatchCtx.Reset();
             return;
         }
         // Teams
-        Game.Team1.StartingTeam = Team.T;
-        Game.Team2.StartingTeam = Team.CT;
-        for (var index = 0; index < Game.Teams.Count; index++)
+        MatchCtx.Team1.StartingTeam = Team.T;
+        MatchCtx.Team2.StartingTeam = Team.CT;
+        for (var index = 0; index < MatchCtx.Teams.Count; index++)
         {
             var teamSchema = (index == 0 ? match.Team1 : match.Team2)?.Get();
             if (teamSchema == null)
                 continue;
             ulong? leaderId = ulong.TryParse(teamSchema.Leaderid, out ulong li) ? li : null;
-            Game.ConfigureTeamFromSchema(index, teamSchema, leaderId);
+            MatchCtx.ConfigureTeamFromSchema(index, teamSchema, leaderId);
         }
         if (match.Cvars != null)
             foreach (var (key, value) in match.Cvars)
@@ -206,8 +208,8 @@ public partial class Match
             }
         Swiftly.Core.Scheduler.NextWorldUpdate(() =>
         {
-            Game.Setup();
-            Game.SetState(new ReadyupWarmupState());
+            MatchCtx.Setup();
+            MatchCtx.SetState(new ReadyupWarmupState());
         });
     }
 }

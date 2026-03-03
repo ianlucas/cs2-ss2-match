@@ -64,21 +64,21 @@ public partial class LiveState : ActiveMatchState
         HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
         HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
         Swiftly.Log("Executing live match configuration");
-        Game.SendEvent(OnGoingLiveEvent.Create());
+        MatchCtx.SendEvent(OnGoingLiveEvent.Create());
         Config.ExecLive(
             maxRounds: ConVars.MaxRounds.Value,
             otMaxRounds: ConVars.OtMaxRounds.Value,
             isFriendlyPause: ConVars.IsFriendlyPause.Value,
-            backupPath: Game.GetBackupPrefix()
+            backupPath: MatchCtx.GetBackupPrefix()
         );
         var localize = Swiftly.Core.Localizer;
-        Swiftly.Core.PlayerManager.SendChatRepeat(localize["match.live", Game.GetChatPrefix()]);
+        Swiftly.Core.PlayerManager.SendChatRepeat(localize["match.live", MatchCtx.GetChatPrefix()]);
         Swiftly.Core.PlayerManager.SendChat(
-            localize["match.live_disclaimer", Game.GetChatPrefix()]
+            localize["match.live_disclaimer", MatchCtx.GetChatPrefix()]
         );
-        Game.ClearAllSurrenderFlags();
+        MatchCtx.ClearAllSurrenderFlags();
         if (!ConVars.IsKnifeRoundEnabled.Value)
-            Cstv.Record(Game.GetDemoFilename());
+            Cstv.Record(MatchCtx.GetDemoFilename());
         Swiftly.Core.PlayerManager.RemovePlayerClans();
         TryForfeitMatch();
     }
@@ -87,7 +87,7 @@ public partial class LiveState : ActiveMatchState
     {
         CheckPauseEvents();
         if (ConVars.ServerGraphicUrl.Value != "")
-            foreach (var player in Game.GetAllPlayers())
+            foreach (var player in MatchCtx.GetAllPlayers())
             {
                 var deathTime = player.Handle?.PlayerPawn?.DeathTime?.Value;
                 if (
@@ -109,7 +109,7 @@ public partial class LiveState : ActiveMatchState
         _lastThrownSmokegrenade = 0;
         _utilityVictims.Clear();
         _didSmokeExtinguishMolotov.Clear();
-        Game.SendEvent(OnRoundStartEvent.Create());
+        MatchCtx.SendEvent(OnRoundStartEvent.Create());
         return HookResult.Continue;
     }
 
@@ -117,7 +117,7 @@ public partial class LiveState : ActiveMatchState
     {
         var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
-            Game.SendEvent(OnGrenadeThrownEvent.Create(playerState, weapon: @event.Weapon));
+            MatchCtx.SendEvent(OnGrenadeThrownEvent.Create(playerState, weapon: @event.Weapon));
         return HookResult.Continue;
     }
 
@@ -125,7 +125,7 @@ public partial class LiveState : ActiveMatchState
     {
         var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
-            Game.SendEvent(OnDecoyStartedEvent.Create(playerState, weapon: "weapon_decoy"));
+            MatchCtx.SendEvent(OnDecoyStartedEvent.Create(playerState, weapon: "weapon_decoy"));
         return HookResult.Continue;
     }
 
@@ -135,14 +135,14 @@ public partial class LiveState : ActiveMatchState
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
-            var roundNumber = Game.GetRoundNumber();
-            var roundTime = Game.GetRoundTime();
+            var roundNumber = MatchCtx.GetRoundNumber();
+            var roundTime = MatchCtx.GetRoundTime();
             Swiftly.Core.Scheduler.DelayBySeconds(
                 0.1f,
                 () =>
                 {
                     var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-                    Game.SendEvent(
+                    MatchCtx.SendEvent(
                         OnHEGrenadeDetonatedEvent.Create(
                             roundNumber,
                             roundTime,
@@ -164,14 +164,14 @@ public partial class LiveState : ActiveMatchState
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
-            var roundNumber = Game.GetRoundNumber();
-            var roundTime = Game.GetRoundTime();
+            var roundNumber = MatchCtx.GetRoundNumber();
+            var roundTime = MatchCtx.GetRoundTime();
             _lastThrownSmokegrenade = entityId;
             Swiftly.Core.Scheduler.DelayBySeconds(
                 0.1f,
                 () =>
                 {
-                    Game.SendEvent(
+                    MatchCtx.SendEvent(
                         OnSmokeGrenadeDetonatedEvent.Create(
                             roundNumber,
                             roundTime,
@@ -194,8 +194,8 @@ public partial class LiveState : ActiveMatchState
         var playerState = controller?.GetState();
         if (entity != null && playerState != null)
             _thrownMolotovs[entity.Index] = new(
-                Game.GetRoundNumber(),
-                Game.GetRoundTime(),
+                MatchCtx.GetRoundNumber(),
+                MatchCtx.GetRoundTime(),
                 playerState
             );
         return HookResult.Continue;
@@ -219,14 +219,14 @@ public partial class LiveState : ActiveMatchState
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
-            var roundNumber = Game.GetRoundNumber();
-            var roundTime = Game.GetRoundTime();
+            var roundNumber = MatchCtx.GetRoundNumber();
+            var roundTime = MatchCtx.GetRoundTime();
             Swiftly.Core.Scheduler.DelayBySeconds(
                 0.1f,
                 () =>
                 {
                     var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-                    Game.SendEvent(
+                    MatchCtx.SendEvent(
                         OnFlashbangDetonatedEvent.Create(
                             roundNumber,
                             roundTime,
@@ -309,7 +309,7 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnBombExploded(EventBombExploded _)
     {
-        Game.SendEvent(OnBombExplodedEvent.Create(_lastPlantedBombZone));
+        MatchCtx.SendEvent(OnBombExplodedEvent.Create(_lastPlantedBombZone));
         return HookResult.Continue;
     }
 
@@ -317,26 +317,26 @@ public partial class LiveState : ActiveMatchState
     {
         _canSurrender = false;
         var localize = Swiftly.Core.Localizer;
-        var home = Game.Teams.First();
-        var away = Game.Teams.Last();
+        var home = MatchCtx.Teams.First();
+        var away = MatchCtx.Teams.Last();
         Swiftly.Core.PlayerManager.SendChat(
             localize[
                 "match.round_end_score",
-                Game.GetChatPrefix(),
+                MatchCtx.GetChatPrefix(),
                 home.FormattedName,
                 home.Score,
                 away.Score,
                 away.FormattedName
             ]
         );
-        foreach (var playerState in Game.Teams.SelectMany(t => t.Players))
+        foreach (var playerState in MatchCtx.Teams.SelectMany(t => t.Players))
         {
             foreach (var report in playerState.DamageReport.Values)
             {
                 playerState.Handle?.SendChat(
                     localize[
                         "match.round_end_damage",
-                        Game.GetChatPrefix(),
+                        MatchCtx.GetChatPrefix(),
                         report.To.Value,
                         report.To.Hits,
                         report.From.Value,
@@ -356,7 +356,7 @@ public partial class LiveState : ActiveMatchState
         if (_thrownMolotovs.TryGetValue(entityId, out var thrown))
         {
             var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-            Game.SendEvent(
+            MatchCtx.SendEvent(
                 OnMolotovDetonatedEvent.Create(
                     thrown.RoundNumber,
                     thrown.RoundTime,

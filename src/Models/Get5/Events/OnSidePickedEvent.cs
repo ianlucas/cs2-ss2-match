@@ -26,14 +26,14 @@ public sealed class OnSidePickedEvent : Get5Event
 
     public static OnSidePickedEvent Create(PlayerTeam team)
     {
-        var map = Game.GetMap();
+        var map = MatchCtx.GetMap();
         return new()
         {
-            MatchId = Game.Id,
+            MatchId = MatchCtx.Id,
             Team = Get5EventHelpers.ToTeamString(team),
             MapName = map?.MapName,
             Side = Get5EventHelpers.ToSideString(team.StartingTeam),
-            MapNumber = Game.FindMapIndex(map),
+            MapNumber = MatchCtx.FindMapIndex(map),
         };
     }
 }

@@ -19,7 +19,7 @@ public partial class Match
         var message = @event.Text.Trim();
         if (message.Length == 0)
             return HookResult.Continue;
-        Game.SendEvent(
+        MatchCtx.SendEvent(
             OnPlayerSayEvent.Create(player, @event.TeamOnly ? "say_team" : "team", message)
         );
         return HookResult.Continue;

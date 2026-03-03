@@ -27,8 +27,8 @@ public sealed class OnKnifeRoundWonEvent : Get5Event
     public static OnKnifeRoundWonEvent Create(PlayerTeam team, KnifeRoundVote decision) =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
             Team = Get5EventHelpers.ToTeamString(team),
             Side = Get5EventHelpers.ToSideString(team.StartingTeam),
             Swapped = decision == KnifeRoundVote.Switch,

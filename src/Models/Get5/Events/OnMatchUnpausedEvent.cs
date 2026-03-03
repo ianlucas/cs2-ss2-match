@@ -24,8 +24,8 @@ public sealed class OnMatchUnpausedEvent : Get5Event
     public static OnMatchUnpausedEvent Create(PlayerTeam? team, string pauseType) =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
             Team = Get5EventHelpers.ToTeamString(team),
             PauseType = pauseType,
         };
