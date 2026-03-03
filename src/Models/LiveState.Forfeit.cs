@@ -60,7 +60,14 @@ public partial class LiveState
                     _isForfeiting = true;
                     Timers.Set("ForfeitTimeout", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
                     Swiftly.Log("A team is forfeiting the match.");
-                    // @todo: Notify players a team is forfeiting.
+                    Swiftly.Core.PlayerManager.SendChat(
+                        Swiftly.Core.Localizer[
+                            "match.forfeit_start",
+                            MatchCtx.GetChatPrefix(true),
+                            team.FormattedName,
+                            ConVars.ForfeitTimeout.Value
+                        ]
+                    );
                     return;
                 }
     }
