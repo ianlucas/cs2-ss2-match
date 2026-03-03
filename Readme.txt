@@ -64,6 +64,9 @@ match_forfeit_timeout 120
 match_surrender_timeout 30
     Time in seconds allowed for surrender voting.
 
+match_event_store false
+    Store all emitted events to disk during a match.
+
 get5_remote_log_url ""
     URL endpoint for sending match events.
 
