@@ -156,14 +156,12 @@ public class ActiveMatchState : BaseState
         );
         // Even with Get5 Events, we still store results in json for further debugging.
         // @todo Maybe only save if `match_verbose` is enabled in the future.
-        IoHelper.WriteJson(
-            Swiftly.Core.GetConfigPath($"{MatchCtx.GetMatchFolder()}/results.json"),
-            maps
-        );
+        IoHelper.WriteJson(MatchCtx.GetMatchPath("results.json"), maps);
         MatchCtx.SendEvent(OnMapResultEvent.Create(map));
         if (isSeriesOver)
         {
             MatchCtx.SendEvent(OnSeriesResultEvent.Create(winner, map));
+            MatchCtx.FinalizeEventLog();
             MatchCtx.Reset();
             MatchCtx.EnforceMatchmakingRestrictions();
         }
