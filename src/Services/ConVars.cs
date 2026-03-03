@@ -147,6 +147,12 @@ public static class ConVars
         false
     );
 
+    public static readonly IConVar<bool> IsResultStore = Swiftly.Core.ConVar.CreateOrFind(
+        "match_result_store",
+        "Store map results to disk after each map.",
+        true
+    );
+
     public static readonly IConVar<string> RemoteLogUrl = Swiftly.Core.ConVar.CreateOrFind(
         "get5_remote_log_url",
         "URL endpoint for sending match events.",
@@ -190,6 +196,7 @@ public static class ConVars
         _ = ForfeitTimeout;
         _ = SurrenderTimeout;
         _ = IsEventStore;
+        _ = IsResultStore;
         _ = RemoteLogUrl;
         _ = RemoteLogHeaderKey;
         _ = RemoteLogHeaderValue;
