@@ -30,10 +30,10 @@ public sealed class OnDecoyStartedEvent : Get5Event
     public static OnDecoyStartedEvent Create(PlayerState player, string weapon) =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
-            RoundNumber = Game.GetRoundNumber(),
-            RoundTime = Game.GetRoundTime(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
+            RoundNumber = MatchCtx.GetRoundNumber(),
+            RoundTime = MatchCtx.GetRoundTime(),
             Player = Get5EventHelpers.ToPlayer(player),
             Weapon = Get5EventHelpers.ToWeapon(weapon),
         };

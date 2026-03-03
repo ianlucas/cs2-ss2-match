@@ -42,7 +42,7 @@ public partial class Match
     {
         HandleBotsChanged();
         HandleIsMatchmakingChanged();
-        Game.SetState(Game.IsSeriesStarted ? new ReadyupWarmupState() : new NoneState());
+        MatchCtx.SetState(MatchCtx.IsSeriesStarted ? new ReadyupWarmupState() : new NoneState());
     }
 
     public void OnClientSteamAuthorize(IOnClientSteamAuthorizeEvent @event)
@@ -67,7 +67,7 @@ public partial class Match
                     "Match is reserved for a lobby.",
                     ENetworkDisconnectionReason.NETWORK_DISCONNECT_REJECT_RESERVED_FOR_LOBBY
                 );
-            Game.SendEvent(OnPlayerConnectedEvent.Create(player));
+            MatchCtx.SendEvent(OnPlayerConnectedEvent.Create(player));
         }
     }
 
@@ -77,7 +77,7 @@ public partial class Match
         if (player != null && !player.IsFakeClient)
         {
             player.GetState()?.Handle = null;
-            Game.SendEvent(OnPlayerDisconnectedEvent.Create(player));
+            MatchCtx.SendEvent(OnPlayerDisconnectedEvent.Create(player));
         }
     }
 }

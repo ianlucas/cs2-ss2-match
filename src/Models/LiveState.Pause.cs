@@ -35,9 +35,9 @@ public partial class LiveState
                     : null;
                 var teamWhichPaused =
                     sideWhichPaused != null
-                        ? Game.Team1.CurrentTeam == sideWhichPaused
-                            ? Game.Team1
-                            : Game.Team2.Opposition
+                        ? MatchCtx.Team1.CurrentTeam == sideWhichPaused
+                            ? MatchCtx.Team1
+                            : MatchCtx.Team2.Opposition
                         : null;
                 var pauseType =
                     isTeamPaused ? "team"
@@ -47,17 +47,17 @@ public partial class LiveState
                     Swiftly.Core.PlayerManager.SendChat(
                         Swiftly.Core.Localizer[
                             "match.pause_start",
-                            Game.GetChatPrefix(),
+                            MatchCtx.GetChatPrefix(),
                             teamWhichPaused.FormattedName
                         ]
                     );
-                Game.SendEvent(OnMatchPausedEvent.Create(team: teamWhichPaused, pauseType));
-                Game.SendEvent(OnPauseBeganEvent.Create(team: teamWhichPaused, pauseType));
+                MatchCtx.SendEvent(OnMatchPausedEvent.Create(team: teamWhichPaused, pauseType));
+                MatchCtx.SendEvent(OnPauseBeganEvent.Create(team: teamWhichPaused, pauseType));
                 _teamWhichPaused = teamWhichPaused;
                 _wasPausedType = pauseType;
             }
             else
-                Game.SendEvent(
+                MatchCtx.SendEvent(
                     OnMatchUnpausedEvent.Create(team: _teamWhichPaused, pauseType: _wasPausedType)
                 );
         }
@@ -74,16 +74,16 @@ public partial class LiveState
             {
                 if (Swiftly.Core.EntitySystem.GetGameRules()?.MatchWaitingForResume == true)
                     return;
-                Game.ClearAllTeamUnpauseFlags();
+                MatchCtx.ClearAllTeamUnpauseFlags();
                 Swiftly.Core.PlayerManager.SendChat(
                     Swiftly.Core.Localizer[
                         "match.pause_start",
-                        Game.GetChatPrefix(),
+                        MatchCtx.GetChatPrefix(),
                         playerState.Team.FormattedName
                     ]
                 );
                 Swiftly.Core.Engine.ExecuteCommand("mp_pause_match");
-                Game.SendEvent(
+                MatchCtx.SendEvent(
                     OnMatchPausedEvent.Create(team: playerState.Team, pauseType: "tactical")
                 );
                 return;
@@ -104,7 +104,7 @@ public partial class LiveState
         {
             var askedForUnpause = playerState.Team.IsUnpauseMatch;
             playerState.Team.IsUnpauseMatch = true;
-            if (!Game.AreAllTeamsReadyToUnpause())
+            if (!MatchCtx.AreAllTeamsReadyToUnpause())
             {
                 if (!askedForUnpause)
                     Timers.SetEveryChatInterval(
@@ -113,7 +113,7 @@ public partial class LiveState
                             Swiftly.Core.PlayerManager.SendChat(
                                 Swiftly.Core.Localizer[
                                     "match.pause_unpause1",
-                                    Game.GetChatPrefix(),
+                                    MatchCtx.GetChatPrefix(),
                                     playerState.Team.FormattedName,
                                     playerState.Team.Opposition.FormattedName
                                 ]
@@ -125,7 +125,7 @@ public partial class LiveState
                 Swiftly.Core.PlayerManager.SendChat(
                     Swiftly.Core.Localizer[
                         "match.pause_unpause2",
-                        Game.GetChatPrefix(),
+                        MatchCtx.GetChatPrefix(),
                         playerState.Team.FormattedName
                     ]
                 );
@@ -145,7 +145,7 @@ public partial class LiveState
                 sendToChat: true,
                 message: Swiftly.Core.Localizer[
                     "match.admin_unpause",
-                    Game.GetChatPrefix(true),
+                    MatchCtx.GetChatPrefix(true),
                     player?.Controller.PlayerName ?? "Console"
                 ]
             );

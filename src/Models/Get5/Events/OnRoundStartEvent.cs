@@ -21,8 +21,8 @@ public sealed class OnRoundStartEvent : Get5Event
     public static OnRoundStartEvent Create() =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
-            RoundNumber = Game.GetRoundNumber(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
+            RoundNumber = MatchCtx.GetRoundNumber(),
         };
 }

@@ -3,14 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-using System.Reflection;
 using Match.Get5.Events;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.ProtobufDefinitions;
 
 namespace Match;
 
-public static class Game
+public static class MatchCtx
 {
     public static readonly List<PlayerTeam> Teams = [];
     public static readonly List<Map> Maps = [];
@@ -25,7 +24,7 @@ public static class Game
     public static PlayerTeam? KnifeRoundWinner { get; set; }
     public static MapEndResult? MapEndResult { get; set; } = null;
 
-    static Game()
+    static MatchCtx()
     {
         var team1 = new PlayerTeam(Team.T);
         var team2 = new PlayerTeam(Team.CT);

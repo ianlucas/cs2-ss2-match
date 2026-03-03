@@ -37,10 +37,10 @@ public sealed class OnBombDefusedEvent : Get5Event
     ) =>
         new()
         {
-            MatchId = Game.Id,
-            MapNumber = Game.GetMapIndex(),
-            RoundNumber = Game.GetRoundNumber(),
-            RoundTime = Game.GetRoundTime(),
+            MatchId = MatchCtx.Id,
+            MapNumber = MatchCtx.GetMapIndex(),
+            RoundNumber = MatchCtx.GetRoundNumber(),
+            RoundTime = MatchCtx.GetRoundTime(),
             Player = Get5EventHelpers.ToPlayer(player),
             Site = Get5EventHelpers.ToSite(site),
             BombTimeRemaining = bombTimeRemaining,

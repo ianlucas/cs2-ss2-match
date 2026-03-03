@@ -37,7 +37,7 @@ public partial class LiveState
         _playerDied.Clear();
         _playerKilledOrAssistedOrTradedKill.Clear();
         _playerPlayedRound.Clear();
-        foreach (var player in Game.GetAllPlayers())
+        foreach (var player in MatchCtx.GetAllPlayers())
         {
             _roundKills[player.SteamID] = 0;
             if (player.Handle != null)
@@ -245,7 +245,7 @@ public partial class LiveState
                 }
             }
         }
-        Game.SendEvent(
+        MatchCtx.SendEvent(
             OnPlayerDeathEvent.Create(
                 player: victimState,
                 attackerState,
@@ -273,7 +273,7 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.BombPlants += 1;
-            Game.SendEvent(OnBombPlantedEvent.Create(playerState, site: _lastPlantedBombZone));
+            MatchCtx.SendEvent(OnBombPlantedEvent.Create(playerState, site: _lastPlantedBombZone));
         }
         return HookResult.Continue;
     }
@@ -293,7 +293,7 @@ public partial class LiveState
                 Swiftly.Log($"bombTimeRemaining={bombTimeRemaining} is negative!");
                 bombTimeRemaining = 0;
             }
-            Game.SendEvent(
+            MatchCtx.SendEvent(
                 OnBombDefusedEvent.Create(
                     playerState,
                     site: _lastPlantedBombZone,
@@ -310,7 +310,7 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.MVPs += 1;
-            Game.SendEvent(OnPlayerBecameMVPEvent.Create(playerState, reason: @event.Reason));
+            MatchCtx.SendEvent(OnPlayerBecameMVPEvent.Create(playerState, reason: @event.Reason));
         }
         return HookResult.Continue;
     }
@@ -321,7 +321,7 @@ public partial class LiveState
         if (gameRules == null)
             return HookResult.Continue;
         var winner = (Team)@event.Winner;
-        var winnerTeam = Game.Teams.FirstOrDefault(t => t.CurrentTeam == winner);
+        var winnerTeam = MatchCtx.Teams.FirstOrDefault(t => t.CurrentTeam == winner);
         switch (winnerTeam?.CurrentTeam)
         {
             case Team.T:
@@ -333,7 +333,7 @@ public partial class LiveState
         }
         _statsBackup[gameRules.TotalRoundsPlayed] = [];
         _teamStatsBackup[gameRules.TotalRoundsPlayed] = [];
-        foreach (var team in Game.Teams)
+        foreach (var team in MatchCtx.Teams)
         {
             _teamStatsBackup[gameRules.TotalRoundsPlayed].Add((team, team.Stats.Clone()));
             foreach (var player in team.Players)
@@ -392,8 +392,8 @@ public partial class LiveState
                 _statsBackup[gameRules.TotalRoundsPlayed].Add((player, player.Stats.Clone()));
             }
         }
-        Game.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
-        Game.SendEvent(OnRoundStatsUpdatedEvent.Create());
+        MatchCtx.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
+        MatchCtx.SendEvent(OnRoundStatsUpdatedEvent.Create());
         return HookResult.Continue;
     }
 }

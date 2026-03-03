@@ -29,7 +29,7 @@ public class ActiveMatchState : BaseState
         Swiftly.Log("Match cancelled.");
         _matchCancelled = true;
         Timers.ClearAll();
-        var winners = Game.GetTeamsWithConnectedPlayers();
+        var winners = MatchCtx.GetTeamsWithConnectedPlayers();
         if (winners.Count() == 1)
         {
             var winner = winners.First();
@@ -57,29 +57,32 @@ public class ActiveMatchState : BaseState
     public void OnMapResult(MapResult result = MapResult.None, PlayerTeam? winner = null)
     {
         Swiftly.Log($"Computing map result: {result}");
-        var map = Game.GetMap() ?? new(Swiftly.Core.Engine.GlobalVars.MapName);
-        var stats = Game.Teams.Select(t => t.Players.Select(p => p.Stats).ToList()).ToList();
+        var map = MatchCtx.GetMap() ?? new(Swiftly.Core.Engine.GlobalVars.MapName);
+        var stats = MatchCtx.Teams.Select(t => t.Players.Select(p => p.Stats).ToList()).ToList();
         var demoFilename = Cstv.GetFilename();
-        var scores = Game.Teams.Select(t => t.Score).ToList();
-        var team1 = Game.Teams.First();
+        var scores = MatchCtx.Teams.Select(t => t.Score).ToList();
+        var team1 = MatchCtx.Teams.First();
         var team2 = team1.Opposition;
         map.DemoFilename = demoFilename;
-        map.KnifeRoundWinner = Game.KnifeRoundWinner?.Index;
+        map.KnifeRoundWinner = MatchCtx.KnifeRoundWinner?.Index;
         map.Result = result;
         map.Stats = stats;
         map.Winner = winner;
         map.Scores = scores;
         if (winner != null)
             winner.SeriesScore += 1;
-        var mapCount = Game.GetTotalMapCount();
+        var mapCount = MatchCtx.GetTotalMapCount();
         if (mapCount % 2 == 0)
             mapCount += 1;
         var seriesScoreToWin = (int)Math.Round(mapCount / 2.0, MidpointRounding.AwayFromZero);
         var isSeriesCancelled = result != MapResult.Completed;
         var isSeriesOver =
             isSeriesCancelled
-            || (Game.IsClinchSeries && Game.Teams.Any(t => t.SeriesScore >= seriesScoreToWin))
-            || Game.GetMap() == null;
+            || (
+                MatchCtx.IsClinchSeries
+                && MatchCtx.Teams.Any(t => t.SeriesScore >= seriesScoreToWin)
+            )
+            || MatchCtx.GetMap() == null;
         if (isSeriesOver)
         {
             // If match doesn't end normally, we already decided which side won.
@@ -91,13 +94,13 @@ public class ActiveMatchState : BaseState
                     winner.SeriesScore = 1;
             }
             // Team with most series score wins the series for non clinch series.
-            if (!Game.IsClinchSeries)
+            if (!MatchCtx.IsClinchSeries)
                 winner =
                     team1.SeriesScore > team2.SeriesScore ? team1
                     : team2.SeriesScore > team1.SeriesScore ? team2
                     : null;
         }
-        Game.MapEndResult = new MapEndResult
+        MatchCtx.MapEndResult = new MapEndResult
         {
             Map = map,
             IsSeriesOver = isSeriesOver,
@@ -105,9 +108,9 @@ public class ActiveMatchState : BaseState
         };
         if (Cstv.IsRecording())
         {
-            var filename = Game.GetDemoFilename();
+            var filename = MatchCtx.GetDemoFilename();
             if (filename != null)
-                Game.SendEvent(OnDemoFinishedEvent.Create(filename));
+                MatchCtx.SendEvent(OnDemoFinishedEvent.Create(filename));
         }
         Cstv.Stop();
     }
@@ -117,7 +120,7 @@ public class ActiveMatchState : BaseState
         Timers.ClearAll();
         var result = MapResult.None;
         PlayerTeam? winner = null;
-        foreach (var team in Game.Teams)
+        foreach (var team in MatchCtx.Teams)
         {
             if (team.IsSurrended)
             {
@@ -139,33 +142,33 @@ public class ActiveMatchState : BaseState
 
     public void OnMapEnd()
     {
-        if (Game.MapEndResult == null)
+        if (MatchCtx.MapEndResult == null)
         {
             Swiftly.Log("Map result not found, defaulting to None state.");
-            Game.SetState(new NoneState());
+            MatchCtx.SetState(new NoneState());
             return;
         }
-        var map = Game.MapEndResult.Map;
-        var isSeriesOver = Game.MapEndResult.IsSeriesOver;
-        var winner = Game.MapEndResult.Winner;
-        var maps = (Game.GetTotalMapCount() > 0 ? Game.Maps : [map]).Where(m =>
+        var map = MatchCtx.MapEndResult.Map;
+        var isSeriesOver = MatchCtx.MapEndResult.IsSeriesOver;
+        var winner = MatchCtx.MapEndResult.Winner;
+        var maps = (MatchCtx.GetTotalMapCount() > 0 ? MatchCtx.Maps : [map]).Where(m =>
             m.Result != MapResult.None
         );
         // Even with Get5 Events, we still store results in json for further debugging.
         // @todo Maybe only save if `match_verbose` is enabled in the future.
         IoHelper.WriteJson(
-            Swiftly.Core.GetConfigPath($"{Game.GetMatchFolder()}/results.json"),
+            Swiftly.Core.GetConfigPath($"{MatchCtx.GetMatchFolder()}/results.json"),
             maps
         );
-        Game.SendEvent(OnMapResultEvent.Create(map));
+        MatchCtx.SendEvent(OnMapResultEvent.Create(map));
         if (isSeriesOver)
         {
-            Game.SendEvent(OnSeriesResultEvent.Create(winner, map));
-            Game.Reset();
-            Game.EnforceMatchmakingRestrictions();
+            MatchCtx.SendEvent(OnSeriesResultEvent.Create(winner, map));
+            MatchCtx.Reset();
+            MatchCtx.EnforceMatchmakingRestrictions();
         }
         else
-            Game.MapEndResult = null;
-        Game.SetState(isSeriesOver ? new NoneState() : new ReadyupWarmupState());
+            MatchCtx.MapEndResult = null;
+        MatchCtx.SetState(isSeriesOver ? new NoneState() : new ReadyupWarmupState());
     }
 }

@@ -16,5 +16,5 @@ public sealed class OnKnifeRoundStartedEvent : Get5Event
     public int MapNumber { get; init; }
 
     public static OnKnifeRoundStartedEvent Create() =>
-        new() { MatchId = Game.Id, MapNumber = Game.GetMapIndex() };
+        new() { MatchId = MatchCtx.Id, MapNumber = MatchCtx.GetMapIndex() };
 }
