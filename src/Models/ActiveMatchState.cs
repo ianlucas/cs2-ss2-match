@@ -154,9 +154,8 @@ public class ActiveMatchState : BaseState
         var maps = (MatchCtx.GetTotalMapCount() > 0 ? MatchCtx.Maps : [map]).Where(m =>
             m.Result != MapResult.None
         );
-        // Even with Get5 Events, we still store results in json for further debugging.
-        // @todo Maybe only save if `match_verbose` is enabled in the future.
-        IoHelper.WriteJson(MatchCtx.GetMatchPath("results.json"), maps);
+        if (ConVars.IsResultStore.Value)
+            IoHelper.WriteJson(MatchCtx.GetMatchPath("results.json"), maps);
         MatchCtx.SendEvent(OnMapResultEvent.Create(map));
         if (isSeriesOver)
         {

@@ -67,6 +67,9 @@ match_surrender_timeout 30
 match_event_store false
     Store all emitted events to disk during a match.
 
+match_result_store true
+    Store map results to disk after each map.
+
 get5_remote_log_url ""
     URL endpoint for sending match events.
 
