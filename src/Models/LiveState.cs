@@ -292,53 +292,15 @@ public partial class LiveState : ActiveMatchState
                 victimDamageReport.To.Value += damage;
                 victimDamageReport.To.Hits += 1;
             }
-            if (ItemHelper.IsUtilityDesignerName(weaponDesignerName))
-            {
-                attackerState.Stats.UtilDamage += damage;
-                var victims = _utilityVictims.GetValueOrDefault(inflictor.Index, []);
-                var victim = victims.GetValueOrDefault(victimState.SteamID, new(victimState));
-                if (victimController.GetHealth() <= 0)
-                    victim.Killed = true;
-                victim.Damage += damage;
-                victims[victimState.SteamID] = victim;
-                _utilityVictims[inflictor.Index] = victims;
-            }
-            attackerState.Stats.Damage += damage;
-            var weaponStats = attackerState.Stats.GetWeaponStats(
-                ItemHelper.NormalizeDesignerName(weaponDesignerName, null)
+            Stats_OnTakeDamage_Alive(
+                victimState,
+                attackerState,
+                victimController,
+                inflictor.Index,
+                weaponDesignerName,
+                damage,
+                info->ActualHitGroup
             );
-            weaponStats.Hits += 1;
-            weaponStats.Damage += damage;
-            switch (info->ActualHitGroup)
-            {
-                case HitGroup_t.HITGROUP_HEAD:
-                    weaponStats.HeadHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_NECK:
-                    weaponStats.NeckHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_CHEST:
-                    weaponStats.ChestHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_STOMACH:
-                    weaponStats.StomachHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_LEFTARM:
-                    weaponStats.LeftArmHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_RIGHTARM:
-                    weaponStats.RightArmHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_LEFTLEG:
-                    weaponStats.LeftLegHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_RIGHTLEG:
-                    weaponStats.RightLegHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_GEAR:
-                    weaponStats.GearHits += 1;
-                    break;
-            }
             return ret;
         };
 
