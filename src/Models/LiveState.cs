@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using System.Runtime.CompilerServices;
 using Match.Get5.Events;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
+using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace Match;
@@ -23,9 +25,8 @@ public partial class LiveState : ActiveMatchState
     private uint _lastThrownSmokegrenade = 0;
     private long _bombPlantedAt = 0;
     private int? _lastPlantedBombZone = null;
-    private readonly Dictionary<ulong, int> _playerHealth = [];
-    private readonly Dictionary<uint, UtilityVictim> _utilityVictims = [];
-    private readonly Dictionary<uint, ThrownMolotov> _thrownMolotovs = [];
+    private readonly Dictionary<uint, ThrownUtility> _thrownUtilities = [];
+    private readonly List<CancellationTokenSource> _utilityDetonateTimers = [];
 
     // smokegrenade_detonate -> inferno_extinguish -> inferno_expire (always called)
     private readonly Dictionary<uint, bool> _didSmokeExtinguishMolotov = [];
@@ -52,8 +53,7 @@ public partial class LiveState : ActiveMatchState
         HookGameEvent<EventInfernoExpire>(OnInfernoExpire);
         HookGameEvent<EventFlashbangDetonate>(OnFlashbangDetonate);
         HookGameEvent<EventPlayerBlind>(Stats_OnPlayerBlind);
-        HookCoreEvent<EventDelegates.OnEntityTakeDamage>(OnEntityTakeDamage);
-        HookGameEvent<EventPlayerHurt>(OnPlayerHurt);
+        AddHook(Natives.CCSPlayerPawn_OnTakeDamage_Alive, OnTakeDamage_Alive);
         HookGameEvent<EventPlayerDeath>(Stats_OnPlayerDeath);
         HookGameEvent<EventBombPlanted>(Stats_OnBombPlanted);
         HookGameEvent<EventBombDefused>(Stats_OnBombDefused);
@@ -103,11 +103,13 @@ public partial class LiveState : ActiveMatchState
         Round += 1;
         RoundStartedAt = TimeHelper.Now();
         _canSurrender = true;
-        _playerHealth.Clear();
-        foreach (var molotovEntityId in _thrownMolotovs.Keys)
-            SendOnMolotovDetonatedEvent(molotovEntityId);
+        foreach (var cts in _utilityDetonateTimers)
+            cts.Cancel();
+        _utilityDetonateTimers.Clear();
+        foreach (var entityId in _thrownUtilities.Keys.ToList())
+            SendOnUtilityDetonatedEvent(entityId);
+        _thrownUtilities.Clear();
         _lastThrownSmokegrenade = 0;
-        _utilityVictims.Clear();
         _didSmokeExtinguishMolotov.Clear();
         MatchCtx.SendEvent(OnRoundStartEvent.Create());
         return HookResult.Continue;
@@ -135,24 +137,14 @@ public partial class LiveState : ActiveMatchState
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
-            var roundNumber = MatchCtx.GetRoundNumber();
-            var roundTime = MatchCtx.GetRoundTime();
-            Swiftly.Core.Scheduler.DelayBySeconds(
-                0.1f,
-                () =>
-                {
-                    var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-                    MatchCtx.SendEvent(
-                        OnHEGrenadeDetonatedEvent.Create(
-                            roundNumber,
-                            roundTime,
-                            playerState,
-                            weapon: "weapon_hegrenade",
-                            victims
-                        )
-                    );
-                    _utilityVictims.Remove(entityId);
-                }
+            _thrownUtilities[entityId] = new(
+                MatchCtx.GetRoundNumber(),
+                MatchCtx.GetRoundTime(),
+                playerState,
+                "weapon_hegrenade"
+            );
+            _utilityDetonateTimers.Add(
+                Swiftly.Core.Scheduler.Delay(4, () => SendOnUtilityDetonatedEvent(entityId))
             );
         }
         return HookResult.Continue;
@@ -164,23 +156,15 @@ public partial class LiveState : ActiveMatchState
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
-            var roundNumber = MatchCtx.GetRoundNumber();
-            var roundTime = MatchCtx.GetRoundTime();
             _lastThrownSmokegrenade = entityId;
-            Swiftly.Core.Scheduler.DelayBySeconds(
-                0.1f,
-                () =>
-                {
-                    MatchCtx.SendEvent(
-                        OnSmokeGrenadeDetonatedEvent.Create(
-                            roundNumber,
-                            roundTime,
-                            playerState,
-                            weapon: "weapon_smokegrenade",
-                            didExtinguishMolotovs: _didSmokeExtinguishMolotov.ContainsKey(entityId)
-                        )
-                    );
-                }
+            _thrownUtilities[entityId] = new(
+                MatchCtx.GetRoundNumber(),
+                MatchCtx.GetRoundTime(),
+                playerState,
+                "weapon_smokegrenade"
+            );
+            _utilityDetonateTimers.Add(
+                Swiftly.Core.Scheduler.Delay(32, () => SendOnUtilityDetonatedEvent(entityId))
             );
         }
         return HookResult.Continue;
@@ -193,10 +177,11 @@ public partial class LiveState : ActiveMatchState
         var controller = pawn?.Controller.Value?.As<CCSPlayerController>();
         var playerState = controller?.GetState();
         if (entity != null && playerState != null)
-            _thrownMolotovs[entity.Index] = new(
+            _thrownUtilities[entity.Index] = new(
                 MatchCtx.GetRoundNumber(),
                 MatchCtx.GetRoundTime(),
-                playerState
+                playerState,
+                "weapon_molotov"
             );
         return HookResult.Continue;
     }
@@ -209,7 +194,7 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnInfernoExpire(EventInfernoExpire @event)
     {
-        SendOnMolotovDetonatedEvent((uint)@event.EntityID);
+        SendOnUtilityDetonatedEvent((uint)@event.EntityID);
         return HookResult.Continue;
     }
 
@@ -219,42 +204,59 @@ public partial class LiveState : ActiveMatchState
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
-            var roundNumber = MatchCtx.GetRoundNumber();
-            var roundTime = MatchCtx.GetRoundTime();
-            Swiftly.Core.Scheduler.DelayBySeconds(
-                0.1f,
-                () =>
-                {
-                    var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-                    MatchCtx.SendEvent(
-                        OnFlashbangDetonatedEvent.Create(
-                            roundNumber,
-                            roundTime,
-                            playerState,
-                            weapon: "weapon_flashbang",
-                            victims
-                        )
-                    );
-                    _utilityVictims.Remove(entityId);
-                }
+            _thrownUtilities[entityId] = new(
+                MatchCtx.GetRoundNumber(),
+                MatchCtx.GetRoundTime(),
+                playerState,
+                "weapon_flashbang"
+            );
+            _utilityDetonateTimers.Add(
+                Swiftly.Core.Scheduler.Delay(4, () => SendOnUtilityDetonatedEvent(entityId))
             );
         }
         return HookResult.Continue;
     }
 
-    public HookResult OnPlayerHurt(EventPlayerHurt @event)
-    {
-        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victimState = @event.UserIdPlayer?.GetState();
-        if (attackerState != null && victimState != null)
+    public unsafe Natives.CCSPlayerPawn_OnTakeDamage_AliveDelegate OnTakeDamage_Alive(
+        Func<Natives.CCSPlayerPawn_OnTakeDamage_AliveDelegate> next
+    ) =>
+        (a1, a2) =>
         {
-            var damage = Math.Max(
-                0,
-                Math.Min(
-                    @event.DmgHealth,
-                    _playerHealth.TryGetValue(victimState.SteamID, out var health) ? health : 100
-                )
-            );
+            var ret = next()(a1, a2);
+            var victimPawn = Swiftly.Core.Memory.ToSchemaClass<CCSPlayerPawn>(a1);
+            ref CTakeDamageResult result = ref Unsafe.AsRef<CTakeDamageResult>((void*)a2);
+            var info = result.OriginatingInfo;
+            var attacker = info->Attacker;
+            if (attacker.Value?.DesignerName != "player")
+                return ret;
+            var victimController = victimPawn.OriginalController.Value?.As<CCSPlayerController>();
+            var victimState = victimController?.GetState();
+            var attackerState = attacker
+                .Value.As<CCSPlayerPawn>()
+                .OriginalController.Value?.As<CCSPlayerController>()
+                .GetState();
+            if (victimController == null || victimState == null || attackerState == null)
+                return ret;
+            var inflictor = info->Inflictor.Value?.As<CBaseEntity>();
+            var weaponDesignerName = info->GetInflictorDesignerName();
+            if (inflictor == null || weaponDesignerName == null || weaponDesignerName == "world")
+                return ret;
+            var damage = result.HealthLost;
+            var isFriendlyFire = victimState.Team == attackerState.Team;
+            if (
+                ItemHelper.IsUtilityDesignerName(weaponDesignerName)
+                && _thrownUtilities.TryGetValue(inflictor.Index, out var utility)
+            )
+            {
+                var victim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
+                if (victimController.GetHealth() <= 0)
+                    victim.Killed = true;
+                victim.Damage += damage;
+                victim.FriendlyFire = isFriendlyFire;
+                utility[victimState.SteamID] = victim;
+            }
+            if (isFriendlyFire)
+                return ret;
             if (
                 victimState.DamageReport.TryGetValue(
                     attackerState.SteamID,
@@ -275,37 +277,14 @@ public partial class LiveState : ActiveMatchState
                 victimDamageReport.To.Value += damage;
                 victimDamageReport.To.Hits += 1;
             }
-            Stats_OnPlayerHurt(@event, damage);
-            _playerHealth[victimState.SteamID] = Math.Max(0, (int)@event.Health);
-        }
-        return HookResult.Continue;
-    }
-
-    public void OnEntityTakeDamage(IOnEntityTakeDamageEvent @event)
-    {
-        var entity = @event.Entity;
-        if (entity.DesignerName != "player")
-            return;
-        var pawn = entity.As<CCSPlayerPawn>();
-        var controller = pawn.OriginalController.Value;
-        if (controller?.SteamID == 0)
-            return;
-        var info = @event.Info;
-        var inflictor = info.Inflictor.Value;
-        if (inflictor == null || !ItemHelper.IsUtilityDesignerName(inflictor.DesignerName))
-            return;
-        var playerState = controller?.GetState();
-        if (playerState != null && controller != null)
-        {
-            var victims = _utilityVictims.TryGetValue(inflictor.Index, out var v) ? v : [];
-            var victim = victims.TryGetValue(playerState.SteamID, out var p) ? p : new(playerState);
-            if (controller.GetHealth() <= 0)
-                victim.Killed = true;
-            victim.Damage += (int)info.Damage;
-            victims[playerState.SteamID] = victim;
-            _utilityVictims[inflictor.Index] = victims;
-        }
-    }
+            Stats_OnTakeDamage_Alive(
+                attackerState,
+                weaponDesignerName,
+                damage,
+                info->ActualHitGroup
+            );
+            return ret;
+        };
 
     public HookResult OnBombExploded(EventBombExploded _)
     {
@@ -351,22 +330,33 @@ public partial class LiveState : ActiveMatchState
         return HookResult.Continue;
     }
 
-    public void SendOnMolotovDetonatedEvent(uint entityId)
+    public void SendOnUtilityDetonatedEvent(uint entityId)
     {
-        if (_thrownMolotovs.TryGetValue(entityId, out var thrown))
+        if (!_thrownUtilities.TryGetValue(entityId, out var thrown))
+            return;
+        switch (thrown.Weapon)
         {
-            var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-            MatchCtx.SendEvent(
-                OnMolotovDetonatedEvent.Create(
-                    thrown.RoundNumber,
-                    thrown.RoundTime,
-                    thrown.Player,
-                    "weapon_molotov",
-                    victims
-                )
-            );
-            _utilityVictims.Remove(entityId);
-            _thrownMolotovs.Remove(entityId);
+            case "weapon_hegrenade":
+                MatchCtx.SendEvent(OnHEGrenadeDetonatedEvent.Create(thrown));
+                break;
+            case "weapon_flashbang":
+                MatchCtx.SendEvent(OnFlashbangDetonatedEvent.Create(thrown));
+                break;
+            case "weapon_molotov":
+                MatchCtx.SendEvent(OnMolotovDetonatedEvent.Create(thrown));
+                break;
+            case "weapon_smokegrenade":
+                MatchCtx.SendEvent(
+                    OnSmokeGrenadeDetonatedEvent.Create(
+                        thrown.RoundNumber,
+                        thrown.RoundTime,
+                        thrown.Player,
+                        weapon: thrown.Weapon,
+                        didExtinguishMolotovs: _didSmokeExtinguishMolotov.ContainsKey(entityId)
+                    )
+                );
+                break;
         }
+        _thrownUtilities.Remove(entityId);
     }
 }

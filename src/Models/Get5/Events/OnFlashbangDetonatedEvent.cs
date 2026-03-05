@@ -30,29 +30,25 @@ public sealed class OnFlashbangDetonatedEvent : Get5Event
     [JsonPropertyName("victims")]
     public List<object> Victims { get; init; } = [];
 
-    public static OnFlashbangDetonatedEvent Create(
-        int roundNumber,
-        long roundTime,
-        PlayerState player,
-        string weapon,
-        UtilityVictim victims
-    ) =>
+    public static OnFlashbangDetonatedEvent Create(ThrownUtility thrown) =>
         new()
         {
             MatchId = MatchCtx.Id,
             MapNumber = MatchCtx.GetMapIndex(),
-            RoundNumber = roundNumber,
-            RoundTime = roundTime,
-            Player = Get5EventHelpers.ToPlayer(player),
-            Weapon = Get5EventHelpers.ToWeapon(weapon),
-            Victims = victims
-                .Values.Select(victim => new
-                {
-                    player = Get5EventHelpers.ToPlayer(victim.Player),
-                    friendly_fire = victim.FriendlyFire,
-                    blind_duration = victim.BindDuration,
-                })
-                .Cast<object>()
-                .ToList(),
+            RoundNumber = thrown.RoundNumber,
+            RoundTime = thrown.RoundTime,
+            Player = Get5EventHelpers.ToPlayer(thrown.Player),
+            Weapon = Get5EventHelpers.ToWeapon(thrown.Weapon),
+            Victims =
+            [
+                .. thrown
+                    .Values.Select(victim => new
+                    {
+                        player = Get5EventHelpers.ToPlayer(victim.Player),
+                        friendly_fire = victim.FriendlyFire,
+                        blind_duration = victim.BlindDuration,
+                    })
+                    .Cast<object>(),
+            ],
         };
 }

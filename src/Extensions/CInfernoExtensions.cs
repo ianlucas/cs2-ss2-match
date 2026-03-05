@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using System.Runtime.InteropServices;
+using SwiftlyS2.Shared.SchemaDefinitions;
+
 namespace Match;
 
-public class UtilityDamage(
-    PlayerState player,
-    bool killed = false,
-    int damage = 0,
-    bool friendlyFire = false,
-    float blindDuration = 0f
-)
+public static class CInfernoExtensions
 {
-    public PlayerState Player = player;
-    public bool Killed = killed;
-    public int Damage = damage;
-    public bool FriendlyFire = friendlyFire;
-    public float BlindDuration = blindDuration;
+    extension(CInferno self)
+    {
+        public ushort GetSourceWeaponDefIndex()
+        {
+            return (ushort)
+                Marshal.ReadInt16(self.Address + Natives.CInferno_m_nSourceWeaponDefIndex);
+        }
+    }
 }

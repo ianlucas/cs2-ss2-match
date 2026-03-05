@@ -5,9 +5,9 @@
 
 namespace Match;
 
-public class ThrownMolotov(int roundNumber, long roundTime, PlayerState player)
+public static partial class Natives
 {
-    public int RoundNumber = roundNumber;
-    public long RoundTime = roundTime;
-    public PlayerState Player = player;
+    public static readonly int CInferno_m_nSourceWeaponDefIndex = GetOffset(
+        "CInferno::m_nSourceWeaponDefIndex"
+    );
 }

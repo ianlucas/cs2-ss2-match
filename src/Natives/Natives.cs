@@ -35,4 +35,9 @@ public static partial class Natives
             ?? throw new InvalidOperationException($"Failed to locate {vtableName} vtable.");
         return Swiftly.Core.Memory.GetUnmanagedFunctionByVTable<TDelegate>(vtable, offset);
     }
+
+    private static int GetOffset(string offsetName)
+    {
+        return Swiftly.Core.GameData.GetOffset(offsetName);
+    }
 }
