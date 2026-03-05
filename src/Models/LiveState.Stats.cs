@@ -7,7 +7,6 @@ using Match.Get5.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
-using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace Match;
 
@@ -89,56 +88,6 @@ public partial class LiveState
             _utilityVictims[entityId] = victims;
         }
         return HookResult.Continue;
-    }
-
-    public void Stats_OnPlayerHurt(EventPlayerHurt @event, int damage)
-    {
-        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
-        var victimState = @event.UserIdPlayer?.GetState();
-        if (attackerState != null && victimState != null && attackerState != victimState)
-        {
-            attackerState.Stats.Damage += damage;
-            if (ItemHelper.IsUtilityDesignerName(@event.Weapon))
-                attackerState.Stats.UtilDamage += damage;
-        }
-        if (attackerState != null && attackerState != victimState && @event.Weapon != "world")
-        {
-            var weaponStats = attackerState.Stats.GetWeaponStats(
-                ItemHelper.NormalizeDesignerName(@event.Weapon, attackerState.Handle?.Controller)
-            );
-            weaponStats.Hits += 1;
-            weaponStats.Damage += damage;
-            switch ((HitGroup_t)@event.HitGroup)
-            {
-                case HitGroup_t.HITGROUP_HEAD:
-                    weaponStats.HeadHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_NECK:
-                    weaponStats.NeckHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_CHEST:
-                    weaponStats.ChestHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_STOMACH:
-                    weaponStats.StomachHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_LEFTARM:
-                    weaponStats.LeftArmHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_RIGHTARM:
-                    weaponStats.RightArmHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_LEFTLEG:
-                    weaponStats.LeftLegHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_RIGHTLEG:
-                    weaponStats.RightLegHits += 1;
-                    break;
-                case HitGroup_t.HITGROUP_GEAR:
-                    weaponStats.GearHits += 1;
-                    break;
-            }
-        }
     }
 
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
