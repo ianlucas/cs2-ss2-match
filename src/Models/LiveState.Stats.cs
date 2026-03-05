@@ -79,14 +79,13 @@ public partial class LiveState
                     attackerState.Stats.EnemiesFlashed += 1;
 
             var entityId = (uint)@event.EntityID;
-            var victims = _utilityVictims.TryGetValue(entityId, out var v) ? v : [];
-            var theVictim = victims.TryGetValue(victimState.SteamID, out var p)
-                ? p
-                : new(victimState);
-            theVictim.FriendlyFire = friendlyFire;
-            theVictim.BlindDuration = @event.BlindDuration;
-            victims[victimState.SteamID] = theVictim;
-            _utilityVictims[entityId] = victims;
+            if (_thrownUtilities.TryGetValue(entityId, out var utility))
+            {
+                var theVictim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
+                theVictim.FriendlyFire = friendlyFire;
+                theVictim.BlindDuration = @event.BlindDuration;
+                utility[victimState.SteamID] = theVictim;
+            }
         }
         return HookResult.Continue;
     }
@@ -266,26 +265,14 @@ public partial class LiveState
     }
 
     public void Stats_OnTakeDamage_Alive(
-        PlayerState victimState,
         PlayerState attackerState,
-        CCSPlayerController victimController,
-        uint inflictorIndex,
         string weaponDesignerName,
         int damage,
         HitGroup_t hitGroup
     )
     {
         if (ItemHelper.IsUtilityDesignerName(weaponDesignerName))
-        {
             attackerState.Stats.UtilDamage += damage;
-            var victims = _utilityVictims.GetValueOrDefault(inflictorIndex, []);
-            var victim = victims.GetValueOrDefault(victimState.SteamID, new(victimState));
-            if (victimController.GetHealth() <= 0)
-                victim.Killed = true;
-            victim.Damage += damage;
-            victims[victimState.SteamID] = victim;
-            _utilityVictims[inflictorIndex] = victims;
-        }
         attackerState.Stats.Damage += damage;
         var weaponStats = attackerState.Stats.GetWeaponStats(
             ItemHelper.NormalizeDesignerName(weaponDesignerName, null)

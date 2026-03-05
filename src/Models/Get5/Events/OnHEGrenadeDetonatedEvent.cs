@@ -36,37 +36,27 @@ public sealed class OnHEGrenadeDetonatedEvent : Get5Event
     [JsonPropertyName("damage_friendlies")]
     public int DamageFriendlies { get; init; }
 
-    public static OnHEGrenadeDetonatedEvent Create(
-        int roundNumber,
-        long roundTime,
-        PlayerState player,
-        string weapon,
-        UtilityVictim victims
-    ) =>
+    public static OnHEGrenadeDetonatedEvent Create(ThrownUtility thrown) =>
         new()
         {
             MatchId = MatchCtx.Id,
             MapNumber = MatchCtx.GetMapIndex(),
-            RoundNumber = roundNumber,
-            RoundTime = roundTime,
-            Player = Get5EventHelpers.ToPlayer(player),
-            Weapon = Get5EventHelpers.ToWeapon(weapon),
-            Victims = victims
-                .Values.Select(victim => new
-                {
-                    player = Get5EventHelpers.ToPlayer(victim.Player),
-                    killed = victim.Killed,
-                    damage = victim.Damage,
-                })
-                .Cast<object>()
-                .ToList(),
-            DamageEnemies = victims
-                .Values.Where(v => v.Player.Team != player.Team)
-                .Select(v => v.Damage)
-                .Sum(),
-            DamageFriendlies = victims
-                .Values.Where(v => v.Player.Team == player.Team)
-                .Select(v => v.Damage)
-                .Sum(),
+            RoundNumber = thrown.RoundNumber,
+            RoundTime = thrown.RoundTime,
+            Player = Get5EventHelpers.ToPlayer(thrown.Player),
+            Weapon = Get5EventHelpers.ToWeapon(thrown.Weapon),
+            Victims =
+            [
+                .. thrown
+                    .Values.Select(victim => new
+                    {
+                        player = Get5EventHelpers.ToPlayer(victim.Player),
+                        killed = victim.Killed,
+                        damage = victim.Damage,
+                    })
+                    .Cast<object>(),
+            ],
+            DamageEnemies = thrown.Values.Where(v => !v.FriendlyFire).Sum(v => v.Damage),
+            DamageFriendlies = thrown.Values.Where(v => v.FriendlyFire).Sum(v => v.Damage),
         };
 }

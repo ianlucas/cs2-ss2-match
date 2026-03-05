@@ -60,7 +60,7 @@ public partial class LiveState
                 }
                 // Because we increment at OnRoundStart.
                 Round = roundAsInt - 1;
-                _thrownMolotovs.Clear();
+                _thrownUtilities.Clear();
                 MatchCtx.SendEvent(OnBackupRestoreEvent.Create(filename));
                 Swiftly.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file {filename}");
             }
