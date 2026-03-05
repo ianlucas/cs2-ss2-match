@@ -227,7 +227,6 @@ public partial class LiveState : ActiveMatchState
             ref CTakeDamageResult result = ref Unsafe.AsRef<CTakeDamageResult>((void*)a2);
             var info = result.OriginatingInfo;
             var attacker = info->Attacker;
-            Swiftly.Log($"OnTakeDamage -> {info->GetInflictorDesignerName()}");
             if (attacker.Value?.DesignerName != "player")
                 return ret;
             var victimController = victimPawn.OriginalController.Value?.As<CCSPlayerController>();
