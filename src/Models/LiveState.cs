@@ -144,10 +144,7 @@ public partial class LiveState : ActiveMatchState
                 "weapon_hegrenade"
             );
             _utilityDetonateTimers.Add(
-                Swiftly.Core.Scheduler.DelayBySeconds(
-                    0.1f,
-                    () => SendOnUtilityDetonatedEvent(entityId)
-                )
+                Swiftly.Core.Scheduler.Delay(4, () => SendOnUtilityDetonatedEvent(entityId))
             );
         }
         return HookResult.Continue;
@@ -162,8 +159,8 @@ public partial class LiveState : ActiveMatchState
             var roundNumber = MatchCtx.GetRoundNumber();
             var roundTime = MatchCtx.GetRoundTime();
             _lastThrownSmokegrenade = entityId;
-            Swiftly.Core.Scheduler.DelayBySeconds(
-                0.1f,
+            Swiftly.Core.Scheduler.Delay(
+                32,
                 () =>
                 {
                     MatchCtx.SendEvent(
@@ -222,10 +219,7 @@ public partial class LiveState : ActiveMatchState
                 "weapon_flashbang"
             );
             _utilityDetonateTimers.Add(
-                Swiftly.Core.Scheduler.DelayBySeconds(
-                    0.1f,
-                    () => SendOnUtilityDetonatedEvent(entityId)
-                )
+                Swiftly.Core.Scheduler.Delay(4, () => SendOnUtilityDetonatedEvent(entityId))
             );
         }
         return HookResult.Continue;
