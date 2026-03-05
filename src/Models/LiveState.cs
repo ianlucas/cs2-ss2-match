@@ -156,23 +156,15 @@ public partial class LiveState : ActiveMatchState
         if (playerState != null)
         {
             var entityId = (uint)@event.EntityID;
-            var roundNumber = MatchCtx.GetRoundNumber();
-            var roundTime = MatchCtx.GetRoundTime();
             _lastThrownSmokegrenade = entityId;
-            Swiftly.Core.Scheduler.Delay(
-                32,
-                () =>
-                {
-                    MatchCtx.SendEvent(
-                        OnSmokeGrenadeDetonatedEvent.Create(
-                            roundNumber,
-                            roundTime,
-                            playerState,
-                            weapon: "weapon_smokegrenade",
-                            didExtinguishMolotovs: _didSmokeExtinguishMolotov.ContainsKey(entityId)
-                        )
-                    );
-                }
+            _thrownUtilities[entityId] = new(
+                MatchCtx.GetRoundNumber(),
+                MatchCtx.GetRoundTime(),
+                playerState,
+                "weapon_smokegrenade"
+            );
+            _utilityDetonateTimers.Add(
+                Swiftly.Core.Scheduler.Delay(32, () => SendOnUtilityDetonatedEvent(entityId))
             );
         }
         return HookResult.Continue;
@@ -353,6 +345,17 @@ public partial class LiveState : ActiveMatchState
                 break;
             case "weapon_molotov":
                 MatchCtx.SendEvent(OnMolotovDetonatedEvent.Create(thrown));
+                break;
+            case "weapon_smokegrenade":
+                MatchCtx.SendEvent(
+                    OnSmokeGrenadeDetonatedEvent.Create(
+                        thrown.RoundNumber,
+                        thrown.RoundTime,
+                        thrown.Player,
+                        weapon: thrown.Weapon,
+                        didExtinguishMolotovs: _didSmokeExtinguishMolotov.ContainsKey(entityId)
+                    )
+                );
                 break;
         }
         _thrownUtilities.Remove(entityId);
