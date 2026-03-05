@@ -84,7 +84,7 @@ public partial class LiveState
                 ? p
                 : new(victimState);
             theVictim.FriendlyFire = friendlyFire;
-            theVictim.BindDuration = @event.BlindDuration;
+            theVictim.BlindDuration = @event.BlindDuration;
             victims[victimState.SteamID] = theVictim;
             _utilityVictims[entityId] = victims;
         }

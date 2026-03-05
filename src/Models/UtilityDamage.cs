@@ -17,5 +17,5 @@ public class UtilityDamage(
     public bool Killed = killed;
     public int Damage = damage;
     public bool FriendlyFire = friendlyFire;
-    public float BindDuration = blindDuration;
+    public float BlindDuration = blindDuration;
 }

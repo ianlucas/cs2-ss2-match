@@ -50,7 +50,7 @@ public sealed class OnFlashbangDetonatedEvent : Get5Event
                 {
                     player = Get5EventHelpers.ToPlayer(victim.Player),
                     friendly_fire = victim.FriendlyFire,
-                    blind_duration = victim.BindDuration,
+                    blind_duration = victim.BlindDuration,
                 })
                 .Cast<object>()
                 .ToList(),
