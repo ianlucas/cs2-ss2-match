@@ -223,66 +223,78 @@ public partial class LiveState : ActiveMatchState
         (a1, a2) =>
         {
             var ret = next()(a1, a2);
-            var victimPawn = Swiftly.Core.Memory.ToSchemaClass<CCSPlayerPawn>(a1);
-            ref CTakeDamageResult result = ref Unsafe.AsRef<CTakeDamageResult>((void*)a2);
-            var info = result.OriginatingInfo;
-            var attacker = info->Attacker;
-            if (attacker.Value?.DesignerName != "player")
-                return ret;
-            var victimController = victimPawn.OriginalController.Value?.As<CCSPlayerController>();
-            var victimState = victimController?.GetState();
-            var attackerState = attacker
-                .Value.As<CCSPlayerPawn>()
-                .OriginalController.Value?.As<CCSPlayerController>()
-                .GetState();
-            if (victimController == null || victimState == null || attackerState == null)
-                return ret;
-            var inflictor = info->Inflictor.Value?.As<CBaseEntity>();
-            var weaponDesignerName = info->GetInflictorDesignerName();
-            if (inflictor == null || weaponDesignerName == null || weaponDesignerName == "world")
-                return ret;
-            var damage = result.HealthLost;
-            var isFriendlyFire = victimState.Team == attackerState.Team;
-            if (
-                ItemHelper.IsUtilityDesignerName(weaponDesignerName)
-                && _thrownUtilities.TryGetValue(inflictor.Index, out var utility)
-            )
+            try
             {
-                var victim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
-                if (victimController.GetHealth() <= 0)
-                    victim.Killed = true;
-                victim.Damage += damage;
-                victim.FriendlyFire = isFriendlyFire;
-                utility[victimState.SteamID] = victim;
-            }
-            if (isFriendlyFire)
-                return ret;
-            if (
-                victimState.DamageReport.TryGetValue(
-                    attackerState.SteamID,
-                    out var attackerDamageReport
+                var victimPawn = Swiftly.Core.Memory.ToSchemaClass<CCSPlayerPawn>(a1);
+                ref CTakeDamageResult result = ref Unsafe.AsRef<CTakeDamageResult>((void*)a2);
+                var info = result.OriginatingInfo;
+                var attacker = info->Attacker;
+                if (attacker.Value?.DesignerName != "player")
+                    return ret;
+                var victimController =
+                    victimPawn.OriginalController.Value?.As<CCSPlayerController>();
+                var victimState = victimController?.GetState();
+                var attackerPawn = attacker.Value?.As<CCSPlayerPawn>();
+                var attackerController =
+                    attackerPawn?.OriginalController.Value?.As<CCSPlayerController>();
+                var attackerState = attackerController?.GetState();
+                if (victimController == null || victimState == null || attackerState == null)
+                    return ret;
+                var inflictor = info->Inflictor.Value?.As<CBaseEntity>();
+                var weaponDesignerName = info->GetInflictorDesignerName();
+                if (
+                    inflictor == null
+                    || weaponDesignerName == null
+                    || weaponDesignerName == "world"
                 )
-            )
-            {
-                attackerDamageReport.From.Value += damage;
-                attackerDamageReport.From.Hits += 1;
-            }
-            if (
-                attackerState.DamageReport.TryGetValue(
-                    victimState.SteamID,
-                    out var victimDamageReport
+                    return ret;
+                var damage = result.HealthLost;
+                var isFriendlyFire = victimState.Team == attackerState.Team;
+                if (
+                    ItemHelper.IsUtilityDesignerName(weaponDesignerName)
+                    && _thrownUtilities.TryGetValue(inflictor.Index, out var utility)
                 )
-            )
-            {
-                victimDamageReport.To.Value += damage;
-                victimDamageReport.To.Hits += 1;
+                {
+                    var victim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
+                    if (victimController.GetHealth() <= 0)
+                        victim.Killed = true;
+                    victim.Damage += damage;
+                    victim.FriendlyFire = isFriendlyFire;
+                    utility[victimState.SteamID] = victim;
+                }
+                if (isFriendlyFire)
+                    return ret;
+                if (
+                    victimState.DamageReport.TryGetValue(
+                        attackerState.SteamID,
+                        out var attackerDamageReport
+                    )
+                )
+                {
+                    attackerDamageReport.From.Value += damage;
+                    attackerDamageReport.From.Hits += 1;
+                }
+                if (
+                    attackerState.DamageReport.TryGetValue(
+                        victimState.SteamID,
+                        out var victimDamageReport
+                    )
+                )
+                {
+                    victimDamageReport.To.Value += damage;
+                    victimDamageReport.To.Hits += 1;
+                }
+                Stats_OnTakeDamage_Alive(
+                    attackerState,
+                    weaponDesignerName,
+                    damage,
+                    info->ActualHitGroup
+                );
             }
-            Stats_OnTakeDamage_Alive(
-                attackerState,
-                weaponDesignerName,
-                damage,
-                info->ActualHitGroup
-            );
+            catch (Exception ex)
+            {
+                Swiftly.Log(ex.ToString());
+            }
             return ret;
         };
 
