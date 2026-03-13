@@ -226,6 +226,8 @@ public partial class LiveState : ActiveMatchState
             try
             {
                 var victimPawn = Swiftly.Core.Memory.ToSchemaClass<CCSPlayerPawn>(a1);
+                if (victimPawn.DesignerName != "player")
+                    return ret;
                 ref CTakeDamageResult result = ref Unsafe.AsRef<CTakeDamageResult>((void*)a2);
                 var info = result.OriginatingInfo;
                 var attacker = info->Attacker;
