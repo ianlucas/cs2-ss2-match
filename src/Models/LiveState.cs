@@ -247,7 +247,7 @@ public partial class LiveState : ActiveMatchState
                 if (
                     inflictor == null
                     || weaponDesignerName == null
-                    || weaponDesignerName == "world"
+                    || weaponDesignerName == "worldent"
                 )
                     return ret;
                 var damage = result.HealthLost;
@@ -286,12 +286,11 @@ public partial class LiveState : ActiveMatchState
                     victimDamageReport.To.Value += damage;
                     victimDamageReport.To.Hits += 1;
                 }
-                Stats_OnTakeDamage_Alive(
-                    attackerState,
-                    weaponDesignerName,
-                    damage,
-                    info->ActualHitGroup
-                );
+                var hitGroup =
+                    info->Trace != null && info->Trace->HitBox != null
+                        ? info->Trace->HitBox->m_nGroupId
+                        : HitGroup_t.HITGROUP_GENERIC;
+                Stats_OnTakeDamage_Alive(attackerState, weaponDesignerName, damage, hitGroup);
             }
             catch (Exception ex)
             {
