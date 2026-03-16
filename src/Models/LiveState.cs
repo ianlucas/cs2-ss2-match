@@ -223,79 +223,67 @@ public partial class LiveState : ActiveMatchState
         (a1, a2) =>
         {
             var ret = next()(a1, a2);
-            try
+            var victimPawn = Swiftly.Core.Memory.ToSchemaClass<CCSPlayerPawn>(a1);
+            if (victimPawn.DesignerName != "player")
+                return ret;
+            ref CTakeDamageResult result = ref Unsafe.AsRef<CTakeDamageResult>((void*)a2);
+            var info = result.OriginatingInfo;
+            var attacker = info->Attacker;
+            if (attacker.Value?.DesignerName != "player")
+                return ret;
+            var victimController = victimPawn.OriginalController.Value?.As<CCSPlayerController>();
+            var victimState = victimController?.GetState();
+            var attackerPawn = attacker.Value?.As<CCSPlayerPawn>();
+            var attackerController =
+                attackerPawn?.OriginalController.Value?.As<CCSPlayerController>();
+            var attackerState = attackerController?.GetState();
+            if (victimController == null || victimState == null || attackerState == null)
+                return ret;
+            var inflictor = info->Inflictor.Value?.As<CBaseEntity>();
+            var weaponDesignerName = info->GetInflictorDesignerName();
+            if (inflictor == null || weaponDesignerName == null || weaponDesignerName == "worldent")
+                return ret;
+            var damage = result.HealthLost;
+            var isFriendlyFire = victimState.Team == attackerState.Team;
+            if (
+                ItemHelper.IsUtilityDesignerName(weaponDesignerName)
+                && _thrownUtilities.TryGetValue(inflictor.Index, out var utility)
+            )
             {
-                var victimPawn = Swiftly.Core.Memory.ToSchemaClass<CCSPlayerPawn>(a1);
-                if (victimPawn.DesignerName != "player")
-                    return ret;
-                ref CTakeDamageResult result = ref Unsafe.AsRef<CTakeDamageResult>((void*)a2);
-                var info = result.OriginatingInfo;
-                var attacker = info->Attacker;
-                if (attacker.Value?.DesignerName != "player")
-                    return ret;
-                var victimController =
-                    victimPawn.OriginalController.Value?.As<CCSPlayerController>();
-                var victimState = victimController?.GetState();
-                var attackerPawn = attacker.Value?.As<CCSPlayerPawn>();
-                var attackerController =
-                    attackerPawn?.OriginalController.Value?.As<CCSPlayerController>();
-                var attackerState = attackerController?.GetState();
-                if (victimController == null || victimState == null || attackerState == null)
-                    return ret;
-                var inflictor = info->Inflictor.Value?.As<CBaseEntity>();
-                var weaponDesignerName = info->GetInflictorDesignerName();
-                if (
-                    inflictor == null
-                    || weaponDesignerName == null
-                    || weaponDesignerName == "worldent"
-                )
-                    return ret;
-                var damage = result.HealthLost;
-                var isFriendlyFire = victimState.Team == attackerState.Team;
-                if (
-                    ItemHelper.IsUtilityDesignerName(weaponDesignerName)
-                    && _thrownUtilities.TryGetValue(inflictor.Index, out var utility)
-                )
-                {
-                    var victim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
-                    if (victimController.GetHealth() <= 0)
-                        victim.Killed = true;
-                    victim.Damage += damage;
-                    victim.FriendlyFire = isFriendlyFire;
-                    utility[victimState.SteamID] = victim;
-                }
-                if (isFriendlyFire)
-                    return ret;
-                if (
-                    victimState.DamageReport.TryGetValue(
-                        attackerState.SteamID,
-                        out var attackerDamageReport
-                    )
-                )
-                {
-                    attackerDamageReport.From.Value += damage;
-                    attackerDamageReport.From.Hits += 1;
-                }
-                if (
-                    attackerState.DamageReport.TryGetValue(
-                        victimState.SteamID,
-                        out var victimDamageReport
-                    )
-                )
-                {
-                    victimDamageReport.To.Value += damage;
-                    victimDamageReport.To.Hits += 1;
-                }
-                var hitGroup =
-                    info->Trace != null && info->Trace->HitBox != null
-                        ? info->Trace->HitBox->m_nGroupId
-                        : HitGroup_t.HITGROUP_GENERIC;
-                Stats_OnTakeDamage_Alive(attackerState, weaponDesignerName, damage, hitGroup);
+                var victim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
+                if (victimController.GetHealth() <= 0)
+                    victim.Killed = true;
+                victim.Damage += damage;
+                victim.FriendlyFire = isFriendlyFire;
+                utility[victimState.SteamID] = victim;
             }
-            catch (Exception ex)
+            if (isFriendlyFire)
+                return ret;
+            if (
+                victimState.DamageReport.TryGetValue(
+                    attackerState.SteamID,
+                    out var attackerDamageReport
+                )
+            )
             {
-                Swiftly.Log(ex.ToString());
+                attackerDamageReport.From.Value += damage;
+                attackerDamageReport.From.Hits += 1;
             }
+            if (
+                attackerState.DamageReport.TryGetValue(
+                    victimState.SteamID,
+                    out var victimDamageReport
+                )
+            )
+            {
+                victimDamageReport.To.Value += damage;
+                victimDamageReport.To.Hits += 1;
+            }
+            var hitGroup =
+                info->Trace != null && info->Trace->HitBox != null
+                    ? info->Trace->HitBox->m_nGroupId
+                    : HitGroup_t.HITGROUP_GENERIC;
+            Stats_OnTakeDamage_Alive(attackerState, weaponDesignerName, damage, hitGroup);
             return ret;
         };
 
