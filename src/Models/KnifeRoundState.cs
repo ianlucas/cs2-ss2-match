@@ -62,20 +62,20 @@ public class KnifeRoundState : ReadyupWarmupState
     public Natives.CCSGameRules_TerminateRoundWindowsDelegate OnTerminateRoundWindows(
         Func<Natives.CCSGameRules_TerminateRoundWindowsDelegate> next
     ) =>
-        (a1, a2, a3, a4, a5) =>
+        (a1, a2, a3, a4) =>
         {
             if (TryGetKnifeWinnerReason() is uint reason)
-                a5 = reason;
-            next()(a1, a2, a3, a4, a5);
+                a3 = reason;
+            next()(a1, a2, a3, a4);
         };
 
     public Natives.CCSGameRules_TerminateRoundLinuxDelegate OnTerminateRoundLinux(
         Func<Natives.CCSGameRules_TerminateRoundLinuxDelegate> next
     ) =>
-        (a1, a2, a3, a4, a5) =>
+        (a1, a2, a3, a4) =>
         {
             if (TryGetKnifeWinnerReason() is uint reason)
                 a2 = reason;
-            next()(a1, a2, a3, a4, a5);
+            next()(a1, a2, a3, a4);
         };
 }

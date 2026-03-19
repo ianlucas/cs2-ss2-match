@@ -13,16 +13,14 @@ public static partial class Natives
         nint a1,
         float a2,
         uint a3,
-        nint a4,
-        uint a5
+        nint a4
     );
 
     public delegate void CCSGameRules_TerminateRoundLinuxDelegate(
         nint a1,
         uint a2,
         nint a3,
-        uint a4,
-        float a5
+        float a4
     );
 
     public static readonly IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate> CCSGameRules_TerminateRoundWindows =
