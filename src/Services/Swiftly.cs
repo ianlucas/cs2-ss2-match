@@ -19,11 +19,11 @@ public static class Swiftly
         _ = Core;
     }
 
-    public static void Log(string message, bool sendToChat = false)
+    public static void Log(string message, bool sendToChat = false, bool force = false)
     {
         if (sendToChat)
             Core.PlayerManager.SendChat(message);
-        if (!ConVars.IsVerbose.Value)
+        if (!ConVars.IsVerbose.Value && !force)
             return;
         var stackTrace = new StackTrace();
         var frame = stackTrace.GetFrame(1);

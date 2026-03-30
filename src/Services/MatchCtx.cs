@@ -274,6 +274,11 @@ public static class MatchCtx
         Maps.Add(new Map(mapName));
     }
 
+    public static bool IsFirstMap()
+    {
+        return Maps.FirstOrDefault()?.MapName == GetMap()?.MapName;
+    }
+
     public static int GetTotalMapCount()
     {
         return Maps.Count;
