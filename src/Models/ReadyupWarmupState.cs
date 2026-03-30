@@ -55,6 +55,8 @@ public class ReadyupWarmupState : WarmupState
             isLockTeams: MatchCtx.AreTeamsLocked()
         );
         _matchCancelled = false;
+        if (this is not NoneState && ConVars.IsMatchmaking.Value && MatchCtx.IsFirstMap())
+            Swiftly.Log("The series has begun.", force: true);
     }
 
     public void OnTick()
