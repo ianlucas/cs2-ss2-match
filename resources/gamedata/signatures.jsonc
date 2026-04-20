@@ -16,8 +16,8 @@
   },
   "CCSPlayerPawnBase::IncrementNumMVPs": {
     "lib": "server",
-    "windows": "40 55 57 41 57 48 8B EC 48 81 EC",
-    "linux": "55 48 89 E5 41 57 41 56 41 55 41 54 49 89 FC 53 48 8D 3D ? ? ? ? 89 F3"
+    "windows": "40 55 57 41 57 48 8B EC 48 81 EC ? ? ? ? 44 8B FA",
+    "linux": "55 48 89 E5 41 57 41 56 41 55 41 54 41 89 F4 BE"
   },
   "CCSGameRules::HandleSwapTeams": {
     "lib": "server",
@@ -37,6 +37,6 @@
   "CCSBotManager::MaintainBotQuota": {
     "lib": "server",
     "windows": "40 55 41 56 48 8D 6C 24 ? 48 81 EC ? ? ? ? 4C 8B F1 FF 15",
-    "linux": "55 31 F6 48 89 E5 41 57 41 56 41 55 41 54 49 89 FC 31 FF"
+    "linux": "55 31 F6 48 89 E5 41 57 41 56 49 89 FE"
   }
 }
