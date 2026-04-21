@@ -5,7 +5,7 @@
   },
   //csshocked
   "CInferno::m_nSourceWeaponDefIndex": {
-    "linux": 5672,
-    "windows": 4944
+    "linux": 5728,
+    "windows": 5000
   }
 }
