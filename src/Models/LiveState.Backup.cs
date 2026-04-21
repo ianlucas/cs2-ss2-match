@@ -62,7 +62,7 @@ public partial class LiveState
                 Round = roundAsInt - 1;
                 _thrownUtilities.Clear();
                 MatchCtx.SendEvent(OnBackupRestoreEvent.Create(filename));
-                Swiftly.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file {filename}");
+                Swiftly.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file \"{filename}\"");
             }
             else
                 player?.SendChat(

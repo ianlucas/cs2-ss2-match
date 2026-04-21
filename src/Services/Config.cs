@@ -84,7 +84,7 @@ public static class Config
         string? backupPath = null
     ) =>
         Swiftly.Core.Engine.ExecuteCommand([
-            $"mp_backup_round_file {backupPath ?? "\"\""}",
+            $"mp_backup_round_file {(backupPath != null ? $"\"{backupPath}\"" : "\"\"")}",
             "ammo_grenade_limit_default 1",
             "ammo_grenade_limit_flashbang 2",
             "ammo_grenade_limit_total 4",
