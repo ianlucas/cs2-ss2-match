@@ -24,6 +24,7 @@ public static class MatchCtx
     public static PlayerTeam? KnifeRoundWinner { get; set; }
     public static MapEndResult? MapEndResult { get; set; } = null;
     public static MatchEventStore? EventStore { get; private set; }
+    private static int _sequence;
 
     static MatchCtx()
     {
@@ -47,6 +48,7 @@ public static class MatchCtx
         KnifeRoundWinner = null;
         MapEndResult = null;
         Maps.Clear();
+        _sequence = 0;
         foreach (var team in Teams)
             team.Reset();
     }
@@ -85,6 +87,7 @@ public static class MatchCtx
         CreateMatchFolder();
         if (ConVars.IsEventStore.Value)
             EventStore = new MatchEventStore(GetMatchPath());
+        _sequence = 0;
         SendEvent(OnSeriesInitEvent.Create());
     }
 
@@ -379,6 +382,7 @@ public static class MatchCtx
 
     public static void SendEvent(Get5Event data)
     {
+        data.Sequence = _sequence++;
         var url = ConVars.RemoteLogUrl.Value;
         Swiftly.Log($"RemoteLogUrl='{url}' event='{data.EventName}'");
         if (url != "")
