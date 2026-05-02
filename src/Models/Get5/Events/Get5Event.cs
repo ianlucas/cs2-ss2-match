@@ -9,6 +9,9 @@ namespace Match.Get5.Events;
 
 public abstract class Get5Event
 {
+    [JsonPropertyName("sequence")]
+    public int Sequence { get; internal set; }
+
     [JsonPropertyName("event")]
     public abstract string EventName { get; }
 
