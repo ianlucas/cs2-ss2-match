@@ -92,7 +92,10 @@ public partial class LiveState
 
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
-        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
+        var attacker = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker);
+        var attackerState = attacker?.GetState();
+        if (attacker?.IsFakeClient == true)
+            return HookResult.Continue;
         var victimState = @event.UserIdPlayer?.GetState();
         if (victimState == null)
             return HookResult.Continue;
