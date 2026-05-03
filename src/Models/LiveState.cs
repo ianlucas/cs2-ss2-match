@@ -299,16 +299,17 @@ public partial class LiveState : ActiveMatchState
         var localize = Swiftly.Core.Localizer;
         var home = MatchCtx.Teams.First();
         var away = MatchCtx.Teams.Last();
-        Swiftly.Core.PlayerManager.SendChat(
-            localize[
-                "match.round_end_score",
-                MatchCtx.GetChatPrefix(),
-                home.FormattedName,
-                home.Score,
-                away.Score,
-                away.FormattedName
-            ]
-        );
+        foreach (var player in Swiftly.Core.PlayerManager.GetAllPlayers())
+            player.SendChat(
+                localize[
+                    "match.round_end_score",
+                    MatchCtx.GetChatPrefix(),
+                    home.FormattedName,
+                    home.Score,
+                    away.Score,
+                    away.FormattedName
+                ]
+            );
         foreach (var playerState in MatchCtx.Teams.SelectMany(t => t.Players))
         {
             foreach (var report in playerState.DamageReport.Values)
