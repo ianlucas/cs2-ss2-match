@@ -34,10 +34,10 @@ public sealed class OnPlayerSayEvent : Get5Event
     public static OnPlayerSayEvent Create(IPlayer player, string command, string message) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
-            RoundNumber = MatchCtx.GetRoundNumber(),
-            RoundTime = MatchCtx.GetRoundTime(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
+            RoundNumber = Rules.GetRoundNumber(),
+            RoundTime = Rules.GetRoundTime(),
             Player = Get5EventHelpers.ToPlayer(player),
             Command = command,
             Message = message,

@@ -17,5 +17,5 @@ public sealed class OnPlayerDisconnectedEvent : Get5Event
     public object Player { get; init; } = null!;
 
     public static OnPlayerDisconnectedEvent Create(IPlayer player) =>
-        new() { MatchId = MatchCtx.Id, Player = Get5EventHelpers.ToPlayer(player) };
+        new() { MatchId = Rules.Id, Player = Get5EventHelpers.ToPlayer(player) };
 }

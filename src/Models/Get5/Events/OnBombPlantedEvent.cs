@@ -30,10 +30,10 @@ public sealed class OnBombPlantedEvent : Get5Event
     public static OnBombPlantedEvent Create(PlayerState player, int? site) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
-            RoundNumber = MatchCtx.GetRoundNumber(),
-            RoundTime = MatchCtx.GetRoundTime(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
+            RoundNumber = Rules.GetRoundNumber(),
+            RoundTime = Rules.GetRoundTime(),
             Player = Get5EventHelpers.ToPlayer(player),
             Site = Get5EventHelpers.ToSite(site),
         };

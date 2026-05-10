@@ -55,14 +55,14 @@ public class Get5MatchTeam
             var name = Fromfile ?? "";
             if (!name.EndsWith(".json"))
                 name += ".json";
-            var filepath = Swiftly.Core.GetConfigPath($"/{name}");
+            var filepath = Runtime.Core.GetConfigPath($"/{name}");
             if (!File.Exists(filepath))
-                filepath = Swiftly.Core.GetCSGOPath(filepath);
+                filepath = Runtime.Core.GetCSGOPath(filepath);
             return JsonSerializer.Deserialize<Get5MatchTeam>(File.ReadAllText(filepath));
         }
         catch (Exception ex)
         {
-            Swiftly.Core.Logger.LogWarning($"Error reading match team file: {ex.Message}");
+            Runtime.Core.Logger.LogWarning($"Error reading match team file: {ex.Message}");
             return null;
         }
     }

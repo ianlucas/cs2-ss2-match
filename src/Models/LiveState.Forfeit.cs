@@ -30,11 +30,11 @@ public partial class LiveState
     public void OnPlayerConnected(IPlayer player)
     {
         var playerState = player.GetState();
-        if (playerState != null && MatchCtx.HasTeamsWithAnyPlayerConnected())
+        if (playerState != null && Rules.HasTeamsWithAnyPlayerConnected())
         {
             _isForfeiting = false;
             Timers.Clear("ForfeitTimeout");
-            Swiftly.Log("Match forfeit cancelled");
+            Runtime.Log("Match forfeit cancelled");
         }
     }
 
@@ -48,8 +48,8 @@ public partial class LiveState
 
     public void TryForfeitMatch(PlayerState? disconnecting = null)
     {
-        if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && MatchCtx.MapEndResult == null)
-            foreach (var team in MatchCtx.Teams)
+        if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && Rules.MapEndResult == null)
+            foreach (var team in Rules.Teams)
                 if (
                     team.Players.Count > 0
                     && team.Players.All(p =>
@@ -59,11 +59,11 @@ public partial class LiveState
                 {
                     _isForfeiting = true;
                     Timers.Set("ForfeitTimeout", ConVars.ForfeitTimeout.Value, OnMatchCancelled);
-                    Swiftly.Log("A team is forfeiting the match.");
-                    Swiftly.Core.PlayerManager.SendChat(
-                        Swiftly.Core.Localizer[
+                    Runtime.Log("A team is forfeiting the match.");
+                    Runtime.Core.PlayerManager.SendChat(
+                        Runtime.Core.Localizer[
                             "match.forfeit_start",
-                            MatchCtx.GetChatPrefix(true),
+                            Rules.GetChatPrefix(true),
                             team.FormattedName,
                             ConVars.ForfeitTimeout.Value
                         ]

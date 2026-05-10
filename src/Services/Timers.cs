@@ -27,22 +27,22 @@ public static class Timers
     public static void Set(string name, float interval, Action callback)
     {
         Clear(name);
-        _timers[name] = Swiftly.Core.Scheduler.DelayBySeconds(interval, callback);
+        _timers[name] = Runtime.Core.Scheduler.DelayBySeconds(interval, callback);
     }
 
     public static void SetEveryChatInterval(string name, Action callback)
     {
         Clear(name);
-        var timer = Swiftly.Core.Scheduler.DelayAndRepeatBySeconds(0.001f, ChatInterval, callback);
-        Swiftly.Core.Scheduler.StopOnMapChange(timer);
+        var timer = Runtime.Core.Scheduler.DelayAndRepeatBySeconds(0.001f, ChatInterval, callback);
+        Runtime.Core.Scheduler.StopOnMapChange(timer);
         _timers[name] = timer;
     }
 
     public static void SetEverySecond(string name, Action callback)
     {
         Clear(name);
-        var timer = Swiftly.Core.Scheduler.DelayAndRepeatBySeconds(0.001f, 1, callback);
-        Swiftly.Core.Scheduler.StopOnMapChange(timer);
+        var timer = Runtime.Core.Scheduler.DelayAndRepeatBySeconds(0.001f, 1, callback);
+        Runtime.Core.Scheduler.StopOnMapChange(timer);
         _timers[name] = timer;
     }
 }

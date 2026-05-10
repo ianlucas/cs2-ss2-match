@@ -37,7 +37,7 @@ public partial class LiveState
         _playerDied.Clear();
         _playerKilledOrAssistedOrTradedKill.Clear();
         _playerPlayedRound.Clear();
-        foreach (var player in MatchCtx.GetAllPlayers())
+        foreach (var player in Rules.GetAllPlayers())
         {
             _roundKills[player.SteamID] = 0;
             if (player.Handle != null)
@@ -67,7 +67,7 @@ public partial class LiveState
 
     public HookResult Stats_OnPlayerBlind(EventPlayerBlind @event)
     {
-        var attackerState = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
+        var attackerState = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker)?.GetState();
         var victimState = @event.UserIdPlayer?.GetState();
         if (attackerState != null && victimState != null)
         {
@@ -92,7 +92,7 @@ public partial class LiveState
 
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
-        var attacker = Swiftly.Core.PlayerManager.GetPlayer(@event.Attacker);
+        var attacker = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker);
         var attackerState = attacker?.GetState();
         if (attacker?.IsFakeClient == true)
             return HookResult.Continue;
@@ -102,13 +102,13 @@ public partial class LiveState
         var victimTeam = victimState.Team.CurrentTeam;
         if (
             !_isTeamClutching.ContainsKey(victimTeam)
-            && Swiftly.Core.PlayerManager.GetAliveInTeam(victimTeam).Count() == 1
+            && Runtime.Core.PlayerManager.GetAliveInTeam(victimTeam).Count() == 1
         )
         {
             _isTeamClutching[victimTeam] = true;
-            var clutcher = Swiftly.Core.PlayerManager.GetAliveInTeam(victimTeam).FirstOrDefault();
+            var clutcher = Runtime.Core.PlayerManager.GetAliveInTeam(victimTeam).FirstOrDefault();
             if (clutcher != null)
-                _roundClutchingCount[clutcher.SteamID] = Swiftly
+                _roundClutchingCount[clutcher.SteamID] = Runtime
                     .Core.PlayerManager.GetAliveInTeam(victimTeam.Toggle())
                     .Count();
         }
@@ -181,7 +181,7 @@ public partial class LiveState
                     attackerState.Stats.HeadshotKills += 1;
                 if (killedWithKnife)
                     attackerState.Stats.KnifeKills += 1;
-                assisterState = Swiftly.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
+                assisterState = Runtime.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
                 if (assisterState != null)
                 {
                     var friendlyFire = assisterState.Team == victimState.Team;
@@ -197,7 +197,7 @@ public partial class LiveState
                 }
             }
         }
-        MatchCtx.SendEvent(
+        Rules.SendEvent(
             OnPlayerDeathEvent.Create(
                 player: victimState,
                 attackerState,
@@ -225,7 +225,7 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.BombPlants += 1;
-            MatchCtx.SendEvent(OnBombPlantedEvent.Create(playerState, site: _lastPlantedBombZone));
+            Rules.SendEvent(OnBombPlantedEvent.Create(playerState, site: _lastPlantedBombZone));
         }
         return HookResult.Continue;
     }
@@ -238,14 +238,14 @@ public partial class LiveState
             playerState.Stats.BombDefuses += 1;
 
             var timeToDefuse = TimeHelper.Now() - _bombPlantedAt;
-            var c4Timer = (Swiftly.Core.ConVar.Find<int>("mp_c4timer")?.Value ?? 0) * 1000;
+            var c4Timer = (Runtime.Core.ConVar.Find<int>("mp_c4timer")?.Value ?? 0) * 1000;
             var bombTimeRemaining = c4Timer - timeToDefuse;
             if (bombTimeRemaining < 0)
             {
-                Swiftly.Log($"bombTimeRemaining={bombTimeRemaining} is negative!");
+                Runtime.Log($"bombTimeRemaining={bombTimeRemaining} is negative!");
                 bombTimeRemaining = 0;
             }
-            MatchCtx.SendEvent(
+            Rules.SendEvent(
                 OnBombDefusedEvent.Create(
                     playerState,
                     site: _lastPlantedBombZone,
@@ -262,7 +262,7 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.MVPs += 1;
-            MatchCtx.SendEvent(OnPlayerBecameMVPEvent.Create(playerState, reason: @event.Reason));
+            Rules.SendEvent(OnPlayerBecameMVPEvent.Create(playerState, reason: @event.Reason));
         }
         return HookResult.Continue;
     }
@@ -316,11 +316,11 @@ public partial class LiveState
 
     public HookResult Stats_OnRoundEnd(EventRoundEnd @event)
     {
-        var gameRules = Swiftly.Core.EntitySystem.GetGameRules();
+        var gameRules = Runtime.Core.EntitySystem.GetGameRules();
         if (gameRules == null)
             return HookResult.Continue;
         var winner = (Team)@event.Winner;
-        var winnerTeam = MatchCtx.Teams.FirstOrDefault(t => t.CurrentTeam == winner);
+        var winnerTeam = Rules.Teams.FirstOrDefault(t => t.CurrentTeam == winner);
         switch (winnerTeam?.CurrentTeam)
         {
             case Team.T:
@@ -332,7 +332,7 @@ public partial class LiveState
         }
         _statsBackup[gameRules.TotalRoundsPlayed] = [];
         _teamStatsBackup[gameRules.TotalRoundsPlayed] = [];
-        foreach (var team in MatchCtx.Teams)
+        foreach (var team in Rules.Teams)
         {
             _teamStatsBackup[gameRules.TotalRoundsPlayed].Add((team, team.Stats.Clone()));
             foreach (var player in team.Players)
@@ -391,8 +391,8 @@ public partial class LiveState
                 _statsBackup[gameRules.TotalRoundsPlayed].Add((player, player.Stats.Clone()));
             }
         }
-        MatchCtx.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
-        MatchCtx.SendEvent(OnRoundStatsUpdatedEvent.Create());
+        Rules.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
+        Rules.SendEvent(OnRoundStatsUpdatedEvent.Create());
         return HookResult.Continue;
     }
 }

@@ -22,7 +22,7 @@ public sealed class OnPlayerConnectedEvent : Get5Event
     public static OnPlayerConnectedEvent Create(IPlayer player) =>
         new()
         {
-            MatchId = MatchCtx.Id,
+            MatchId = Rules.Id,
             Player = Get5EventHelpers.ToPlayer(player),
             IpAddress = player.IPAddress,
         };

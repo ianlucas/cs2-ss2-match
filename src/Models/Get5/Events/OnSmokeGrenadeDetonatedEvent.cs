@@ -39,8 +39,8 @@ public sealed class OnSmokeGrenadeDetonatedEvent : Get5Event
     ) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
             RoundNumber = roundNumber,
             RoundTime = roundTime,
             Player = Get5EventHelpers.ToPlayer(player),

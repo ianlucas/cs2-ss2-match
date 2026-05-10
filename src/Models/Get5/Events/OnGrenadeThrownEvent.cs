@@ -30,10 +30,10 @@ public sealed class OnGrenadeThrownEvent : Get5Event
     public static OnGrenadeThrownEvent Create(PlayerState player, string weapon) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
-            RoundNumber = MatchCtx.GetRoundNumber(),
-            RoundTime = MatchCtx.GetRoundTime(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
+            RoundNumber = Rules.GetRoundNumber(),
+            RoundTime = Rules.GetRoundTime(),
             Player = Get5EventHelpers.ToPlayer(player),
             Weapon = Get5EventHelpers.ToWeapon(weapon),
         };

@@ -24,9 +24,9 @@ public sealed class OnSeriesInitEvent : Get5Event
     public static OnSeriesInitEvent Create() =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            NumMaps = MatchCtx.Maps.Count,
-            Team1 = new { id = MatchCtx.Team1.Id, name = MatchCtx.Team1.Name },
-            Team2 = new { id = MatchCtx.Team2.Id, name = MatchCtx.Team2.Name },
+            MatchId = Rules.Id,
+            NumMaps = Rules.Maps.Count,
+            Team1 = new { id = Rules.Team1.Id, name = Rules.Team1.Name },
+            Team2 = new { id = Rules.Team2.Id, name = Rules.Team2.Name },
         };
 }

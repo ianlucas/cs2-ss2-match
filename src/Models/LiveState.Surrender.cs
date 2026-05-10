@@ -34,18 +34,18 @@ public partial class LiveState
                 if (!_canSurrender)
                     return;
                 Timers.Clear(timerName);
-                Swiftly.Core.PlayerManager.SendChat(
-                    Swiftly.Core.Localizer[
+                Runtime.Core.PlayerManager.SendChat(
+                    Runtime.Core.Localizer[
                         "match.surrender_success",
-                        MatchCtx.GetChatPrefix(),
+                        Rules.GetChatPrefix(),
                         playerState.Team.FormattedName
                     ]
                 );
                 playerState.Team.IsSurrended = true;
                 playerState.Team.Score = 0;
                 playerState.Team.Opposition.Score = 1;
-                Swiftly.Log("Terminating match due to team surrender");
-                Swiftly
+                Runtime.Log("Terminating match due to team surrender");
+                Runtime
                     .Core.EntitySystem.GetGameRules()
                     ?.TerminateRound(
                         playerState.Team.CurrentTeam == Team.T
@@ -57,9 +57,9 @@ public partial class LiveState
             else if (playerState.Team.SurrenderVotes.Count == 1)
             {
                 playerState.Team.SendChat(
-                    Swiftly.Core.Localizer[
+                    Runtime.Core.Localizer[
                         "match.surrender_start",
-                        MatchCtx.GetChatPrefix(),
+                        Rules.GetChatPrefix(),
                         playerState.Name,
                         neededVotes,
                         ConVars.SurrenderTimeout.Value
@@ -75,11 +75,11 @@ public partial class LiveState
                             playerState.Team.SurrenderVotes.Count == playerState.Team.Players.Count;
                         playerState.Team.SurrenderVotes.Clear();
                         playerState.Team.SendChat(
-                            Swiftly.Core.Localizer[
+                            Runtime.Core.Localizer[
                                 hadAllSurrenderVotes
                                     ? "match.surrender_fail1"
                                     : "match.surrender_fail2",
-                                MatchCtx.GetChatPrefix()
+                                Rules.GetChatPrefix()
                             ]
                         );
                     }

@@ -29,7 +29,7 @@ public static class IoHelper
         }
         catch (Exception ex)
         {
-            Swiftly.Log($"Error writing JSON to {filename}: {ex.Message}");
+            Runtime.Log($"Error writing JSON to {filename}: {ex.Message}");
         }
     }
 }

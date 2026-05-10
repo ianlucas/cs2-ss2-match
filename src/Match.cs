@@ -24,7 +24,7 @@ public partial class Match(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Load(bool hotReload)
     {
-        Swiftly.Initialize();
+        Runtime.Initialize();
         ConVars.Initialize();
         Cstv.Initialize();
         Core.Event.OnConVarValueChanged += OnConVarValueChanged;

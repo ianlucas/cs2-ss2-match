@@ -21,8 +21,8 @@ public sealed class OnDemoFinishedEvent : Get5Event
     public static OnDemoFinishedEvent Create(string filename) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
             Filename = filename,
         };
 }

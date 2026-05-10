@@ -15,7 +15,7 @@ public class ActiveMatchState : BaseState
 {
     public HookResult OnRoundPrestart(EventRoundPrestart _)
     {
-        var gameRules = Swiftly.Core.EntitySystem.GetGameRules();
+        var gameRules = Runtime.Core.EntitySystem.GetGameRules();
         if (gameRules?.GamePhaseEnum == GamePhase.GAMEPHASE_MATCH_ENDED)
         {
             OnMapEnd(); // Map result should be computed at State::OnCsWinPanelRound.
@@ -26,19 +26,19 @@ public class ActiveMatchState : BaseState
 
     public void OnMatchCancelled()
     {
-        Swiftly.Log("Match cancelled.");
+        Runtime.Log("Match cancelled.");
         _matchCancelled = true;
         Timers.ClearAll();
-        var winners = MatchCtx.GetTeamsWithConnectedPlayers();
+        var winners = Rules.GetTeamsWithConnectedPlayers();
         if (winners.Count() == 1)
         {
             var winner = winners.First();
             var loser = winner.Opposition;
             loser.IsSurrended = true;
-            Swiftly.Log(
+            Runtime.Log(
                 $"Terminating match due to cancellation: winner={winner.Index}, forfeited={loser.Index}"
             );
-            Swiftly
+            Runtime
                 .Core.EntitySystem.GetGameRules()
                 ?.TerminateRound(
                     loser.CurrentTeam == Team.T
@@ -56,33 +56,30 @@ public class ActiveMatchState : BaseState
 
     public void OnMapResult(MapResult result = MapResult.None, PlayerTeam? winner = null)
     {
-        Swiftly.Log($"Computing map result: {result}");
-        var map = MatchCtx.GetMap() ?? new(Swiftly.Core.Engine.GlobalVars.MapName);
-        var stats = MatchCtx.Teams.Select(t => t.Players.Select(p => p.Stats).ToList()).ToList();
+        Runtime.Log($"Computing map result: {result}");
+        var map = Rules.GetMap() ?? new(Runtime.Core.Engine.GlobalVars.MapName);
+        var stats = Rules.Teams.Select(t => t.Players.Select(p => p.Stats).ToList()).ToList();
         var demoFilename = Cstv.GetFilename();
-        var scores = MatchCtx.Teams.Select(t => t.Score).ToList();
-        var team1 = MatchCtx.Teams.First();
+        var scores = Rules.Teams.Select(t => t.Score).ToList();
+        var team1 = Rules.Teams.First();
         var team2 = team1.Opposition;
         map.DemoFilename = demoFilename;
-        map.KnifeRoundWinner = MatchCtx.KnifeRoundWinner?.Index;
+        map.KnifeRoundWinner = Rules.KnifeRoundWinner?.Index;
         map.Result = result;
         map.Stats = stats;
         map.Winner = winner;
         map.Scores = scores;
         if (winner != null)
             winner.SeriesScore += 1;
-        var mapCount = MatchCtx.GetTotalMapCount();
+        var mapCount = Rules.GetTotalMapCount();
         if (mapCount % 2 == 0)
             mapCount += 1;
         var seriesScoreToWin = (int)Math.Round(mapCount / 2.0, MidpointRounding.AwayFromZero);
         var isSeriesCancelled = result != MapResult.Completed;
         var isSeriesOver =
             isSeriesCancelled
-            || (
-                MatchCtx.IsClinchSeries
-                && MatchCtx.Teams.Any(t => t.SeriesScore >= seriesScoreToWin)
-            )
-            || MatchCtx.GetMap() == null;
+            || (Rules.IsClinchSeries && Rules.Teams.Any(t => t.SeriesScore >= seriesScoreToWin))
+            || Rules.GetMap() == null;
         if (isSeriesOver)
         {
             // If match doesn't end normally, we already decided which side won.
@@ -94,13 +91,13 @@ public class ActiveMatchState : BaseState
                     winner.SeriesScore = 1;
             }
             // Team with most series score wins the series for non clinch series.
-            if (!MatchCtx.IsClinchSeries)
+            if (!Rules.IsClinchSeries)
                 winner =
                     team1.SeriesScore > team2.SeriesScore ? team1
                     : team2.SeriesScore > team1.SeriesScore ? team2
                     : null;
         }
-        MatchCtx.MapEndResult = new MapEndResult
+        Rules.MapEndResult = new MapEndResult
         {
             Map = map,
             IsSeriesOver = isSeriesOver,
@@ -108,9 +105,9 @@ public class ActiveMatchState : BaseState
         };
         if (Cstv.IsRecording())
         {
-            var filename = MatchCtx.GetDemoFilename();
+            var filename = Rules.GetDemoFilename();
             if (filename != null)
-                MatchCtx.SendEvent(OnDemoFinishedEvent.Create(filename));
+                Rules.SendEvent(OnDemoFinishedEvent.Create(filename));
         }
         Cstv.Stop();
     }
@@ -120,20 +117,20 @@ public class ActiveMatchState : BaseState
         Timers.ClearAll();
         var result = MapResult.None;
         PlayerTeam? winner = null;
-        foreach (var team in MatchCtx.Teams)
+        foreach (var team in Rules.Teams)
         {
             if (team.IsSurrended)
             {
                 result = MapResult.Forfeited;
                 winner = team.Opposition;
-                Swiftly.Log($"Map forfeited: result={result}, winner={winner.Index}");
+                Runtime.Log($"Map forfeited: result={result}, winner={winner.Index}");
                 break;
             }
             if (team.Score > team.Opposition.Score)
             {
                 result = MapResult.Completed;
                 winner = team;
-                Swiftly.Log($"Map completed: result={result}, winner={winner.Index}");
+                Runtime.Log($"Map completed: result={result}, winner={winner.Index}");
             }
         }
         OnMapResult(result, winner);
@@ -142,30 +139,30 @@ public class ActiveMatchState : BaseState
 
     public void OnMapEnd()
     {
-        if (MatchCtx.MapEndResult == null)
+        if (Rules.MapEndResult == null)
         {
-            Swiftly.Log("Map result not found, defaulting to None state.");
-            MatchCtx.SetState(new NoneState());
+            Runtime.Log("Map result not found, defaulting to None state.");
+            Rules.SetState(new NoneState());
             return;
         }
-        var map = MatchCtx.MapEndResult.Map;
-        var isSeriesOver = MatchCtx.MapEndResult.IsSeriesOver;
-        var winner = MatchCtx.MapEndResult.Winner;
-        var maps = (MatchCtx.GetTotalMapCount() > 0 ? MatchCtx.Maps : [map]).Where(m =>
+        var map = Rules.MapEndResult.Map;
+        var isSeriesOver = Rules.MapEndResult.IsSeriesOver;
+        var winner = Rules.MapEndResult.Winner;
+        var maps = (Rules.GetTotalMapCount() > 0 ? Rules.Maps : [map]).Where(m =>
             m.Result != MapResult.None
         );
         if (ConVars.IsResultStore.Value)
-            IoHelper.WriteJson(MatchCtx.GetMatchPath("results.json"), maps);
-        MatchCtx.SendEvent(OnMapResultEvent.Create(map));
+            IoHelper.WriteJson(Rules.GetMatchPath("results.json"), maps);
+        Rules.SendEvent(OnMapResultEvent.Create(map));
         if (isSeriesOver)
         {
-            MatchCtx.SendEvent(OnSeriesResultEvent.Create(winner, map));
-            MatchCtx.FinalizeEventLog();
-            MatchCtx.Reset();
-            MatchCtx.EnforceMatchmakingRestrictions();
+            Rules.SendEvent(OnSeriesResultEvent.Create(winner, map));
+            Rules.FinalizeEventLog();
+            Rules.Reset();
+            Rules.EnforceMatchmakingRestrictions();
         }
         else
-            MatchCtx.MapEndResult = null;
-        MatchCtx.SetState(isSeriesOver ? new NoneState() : new ReadyupWarmupState());
+            Rules.MapEndResult = null;
+        Rules.SetState(isSeriesOver ? new NoneState() : new ReadyupWarmupState());
     }
 }

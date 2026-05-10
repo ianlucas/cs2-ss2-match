@@ -41,9 +41,9 @@ public static class IPlayerManagerServiceExtensions
                     player.Kick(reason, ENetworkDisconnectionReason.NETWORK_DISCONNECT_KICKED);
         }
 
-        public void UpdateScoreboards()
+        public void UpdateScoreboard()
         {
-            Swiftly.Core.GameEvent.Fire<EventNextlevelChanged>();
+            Runtime.Core.GameEvent.Fire<EventNextlevelChanged>();
         }
 
         public void RemovePlayerClans()
@@ -53,7 +53,7 @@ public static class IPlayerManagerServiceExtensions
                 if (player.SetPlayerClan(""))
                     didUpdatePlayers = true;
             if (didUpdatePlayers)
-                self.UpdateScoreboards();
+                self.UpdateScoreboard();
         }
 
         public void SendChatRepeat(string message, int amount = 3)
