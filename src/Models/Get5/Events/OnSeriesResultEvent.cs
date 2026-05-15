@@ -30,11 +30,11 @@ public sealed class OnSeriesResultEvent : Get5Event
     public static OnSeriesResultEvent Create(PlayerTeam? winner, Map map) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            Team1SeriesScore = MatchCtx.Team1.SeriesScore,
-            Team2SeriesScore = MatchCtx.Team2.SeriesScore,
+            MatchId = Rules.Id,
+            Team1SeriesScore = Rules.Team1.SeriesScore,
+            Team2SeriesScore = Rules.Team2.SeriesScore,
             Winner = Get5EventHelpers.ToWinner(winner),
             TimeUntilRestore = 0,
-            LastMapNumber = MatchCtx.FindMapIndex(map),
+            LastMapNumber = Rules.FindMapIndex(map),
         };
 }

@@ -12,7 +12,7 @@ public class WarmupState : ActiveMatchState
 {
     public override void Load()
     {
-        Swiftly.Core.EntitySystem.GetGameRules()?.RoundsPlayedThisPhase = 0;
+        Runtime.Core.EntitySystem.GetGameRules()?.RoundsPlayedThisPhase = 0;
         HookGameEvent<EventItemPickup>(OnItemPickup);
     }
 

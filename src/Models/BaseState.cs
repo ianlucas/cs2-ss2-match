@@ -29,9 +29,9 @@ public class BaseState
         foreach (var cleanup in _nativeHooks)
             cleanup();
         foreach (var guid in _commands)
-            Swiftly.Core.Command.UnregisterCommand(guid);
+            Runtime.Core.Command.UnregisterCommand(guid);
         foreach (var guid in _gameEvents)
-            Swiftly.Core.GameEvent.Unhook(guid);
+            Runtime.Core.GameEvent.Unhook(guid);
     }
 
     protected void RegisterCommand(
@@ -39,7 +39,7 @@ public class BaseState
         ICommandService.CommandListener handler
     )
     {
-        _commands.AddRange(Swiftly.Core.Command.Register(commandNames, handler));
+        _commands.AddRange(Runtime.Core.Command.Register(commandNames, handler));
     }
 
     protected void HookGameEvent<T>(
@@ -50,8 +50,8 @@ public class BaseState
     {
         _gameEvents.Add(
             mode == HookMode.Pre
-                ? Swiftly.Core.GameEvent.HookPre(handler)
-                : Swiftly.Core.GameEvent.HookPost(handler)
+                ? Runtime.Core.GameEvent.HookPre(handler)
+                : Runtime.Core.GameEvent.HookPost(handler)
         );
     }
 
@@ -59,7 +59,7 @@ public class BaseState
         where THandler : Delegate
     {
         var eventName = typeof(THandler).Name;
-        var eventSource = Swiftly.Core.Event;
+        var eventSource = Runtime.Core.Event;
         var eventInfo =
             eventSource.GetType().GetEvent(eventName) ?? throw new ArgumentException(
                 $"Event '{eventName}' not found on type '{eventSource.GetType().Name}'"

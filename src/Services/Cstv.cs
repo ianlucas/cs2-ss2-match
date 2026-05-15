@@ -14,12 +14,12 @@ public static class Cstv
 
     public static void Initialize()
     {
-        Swiftly.Core.Event.OnCommandExecuteHook += OnCommandExecuteHook;
+        Runtime.Core.Event.OnCommandExecuteHook += OnCommandExecuteHook;
     }
 
     public static void Shutdown()
     {
-        Swiftly.Core.Event.OnCommandExecuteHook -= OnCommandExecuteHook;
+        Runtime.Core.Event.OnCommandExecuteHook -= OnCommandExecuteHook;
     }
 
     public static void OnCommandExecuteHook(IOnCommandExecuteHookEvent @event)
@@ -31,7 +31,7 @@ public static class Cstv
                 @event.Result = HookResult.Stop;
                 var commandString = @event.Command.GetCommandString;
                 if (commandString != null)
-                    Swiftly.Core.Engine.ExecuteCommand(commandString);
+                    Runtime.Core.Engine.ExecuteCommand(commandString);
             }
     }
 
@@ -42,8 +42,8 @@ public static class Cstv
         if (!IsEnabled() || IsRecording() || filename == null)
             return;
         Filename = filename;
-        Swiftly.Core.Engine.ExecuteCommand($"tv_record \"{filename}\"");
-        Swiftly.Log($"Demo recording started: {filename}");
+        Runtime.Core.Engine.ExecuteCommand($"tv_record \"{filename}\"");
+        Runtime.Log($"Demo recording started: {filename}");
     }
 
     public static void Stop()
@@ -51,24 +51,24 @@ public static class Cstv
         if (IsRecording())
         {
             Filename = null;
-            Swiftly.Core.Engine.ExecuteCommand("tv_stoprecord");
-            Swiftly.Log("Demo recording stopped.");
+            Runtime.Core.Engine.ExecuteCommand("tv_stoprecord");
+            Runtime.Log("Demo recording stopped.");
         }
     }
 
     public static string? GetFilename() => Filename;
 
-    public static bool IsEnabled() => Swiftly.Core.ConVar.Find<bool>("tv_enable")?.Value == true;
+    public static bool IsEnabled() => Runtime.Core.ConVar.Find<bool>("tv_enable")?.Value == true;
 
     public static void Set(bool value)
     {
         if (value)
         {
-            Swiftly.Core.ConVar.Find<bool>("tv_enable")?.Value = true;
-            Swiftly.Core.ConVar.Find<int>("tv_record_immediate")?.Value = 1;
-            Swiftly.Core.ConVar.Find<int>("tv_delay")?.Value = ConVars.TvDelay.Value;
+            Runtime.Core.ConVar.Find<bool>("tv_enable")?.Value = true;
+            Runtime.Core.ConVar.Find<int>("tv_record_immediate")?.Value = 1;
+            Runtime.Core.ConVar.Find<int>("tv_delay")?.Value = ConVars.TvDelay.Value;
         }
         else
-            Swiftly.Core.ConVar.Find<bool>("tv_enable")?.Value = false;
+            Runtime.Core.ConVar.Find<bool>("tv_enable")?.Value = false;
     }
 }

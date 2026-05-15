@@ -36,13 +36,13 @@ public sealed class OnRoundEndEvent : Get5Event
     public static OnRoundEndEvent Create(PlayerTeam? winner, int reason) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
-            RoundNumber = MatchCtx.GetRoundNumber(),
-            RoundTime = MatchCtx.GetRoundTime(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
+            RoundNumber = Rules.GetRoundNumber(),
+            RoundTime = Rules.GetRoundTime(),
             Reason = reason,
             Winner = Get5EventHelpers.ToWinner(winner),
-            Team1 = Get5EventHelpers.ToStatsTeam(MatchCtx.Team1),
-            Team2 = Get5EventHelpers.ToStatsTeam(MatchCtx.Team2),
+            Team1 = Get5EventHelpers.ToStatsTeam(Rules.Team1),
+            Team2 = Get5EventHelpers.ToStatsTeam(Rules.Team2),
         };
 }

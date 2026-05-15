@@ -27,9 +27,9 @@ public sealed class OnPlayerBecameMVPEvent : Get5Event
     public static OnPlayerBecameMVPEvent Create(PlayerState player, int reason) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
-            RoundNumber = MatchCtx.GetRoundNumber(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
+            RoundNumber = Rules.GetRoundNumber(),
             Player = Get5EventHelpers.ToPlayer(player),
             Reason = reason,
         };

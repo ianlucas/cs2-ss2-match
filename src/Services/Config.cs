@@ -8,7 +8,7 @@ namespace Match;
 public static class Config
 {
     public static void ExecWarmup(int warmupTime = -1, bool isLockTeams = false) =>
-        Swiftly.Core.Engine.ExecuteCommand([
+        Runtime.Core.Engine.ExecuteCommand([
             "bot_chatter off",
             "bot_join_after_player 0",
             "bot_quota_mode fill",
@@ -53,7 +53,7 @@ public static class Config
         ]);
 
     public static void ExecKnife() =>
-        Swiftly.Core.Engine.ExecuteCommand([
+        Runtime.Core.Engine.ExecuteCommand([
             "mp_maxrounds 4",
             "mp_ct_default_secondary \"\"",
             "mp_free_armor 1",
@@ -83,7 +83,7 @@ public static class Config
         bool isFriendlyPause = false,
         string? backupPath = null
     ) =>
-        Swiftly.Core.Engine.ExecuteCommand([
+        Runtime.Core.Engine.ExecuteCommand([
             $"mp_backup_round_file {(backupPath != null ? $"\"{backupPath}\"" : "\"\"")}",
             "ammo_grenade_limit_default 1",
             "ammo_grenade_limit_flashbang 2",

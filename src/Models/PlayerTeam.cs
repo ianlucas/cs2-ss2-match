@@ -48,7 +48,7 @@ public class PlayerTeam(Team startingTeam)
     public Team CurrentTeam
     {
         get =>
-            Swiftly.Core.EntitySystem.GetGameRules()?.AreTeamsPlayingSwitchedSides() == true
+            Runtime.Core.EntitySystem.GetGameRules()?.AreTeamsPlayingSwitchedSides() == true
                 ? StartingTeam.Toggle()
                 : StartingTeam;
     }
@@ -64,11 +64,11 @@ public class PlayerTeam(Team startingTeam)
         Name == ""
             ? InGameLeader != null
                 ? $"team_{InGameLeader.Name}"
-                : Swiftly.Core.Localizer[CurrentTeam == Team.T ? "match.t" : "match.ct"]
+                : Runtime.Core.Localizer[CurrentTeam == Team.T ? "match.t" : "match.ct"]
             : Name;
 
     public CCSTeam? Manager =>
-        Swiftly
+        Runtime
             .Core.EntitySystem.GetAllEntitiesByDesignerName<CCSTeam>("cs_team_manager")
             .FirstOrDefault(t => t.TeamNum == (byte)CurrentTeam);
 

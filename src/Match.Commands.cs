@@ -21,12 +21,12 @@ public partial class Match
         )
             return;
         var message = "[MatchPlugin Status]\n\n";
-        message += $"State: {MatchCtx.State.GetType().Name}\n";
-        message += $"Id: {MatchCtx.Id ?? "(No ID)"}\n";
-        message += $"Loaded from file?: {MatchCtx.IsLoadedFromFile}\n";
-        message += $"Is matchmaking?: {MatchCtx.IsMatchmaking()}\n";
+        message += $"State: {Rules.State.GetType().Name}\n";
+        message += $"Id: {Rules.Id ?? "(No ID)"}\n";
+        message += $"Loaded from file?: {Rules.IsLoadedFromFile}\n";
+        message += $"Is matchmaking?: {Rules.IsMatchmaking()}\n";
         message += "\n";
-        foreach (var team in MatchCtx.Teams)
+        foreach (var team in Rules.Teams)
         {
             message += $"[Team {team.Index}]\n";
             if (team.Players.Count == 0)
@@ -64,16 +64,16 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        if (MatchCtx.State is not ReadyupWarmupState)
+        if (Rules.State is not ReadyupWarmupState)
             return;
-        if (!MatchCtx.IsLoadedFromFile)
+        if (!Rules.IsLoadedFromFile)
         {
             foreach (var player in Core.PlayerManager.GetPlayersInTeams())
             {
                 var playerState = player.GetState();
                 if (playerState == null)
                 {
-                    var team = MatchCtx.GetTeam(player.Controller.Team);
+                    var team = Rules.GetTeam(player.Controller.Team);
                     if (team == null)
                         player.ChangeTeam(Team.Spectator);
                     else
@@ -90,22 +90,20 @@ public partial class Match
                 if (playerState != null)
                     playerState.IsReady = true;
             }
-            MatchCtx.Setup();
+            Rules.Setup();
         }
         else
-            foreach (var player in MatchCtx.GetAllPlayers())
+            foreach (var player in Rules.GetAllPlayers())
                 player.IsReady = true;
-        Swiftly.Log(
+        Runtime.Log(
             sendToChat: true,
             message: Core.Localizer[
                 "match.admin_start",
-                MatchCtx.GetChatPrefix(true),
+                Rules.GetChatPrefix(true),
                 caller?.Controller.PlayerName ?? "Console"
             ]
         );
-        MatchCtx.SetState(
-            ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new LiveState()
-        );
+        Rules.SetState(ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new LiveState());
     }
 
     public void OnMapCommand(ICommandContext context)
@@ -121,13 +119,13 @@ public partial class Match
         var mapname = context.Args[0].ToLower().Trim();
         if (!mapname.StartsWith("de_"))
             return;
-        if (MatchCtx.AreTeamsLocked())
+        if (Rules.AreTeamsLocked())
             return;
-        Swiftly.Log(
+        Runtime.Log(
             sendToChat: true,
             message: Core.Localizer[
                 "match.admin_map",
-                MatchCtx.GetChatPrefix(true),
+                Rules.GetChatPrefix(true),
                 caller?.Controller.PlayerName ?? "Console"
             ]
         );
@@ -142,16 +140,16 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        Swiftly.Log(
+        Runtime.Log(
             sendToChat: true,
             message: Core.Localizer[
                 "match.admin_restart",
-                MatchCtx.GetChatPrefix(true),
+                Rules.GetChatPrefix(true),
                 caller?.Controller.PlayerName ?? "Console"
             ]
         );
-        MatchCtx.Reset();
-        MatchCtx.SetState(new NoneState());
+        Rules.Reset();
+        Rules.SetState(new NoneState());
     }
 
     public void OnMatchLoadCommand(ICommandContext context)
@@ -162,54 +160,54 @@ public partial class Match
             && !Core.Permission.PlayerHasPermissions(caller.SteamID, ["@css/config"])
         )
             return;
-        if (MatchCtx.State is not ReadyupWarmupState)
+        if (Rules.State is not ReadyupWarmupState)
             return;
         if (context.Args.Length != 1)
             return;
         var name = context.Args[0].Trim();
         var file = Get5Match.Read(name);
         if (file.Error != null)
-            MatchCtx.SendEvent(OnLoadMatchConfigFailedEvent.Create(reason: file.Error));
+            Rules.SendEvent(OnLoadMatchConfigFailedEvent.Create(reason: file.Error));
         var match = file.Contents;
         if (match == null || file.Path == null)
             return;
-        MatchCtx.SendEvent(OnPreLoadMatchConfigEvent.Create(filename: file.Path));
-        MatchCtx.Reset();
-        MatchCtx.IsLoadedFromFile = true;
-        MatchCtx.Id = match.Matchid;
-        MatchCtx.IsClinchSeries = match.ClinchSeries ?? true;
+        Rules.SendEvent(OnPreLoadMatchConfigEvent.Create(filename: file.Path));
+        Rules.Reset();
+        Rules.IsLoadedFromFile = true;
+        Rules.Id = match.Matchid;
+        Rules.IsClinchSeries = match.ClinchSeries ?? true;
         // Maps
         var maplist = match.Maplist.Get();
         if (maplist != null)
             foreach (var mapName in maplist)
-                MatchCtx.AddMap(mapName);
+                Rules.AddMap(mapName);
         else
         {
-            MatchCtx.Reset();
+            Rules.Reset();
             return;
         }
         // Teams
-        MatchCtx.Team1.StartingTeam = Team.T;
-        MatchCtx.Team2.StartingTeam = Team.CT;
-        for (var index = 0; index < MatchCtx.Teams.Count; index++)
+        Rules.Team1.StartingTeam = Team.T;
+        Rules.Team2.StartingTeam = Team.CT;
+        for (var index = 0; index < Rules.Teams.Count; index++)
         {
             var teamSchema = (index == 0 ? match.Team1 : match.Team2)?.Get();
             if (teamSchema == null)
                 continue;
             ulong? leaderId = ulong.TryParse(teamSchema.Leaderid, out ulong li) ? li : null;
-            MatchCtx.ConfigureTeamFromSchema(index, teamSchema, leaderId);
+            Rules.ConfigureTeamFromSchema(index, teamSchema, leaderId);
         }
         if (match.Cvars != null)
             foreach (var (key, value) in match.Cvars)
             {
                 var cmd = $"{key} {value}";
-                Swiftly.Log($"Executing command: {cmd}");
+                Runtime.Log($"Executing command: {cmd}");
                 Core.Engine.ExecuteCommand(cmd);
             }
-        Swiftly.Core.Scheduler.NextWorldUpdate(() =>
+        Runtime.Core.Scheduler.NextWorldUpdate(() =>
         {
-            MatchCtx.Setup();
-            MatchCtx.SetState(new ReadyupWarmupState());
+            Rules.Setup();
+            Rules.SetState(new ReadyupWarmupState());
         });
     }
 }

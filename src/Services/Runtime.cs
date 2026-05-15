@@ -4,20 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using SwiftlyS2.Shared;
 
 namespace Match;
 
-public static class Swiftly
+public static class Runtime
 {
     [SwiftlyInject]
     public static ISwiftlyCore Core { get; set; } = null!;
 
-    public static void Initialize()
-    {
-        _ = Core;
-    }
+    public static void Initialize() =>
+        RuntimeHelpers.RunClassConstructor(typeof(Runtime).TypeHandle);
 
     public static void Log(string message, bool sendToChat = false, bool force = false)
     {

@@ -29,7 +29,7 @@ public static class IPlayerExtensions
 
         public PlayerState? GetState()
         {
-            return MatchCtx.GetPlayerStateFromSteamID(self.SteamID);
+            return Rules.GetPlayerStateFromSteamID(self.SteamID);
         }
     }
 }

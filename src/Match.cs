@@ -14,7 +14,7 @@ namespace Match;
     Version = "1.0.0",
     Name = "Match",
     Author = "Ian Lucas",
-    Description = "https://github.com/ianlucas/cs2-ss2-match"
+    Description = "A SwiftlyS2 plugin for managing matches"
 )]
 public partial class Match(ISwiftlyCore core) : BasePlugin(core)
 {
@@ -24,7 +24,7 @@ public partial class Match(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Load(bool hotReload)
     {
-        Swiftly.Initialize();
+        Runtime.Initialize();
         ConVars.Initialize();
         Cstv.Initialize();
         Core.Event.OnConVarValueChanged += OnConVarValueChanged;

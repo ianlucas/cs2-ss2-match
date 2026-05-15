@@ -38,7 +38,7 @@ public class MatchEventStore
             }
             catch (Exception ex)
             {
-                Swiftly.Log($"Error writing in_progress.json: {ex.Message}");
+                Runtime.Log($"Error writing in_progress.json: {ex.Message}");
             }
         }
     }

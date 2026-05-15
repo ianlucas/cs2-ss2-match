@@ -33,8 +33,8 @@ public sealed class OnFlashbangDetonatedEvent : Get5Event
     public static OnFlashbangDetonatedEvent Create(ThrownUtility thrown) =>
         new()
         {
-            MatchId = MatchCtx.Id,
-            MapNumber = MatchCtx.GetMapIndex(),
+            MatchId = Rules.Id,
+            MapNumber = Rules.GetMapIndex(),
             RoundNumber = thrown.RoundNumber,
             RoundTime = thrown.RoundTime,
             Player = Get5EventHelpers.ToPlayer(thrown.Player),

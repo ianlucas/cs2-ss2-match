@@ -20,10 +20,10 @@ public class ReadyupWarmupState : WarmupState
 
     public override void Load()
     {
-        Swiftly.Log($"Matchmaking mode: {MatchCtx.IsMatchmaking()}");
+        Runtime.Log($"Matchmaking mode: {Rules.IsMatchmaking()}");
         Cstv.Stop();
         Cstv.Set(ConVars.IsTvRecord.Value);
-        if (MatchCtx.EnsureCorrectMap())
+        if (Rules.EnsureCorrectMap())
             return /* Map will be changed. */
             ;
         base.Load();
@@ -35,11 +35,11 @@ public class ReadyupWarmupState : WarmupState
         HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
         RegisterCommand(ReadyCmds, OnReadyCommand);
         RegisterCommand(UnreadyCmds, OnUnreadyCommand);
-        MatchCtx.ResetTeamsForNewMatch();
+        Rules.ResetTeamsForNewMatch();
         if (this is not NoneState && ConVars.IsMatchmaking.Value)
         {
-            var nextMap = MatchCtx.GetNextMap();
-            Swiftly.Core.ConVar.Find<string>("nextlevel")?.Value = nextMap?.MapName ?? "";
+            var nextMap = Rules.GetNextMap();
+            Runtime.Core.ConVar.Find<string>("nextlevel")?.Value = nextMap?.MapName ?? "";
             _warmupStart = TimeHelper.NowSeconds();
             Timers.SetEverySecond("ReadyStatusReminder", SendReadyStatusReminder);
             Timers.Set(
@@ -49,41 +49,41 @@ public class ReadyupWarmupState : WarmupState
             );
         }
         Timers.SetEveryChatInterval("WarmupInstructions", SendWarmupInstructions);
-        Swiftly.Log("Executing warm-up commands...");
+        Runtime.Log("Executing warm-up commands...");
         Config.ExecWarmup(
-            warmupTime: MatchCtx.IsMatchmaking() ? ConVars.MatchmakingReadyTimeout.Value : -1,
-            isLockTeams: MatchCtx.AreTeamsLocked()
+            warmupTime: Rules.IsMatchmaking() ? ConVars.MatchmakingReadyTimeout.Value : -1,
+            isLockTeams: Rules.AreTeamsLocked()
         );
         _matchCancelled = false;
-        if (this is not NoneState && ConVars.IsMatchmaking.Value && MatchCtx.IsFirstMap())
-            Swiftly.Log("The series has begun.", force: true);
+        if (this is not NoneState && ConVars.IsMatchmaking.Value && Rules.IsFirstMap())
+            Runtime.Log("The series has begun.", force: true);
     }
 
     public void OnTick()
     {
         bool didUpdatePlayers = false;
-        foreach (var player in Swiftly.Core.PlayerManager.GetPlayersInTeams())
+        foreach (var player in Runtime.Core.PlayerManager.GetPlayersInTeams())
             if (
                 !player.IsFakeClient
                 && player.SetPlayerClan(
-                    Swiftly.Core.Localizer[
+                    Runtime.Core.Localizer[
                         player.GetState()?.IsReady == true ? "match.ready" : "match.not_ready"
                     ]
                 )
             )
                 didUpdatePlayers = true;
         if (didUpdatePlayers)
-            Swiftly.Core.PlayerManager.UpdateScoreboards();
+            Runtime.Core.PlayerManager.UpdateScoreboard();
     }
 
     public void SendWarmupInstructions()
     {
-        var needed = MatchCtx.GetNeededPlayersCount() - MatchCtx.GetReadyPlayersCount();
-        foreach (var player in Swiftly.Core.PlayerManager.GetPlayersInTeams())
+        var needed = Rules.GetNeededPlayersCount() - Rules.GetReadyPlayersCount();
+        foreach (var player in Runtime.Core.PlayerManager.GetPlayersInTeams())
         {
-            var localize = Swiftly.Core.Localizer;
+            var localize = Runtime.Core.Localizer;
             var playerState = player.GetState();
-            player.SendChat(localize["match.commands", MatchCtx.GetChatPrefix()]);
+            player.SendChat(localize["match.commands", Rules.GetChatPrefix()]);
             if (needed > 0)
                 player.SendChat(localize["match.commands_needed", needed]);
             if (playerState?.IsReady != true)
@@ -101,7 +101,7 @@ public class ReadyupWarmupState : WarmupState
         if (timeleft % 30 != 0)
             return;
         var formattedTimeleft = TimeHelper.FormatMmSs(timeleft);
-        var unreadyTeams = MatchCtx.GetUnreadyTeams();
+        var unreadyTeams = Rules.GetUnreadyTeams();
         if (timeleft == 0)
             Timers.Clear("ReadyStatusReminder");
         else
@@ -109,10 +109,10 @@ public class ReadyupWarmupState : WarmupState
             {
                 case 1:
                     var team = unreadyTeams.First();
-                    Swiftly.Core.PlayerManager.SendChat(
-                        Swiftly.Core.Localizer[
+                    Runtime.Core.PlayerManager.SendChat(
+                        Runtime.Core.Localizer[
                             "match.match_waiting_team",
-                            MatchCtx.GetChatPrefix(stripColors: true),
+                            Rules.GetChatPrefix(stripColors: true),
                             team.FormattedName,
                             formattedTimeleft
                         ]
@@ -120,10 +120,10 @@ public class ReadyupWarmupState : WarmupState
                     break;
 
                 case 2:
-                    Swiftly.Core.PlayerManager.SendChat(
-                        Swiftly.Core.Localizer[
+                    Runtime.Core.PlayerManager.SendChat(
+                        Runtime.Core.Localizer[
                             "match.match_waiting_players",
-                            MatchCtx.GetChatPrefix(stripColors: true),
+                            Rules.GetChatPrefix(stripColors: true),
                             formattedTimeleft
                         ]
                     );
@@ -134,7 +134,7 @@ public class ReadyupWarmupState : WarmupState
     public HookResult OnPlayerTeam(EventPlayerTeam @event)
     {
         var player = @event.UserIdPlayer;
-        if (!MatchCtx.IsLoadedFromFile && player != null)
+        if (!Rules.IsLoadedFromFile && player != null)
             player.GetState()?.LeaveTeam();
         return HookResult.Continue;
     }
@@ -148,9 +148,9 @@ public class ReadyupWarmupState : WarmupState
             player != null
             && !player.IsFakeClient
             && ConVars.IsMatchmaking.Value
-            && Swiftly.Core.PlayerManager.GetActualPlayers().Count() == 1
+            && Runtime.Core.PlayerManager.GetActualPlayers().Count() == 1
         )
-            Swiftly.Core.Engine.ExecuteCommand(
+            Runtime.Core.Engine.ExecuteCommand(
                 $"mp_warmuptime {Math.Max(
                 1,
                 ConVars.MatchmakingReadyTimeout.Value - (TimeHelper.NowSeconds() - _warmupStart)
@@ -164,11 +164,11 @@ public class ReadyupWarmupState : WarmupState
         var player = context.Sender;
         if (player != null && !_matchCancelled)
         {
-            Swiftly.Log($"{player.Controller.PlayerName} sent !ready.");
+            Runtime.Log($"{player.Controller.PlayerName} sent !ready.");
             var playerState = player.GetState();
-            if (playerState == null && !MatchCtx.IsLoadedFromFile)
+            if (playerState == null && !Rules.IsLoadedFromFile)
             {
-                var team = MatchCtx.GetTeam(player.Controller.Team);
+                var team = Rules.GetTeam(player.Controller.Team);
                 if (team != null && team.CanAddPlayer())
                 {
                     playerState = new(player.SteamID, player.Controller.PlayerName, team, player);
@@ -178,7 +178,7 @@ public class ReadyupWarmupState : WarmupState
             if (playerState != null)
             {
                 playerState.IsReady = true;
-                MatchCtx.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
+                Rules.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
                 TryStartMatch();
             }
         }
@@ -187,23 +187,23 @@ public class ReadyupWarmupState : WarmupState
     public void OnUnreadyCommand(ICommandContext context)
     {
         var player = context.Sender;
-        Swiftly.Log($"{player?.Controller.PlayerName} sent !unready.");
+        Runtime.Log($"{player?.Controller.PlayerName} sent !unready.");
         var playerState = player?.GetState();
         if (playerState != null)
         {
             playerState.IsReady = false;
-            MatchCtx.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
+            Rules.SendEvent(OnTeamReadyStatusChangedEvent.Create(team: playerState.Team));
         }
     }
 
     public void TryStartMatch()
     {
-        var players = MatchCtx.GetAllPlayers();
-        if (players.Count() == MatchCtx.GetNeededPlayersCount() && MatchCtx.AreAllPlayersReady())
+        var players = Rules.GetAllPlayers();
+        if (players.Count() == Rules.GetNeededPlayersCount() && Rules.AreAllPlayersReady())
         {
-            if (!MatchCtx.IsLoadedFromFile)
-                MatchCtx.Setup();
-            MatchCtx.SetState(
+            if (!Rules.IsLoadedFromFile)
+                Rules.Setup();
+            Rules.SetState(
                 ConVars.IsKnifeRoundEnabled.Value ? new KnifeRoundState() : new LiveState()
             );
         }
@@ -212,7 +212,7 @@ public class ReadyupWarmupState : WarmupState
     public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event)
     {
         var player = @event.UserIdPlayer;
-        if (!MatchCtx.IsLoadedFromFile && player != null)
+        if (!Rules.IsLoadedFromFile && player != null)
             player.GetState()?.LeaveTeam();
         return HookResult.Continue;
     }

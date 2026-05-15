@@ -21,7 +21,7 @@ public static class CCSPlayerControllerExtensions
 
         public PlayerState? GetState()
         {
-            return MatchCtx.GetPlayerStateFromSteamID(self.SteamID);
+            return Rules.GetPlayerStateFromSteamID(self.SteamID);
         }
     }
 }

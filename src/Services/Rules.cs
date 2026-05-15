@@ -9,7 +9,7 @@ using SwiftlyS2.Shared.ProtobufDefinitions;
 
 namespace Match;
 
-public static class MatchCtx
+public static class Rules
 {
     public static readonly List<PlayerTeam> Teams = [];
     public static readonly List<Map> Maps = [];
@@ -24,9 +24,9 @@ public static class MatchCtx
     public static PlayerTeam? KnifeRoundWinner { get; set; }
     public static MapEndResult? MapEndResult { get; set; } = null;
     public static MatchEventStore? EventStore { get; private set; }
-    private static int _sequence;
+    public static int Sequence { get; set; } = 0;
 
-    static MatchCtx()
+    static Rules()
     {
         var team1 = new PlayerTeam(Team.T);
         var team2 = new PlayerTeam(Team.CT);
@@ -48,7 +48,7 @@ public static class MatchCtx
         KnifeRoundWinner = null;
         MapEndResult = null;
         Maps.Clear();
-        _sequence = 0;
+        Sequence = 0;
         foreach (var team in Teams)
             team.Reset();
     }
@@ -58,14 +58,14 @@ public static class MatchCtx
         if (Id == "" || !IsLoadedFromFile)
             Id = Guid.NewGuid().ToString();
         if (!IsLoadedFromFile)
-            Maps.Add(new(Swiftly.Core.Engine.GlobalVars.MapName));
+            Maps.Add(new(Runtime.Core.Engine.GlobalVars.MapName));
         var idsInMatch = GetAllPlayers().Select(p => p.SteamID);
-        foreach (var player in Swiftly.Core.PlayerManager.GetActualPlayers())
+        foreach (var player in Runtime.Core.PlayerManager.GetActualPlayers())
             if (!idsInMatch.Contains(player.SteamID))
                 if (
                     !ConVars.IsMatchmaking.Value
                     || !ConVars.IsMatchmakingKick.Value
-                    || Swiftly.Core.Permission.PlayerHasPermission(player.SteamID, "@css/config")
+                    || Runtime.Core.Permission.PlayerHasPermission(player.SteamID, "@css/config")
                 )
                     player.ChangeTeam(Team.Spectator);
                 else
@@ -75,7 +75,7 @@ public static class MatchCtx
                     );
         foreach (var team in Teams)
         {
-            Swiftly.Core.Engine.SetTeamName(team.StartingTeam, team.ServerName);
+            Runtime.Core.Engine.SetTeamName(team.StartingTeam, team.ServerName);
             foreach (var player in team.Players)
             {
                 player.DamageReport.Clear();
@@ -87,7 +87,7 @@ public static class MatchCtx
         CreateMatchFolder();
         if (ConVars.IsEventStore.Value)
             EventStore = new MatchEventStore(GetMatchPath());
-        _sequence = 0;
+        Sequence = 0;
         SendEvent(OnSeriesInitEvent.Create());
     }
 
@@ -98,15 +98,15 @@ public static class MatchCtx
         if (newState.Name != State.Name)
             SendEvent(OnGameStateChangedEvent.Create(oldState: State, newState));
         State.Unload();
-        Swiftly.Log($"Unloaded {State.GetType().FullName}");
+        Runtime.Log($"Unloaded {State.GetType().FullName}");
         State = newState;
         State.Load();
-        Swiftly.Log($"Loaded {State.GetType().FullName}");
+        Runtime.Log($"Loaded {State.GetType().FullName}");
     }
 
     public static bool EnsureCorrectMap()
     {
-        var currentInGameMap = Swiftly.Core.Engine.GlobalVars.MapName;
+        var currentInGameMap = Runtime.Core.Engine.GlobalVars.MapName;
         var currentMap = GetMap();
         if (
             (currentMap != null && (currentInGameMap != currentMap.MapName))
@@ -114,12 +114,12 @@ public static class MatchCtx
         )
         {
             // Next level change will be handled by the game.
-            if (Swiftly.Core.ConVar.Find<string>("nextlevel")?.Value != "")
+            if (Runtime.Core.ConVar.Find<string>("nextlevel")?.Value != "")
                 return true;
             DidRestartFirstMap = true;
             var currentMapName = currentMap?.MapName ?? currentInGameMap;
-            Swiftly.Log($"Need to change map to {currentMapName}");
-            Swiftly.Core.Engine.ExecuteCommand($"changelevel {currentMapName}");
+            Runtime.Log($"Need to change map to {currentMapName}");
+            Runtime.Core.Engine.ExecuteCommand($"changelevel {currentMapName}");
             return true;
         }
         return false;
@@ -129,9 +129,9 @@ public static class MatchCtx
     {
         if (!ConVars.IsMatchmaking.Value)
             return;
-        foreach (var player in Swiftly.Core.PlayerManager.GetActualPlayers())
+        foreach (var player in Runtime.Core.PlayerManager.GetActualPlayers())
             if (player.GetState() == null)
-                if (Swiftly.Core.Permission.PlayerHasPermission(player.SteamID, "@css/root"))
+                if (Runtime.Core.Permission.PlayerHasPermission(player.SteamID, "@css/root"))
                     player.ChangeTeam(Team.Spectator);
                 else
                     player.Kick(
@@ -167,7 +167,7 @@ public static class MatchCtx
                 steamId,
                 playerSchema.Value,
                 team,
-                Swiftly.Core.PlayerManager.GetPlayerFromSteamID(steamId)
+                Runtime.Core.PlayerManager.GetPlayerFromSteamID(steamId)
             );
             team.AddPlayer(player);
 
@@ -311,7 +311,7 @@ public static class MatchCtx
     }
 
     public static string GetMatchPath(string filename = "") =>
-        Swiftly.Core.GetConfigPath($"{GetMatchFolder()}{(filename != "" ? $"/{filename}" : "")}");
+        Runtime.Core.GetConfigPath($"{GetMatchFolder()}{(filename != "" ? $"/{filename}" : "")}");
 
     public static DirectoryInfo CreateMatchFolder()
     {
@@ -320,12 +320,12 @@ public static class MatchCtx
 
     public static string? GetBackupPrefix()
     {
-        return Id != null ? GetMatchPath(Swiftly.Core.Engine.GlobalVars.MapName) : null;
+        return Id != null ? GetMatchPath(Runtime.Core.Engine.GlobalVars.MapName) : null;
     }
 
     public static string? GetDemoFilename()
     {
-        return Id != null ? GetMatchPath($"{Swiftly.Core.Engine.GlobalVars.MapName}.dem") : null;
+        return Id != null ? GetMatchPath($"{Runtime.Core.Engine.GlobalVars.MapName}.dem") : null;
     }
 
     public static void FinalizeEventLog()
@@ -382,9 +382,9 @@ public static class MatchCtx
 
     public static void SendEvent(Get5Event data)
     {
-        data.Sequence = _sequence++;
+        data.Sequence = Sequence++;
         var url = ConVars.RemoteLogUrl.Value;
-        Swiftly.Log($"RemoteLogUrl='{url}' event='{data.EventName}'");
+        Runtime.Log($"RemoteLogUrl='{url}' event='{data.EventName}'");
         if (url != "")
         {
             var headers = new Dictionary<string, string>();

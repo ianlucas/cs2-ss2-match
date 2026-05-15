@@ -14,12 +14,12 @@ public static partial class Natives
     )
         where TDelegate : Delegate
     {
-        nint? address = Swiftly.Core.GameData.GetSignature(signatureName);
+        nint? address = Runtime.Core.GameData.GetSignature(signatureName);
         if (address is null)
             throw new InvalidOperationException(
                 $"Failed to locate game function signature '{signatureName}'. The function may not exist in the current game version or the signature pattern may be outdated."
             );
-        return Swiftly.Core.Memory.GetUnmanagedFunctionByAddress<TDelegate>(address.Value);
+        return Runtime.Core.Memory.GetUnmanagedFunctionByAddress<TDelegate>(address.Value);
     }
 
     private static IUnmanagedFunction<TDelegate> GetFunctionByOffset<TDelegate>(
@@ -29,15 +29,15 @@ public static partial class Natives
     )
         where TDelegate : Delegate
     {
-        var offset = Swiftly.Core.GameData.GetOffset(offsetName);
+        var offset = Runtime.Core.GameData.GetOffset(offsetName);
         var vtable =
-            Swiftly.Core.Memory.GetVTableAddress(library ?? Library.Server, vtableName)
+            Runtime.Core.Memory.GetVTableAddress(library ?? Library.Server, vtableName)
             ?? throw new InvalidOperationException($"Failed to locate {vtableName} vtable.");
-        return Swiftly.Core.Memory.GetUnmanagedFunctionByVTable<TDelegate>(vtable, offset);
+        return Runtime.Core.Memory.GetUnmanagedFunctionByVTable<TDelegate>(vtable, offset);
     }
 
     private static int GetOffset(string offsetName)
     {
-        return Swiftly.Core.GameData.GetOffset(offsetName);
+        return Runtime.Core.GameData.GetOffset(offsetName);
     }
 }

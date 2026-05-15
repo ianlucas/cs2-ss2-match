@@ -17,40 +17,40 @@ public class KnifeRoundState : ReadyupWarmupState
 
     public override void Load()
     {
-        MatchCtx.KnifeRoundWinner = null;
+        Rules.KnifeRoundWinner = null;
         HookGameEvent<EventRoundStart>(OnRoundStart);
         AddHook(Natives.CCSPlayerPawnBase_IncrementNumMVPs, OnIncrementNumMVPs);
         if (OperatingSystem.IsWindows())
             AddHook(Natives.CCSGameRules_TerminateRoundWindows, OnTerminateRoundWindows);
         else
             AddHook(Natives.CCSGameRules_TerminateRoundLinux, OnTerminateRoundLinux);
-        Swiftly.Log("Executing knife round configuration");
+        Runtime.Log("Executing knife round configuration");
         Config.ExecKnife();
-        Cstv.Record(MatchCtx.GetDemoFilename());
-        Swiftly.Core.PlayerManager.RemovePlayerClans();
+        Cstv.Record(Rules.GetDemoFilename());
+        Runtime.Core.PlayerManager.RemovePlayerClans();
     }
 
     private uint? TryGetKnifeWinnerReason()
     {
-        var winner = Swiftly.Core.EntitySystem.GetGameRules()?.DetermineWinnerBySurvival();
+        var winner = Runtime.Core.EntitySystem.GetGameRules()?.DetermineWinnerBySurvival();
         if (winner == null)
             return null;
-        MatchCtx.KnifeRoundWinner = MatchCtx.GetTeam(winner.Value);
+        Rules.KnifeRoundWinner = Rules.GetTeam(winner.Value);
         return (uint)(winner == Team.T ? RoundEndReason.TerroristsWin : RoundEndReason.CTsWin);
     }
 
     public HookResult OnRoundStart(EventRoundStart @event)
     {
-        if (MatchCtx.KnifeRoundWinner != null)
-            Swiftly.Core.Scheduler.NextWorldUpdate(() =>
-                MatchCtx.SetState(new KnifeVoteWarmupState())
+        if (Rules.KnifeRoundWinner != null)
+            Runtime.Core.Scheduler.NextWorldUpdate(() =>
+                Rules.SetState(new KnifeVoteWarmupState())
             );
         else
         {
-            Swiftly.Core.PlayerManager.SendChatRepeat(
-                Swiftly.Core.Localizer["match.knife", MatchCtx.GetChatPrefix()]
+            Runtime.Core.PlayerManager.SendChatRepeat(
+                Runtime.Core.Localizer["match.knife", Rules.GetChatPrefix()]
             );
-            MatchCtx.SendEvent(OnKnifeRoundStartedEvent.Create());
+            Rules.SendEvent(OnKnifeRoundStartedEvent.Create());
         }
         return HookResult.Continue;
     }

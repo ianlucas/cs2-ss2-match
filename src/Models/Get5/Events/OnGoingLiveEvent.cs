@@ -16,5 +16,5 @@ public sealed class OnGoingLiveEvent : Get5Event
     public int MapNumber { get; init; }
 
     public static OnGoingLiveEvent Create() =>
-        new() { MatchId = MatchCtx.Id, MapNumber = MatchCtx.GetMapIndex() };
+        new() { MatchId = Rules.Id, MapNumber = Rules.GetMapIndex() };
 }
