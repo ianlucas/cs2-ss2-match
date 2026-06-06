@@ -16,7 +16,7 @@ public static partial class Natives
     );
 
     public static readonly IUnmanagedFunction<CEconItemSchema_GetItemDefinitionDelegate> CEconItemSchema_GetItemDefinition =
-        GetFunctionBySignature<CEconItemSchema_GetItemDefinitionDelegate>(
+        ResolveFunction<CEconItemSchema_GetItemDefinitionDelegate>(
             "CEconItemSchema::GetItemDefinition"
         );
 }

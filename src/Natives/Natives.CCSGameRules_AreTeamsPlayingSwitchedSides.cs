@@ -12,7 +12,7 @@ public static partial class Natives
     public delegate bool CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate(nint thisPtr);
 
     public static readonly IUnmanagedFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate> CCSGameRules_AreTeamsPlayingSwitchedSides =
-        GetFunctionBySignature<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>(
+        ResolveFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>(
             "CCSGameRules::AreTeamsPlayingSwitchedSides"
         );
 }

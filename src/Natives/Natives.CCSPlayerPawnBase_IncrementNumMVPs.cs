@@ -12,7 +12,7 @@ public static partial class Natives
     public delegate nint CCSPlayerPawnBase_IncrementNumMVPsDelegate(nint thisPtr, uint a2);
 
     public static readonly IUnmanagedFunction<CCSPlayerPawnBase_IncrementNumMVPsDelegate> CCSPlayerPawnBase_IncrementNumMVPs =
-        GetFunctionBySignature<CCSPlayerPawnBase_IncrementNumMVPsDelegate>(
+        ResolveFunction<CCSPlayerPawnBase_IncrementNumMVPsDelegate>(
             "CCSPlayerPawnBase::IncrementNumMVPs"
         );
 }

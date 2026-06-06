@@ -7,7 +7,7 @@ namespace Match;
 
 public static partial class Natives
 {
-    public static readonly int CInferno_m_nSourceWeaponDefIndex = GetOffset(
+    public static readonly int CInferno_m_nSourceWeaponDefIndex = ResolveOffset(
         "CInferno::m_nSourceWeaponDefIndex"
     );
 }

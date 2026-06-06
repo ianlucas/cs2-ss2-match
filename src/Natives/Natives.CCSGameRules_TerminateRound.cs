@@ -25,14 +25,14 @@ public static partial class Natives
 
     public static readonly IUnmanagedFunction<CCSGameRules_TerminateRoundWindowsDelegate> CCSGameRules_TerminateRoundWindows =
         OperatingSystem.IsWindows()
-            ? GetFunctionBySignature<CCSGameRules_TerminateRoundWindowsDelegate>(
+            ? ResolveFunction<CCSGameRules_TerminateRoundWindowsDelegate>(
                 "CGameRules::TerminateRound"
             )
             : null!;
 
     public static readonly IUnmanagedFunction<CCSGameRules_TerminateRoundLinuxDelegate> CCSGameRules_TerminateRoundLinux =
         !OperatingSystem.IsWindows()
-            ? GetFunctionBySignature<CCSGameRules_TerminateRoundLinuxDelegate>(
+            ? ResolveFunction<CCSGameRules_TerminateRoundLinuxDelegate>(
                 "CGameRules::TerminateRound"
             )
             : null!;
