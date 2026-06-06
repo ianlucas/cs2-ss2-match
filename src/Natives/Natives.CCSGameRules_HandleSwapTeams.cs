@@ -12,7 +12,5 @@ public static partial class Natives
     public delegate nint CCSGameRules_HandleSwapTeamsDelegate(nint thisPtr);
 
     public static readonly IUnmanagedFunction<CCSGameRules_HandleSwapTeamsDelegate> CCSGameRules_HandleSwapTeams =
-        GetFunctionBySignature<CCSGameRules_HandleSwapTeamsDelegate>(
-            "CCSGameRules::HandleSwapTeams"
-        );
+        ResolveFunction<CCSGameRules_HandleSwapTeamsDelegate>("CCSGameRules::HandleSwapTeams");
 }

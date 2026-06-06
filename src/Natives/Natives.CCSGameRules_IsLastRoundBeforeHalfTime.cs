@@ -12,7 +12,7 @@ public static partial class Natives
     public delegate bool CCSGameRules_IsLastRoundBeforeHalfTimeDelegate(nint thisPtr);
 
     public static readonly IUnmanagedFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate> CCSGameRules_IsLastRoundBeforeHalfTime =
-        GetFunctionBySignature<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>(
+        ResolveFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>(
             "CCSGameRules::IsLastRoundBeforeHalfTime"
         );
 }

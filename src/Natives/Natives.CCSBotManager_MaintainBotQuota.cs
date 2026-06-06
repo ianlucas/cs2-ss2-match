@@ -12,7 +12,5 @@ public static partial class Natives
     public delegate byte CCSBotManager_MaintainBotQuotaDelegate(nint thisPtr);
 
     public static readonly IUnmanagedFunction<CCSBotManager_MaintainBotQuotaDelegate> CCSBotManager_MaintainBotQuota =
-        GetFunctionBySignature<CCSBotManager_MaintainBotQuotaDelegate>(
-            "CCSBotManager::MaintainBotQuota"
-        );
+        ResolveFunction<CCSBotManager_MaintainBotQuotaDelegate>("CCSBotManager::MaintainBotQuota");
 }

@@ -43,6 +43,17 @@ public partial class Match(ISwiftlyCore core) : BasePlugin(core)
         Directory.CreateDirectory(Core.GetConfigPath());
     }
 
+    public void HandleBotsChanged()
+    {
+        if (ConVars.IsBots.Value)
+            DidKickBots = false;
+    }
+
+    public void HandleIsMatchmakingChanged()
+    {
+        Rules.EnforceMatchmakingRestrictions();
+    }
+
     public override void Unload()
     {
         Cstv.Shutdown();

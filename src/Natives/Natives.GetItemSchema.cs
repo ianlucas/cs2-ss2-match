@@ -12,5 +12,5 @@ public static partial class Natives
     public delegate nint GetItemSchemaDelegate();
 
     public static readonly IUnmanagedFunction<GetItemSchemaDelegate> GetItemSchema =
-        GetFunctionBySignature<GetItemSchemaDelegate>("GetItemSchema");
+        ResolveFunction<GetItemSchemaDelegate>("GetItemSchema");
 }

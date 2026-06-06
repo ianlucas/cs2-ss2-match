@@ -9,9 +9,7 @@ namespace Match;
 
 public static partial class Natives
 {
-    private static IUnmanagedFunction<TDelegate> GetFunctionBySignature<TDelegate>(
-        string signatureName
-    )
+    private static IUnmanagedFunction<TDelegate> ResolveFunction<TDelegate>(string signatureName)
         where TDelegate : Delegate
     {
         nint? address = Runtime.Core.GameData.GetSignature(signatureName);
@@ -22,7 +20,7 @@ public static partial class Natives
         return Runtime.Core.Memory.GetUnmanagedFunctionByAddress<TDelegate>(address.Value);
     }
 
-    private static IUnmanagedFunction<TDelegate> GetFunctionByOffset<TDelegate>(
+    private static IUnmanagedFunction<TDelegate> ResolveFunction<TDelegate>(
         string vtableName,
         string offsetName,
         string? library = null
@@ -36,7 +34,7 @@ public static partial class Natives
         return Runtime.Core.Memory.GetUnmanagedFunctionByVTable<TDelegate>(vtable, offset);
     }
 
-    private static int GetOffset(string offsetName)
+    private static int ResolveOffset(string offsetName)
     {
         return Runtime.Core.GameData.GetOffset(offsetName);
     }
