@@ -21,8 +21,8 @@
   },
   "CCSGameRules::HandleSwapTeams": {
     "lib": "server",
-    "windows": "48 8B C4 48 89 48 ? 41 54 48 81 EC ? ? ? ? 48 89 58",
-    "linux": "55 48 89 E5 41 57 41 56 45 31 F6 41 55 41 54 53 48 81 EC ? ? ? ? 4C 8D 25"
+    "windows": "48 89 4C 24 ? 53 55 56 57 41 54 41 55 41 56 41 57 48 83 EC ? 33 C0",
+    "linux": "55 48 89 E5 41 57 45 31 FF 41 56 41 55 41 54 53 48 81 EC ? ? ? ? 4C 8D 2D"
   },
   "CCSGameRules::IsLastRoundBeforeHalfTime": {
     "lib": "server",
