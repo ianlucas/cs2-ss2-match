@@ -81,7 +81,8 @@ public static class Config
         int maxRounds = 30,
         int otMaxRounds = 6,
         bool isFriendlyPause = false,
-        string? backupPath = null
+        string? backupPath = null,
+        int restartDelay = -1
     ) =>
         Runtime.Core.Engine.ExecuteCommand([
             $"mp_backup_round_file {(backupPath != null ? $"\"{backupPath}\"" : "\"\"")}",
@@ -201,7 +202,7 @@ public static class Config
             "mp_technical_timeout_duration_s 120",
             "mp_team_timeout_time 30",
             // Demo settings
-            $"mp_match_restart_delay 25",
+            $"mp_match_restart_delay {(restartDelay > -1 ? restartDelay + 5 : 25)}",
             // ...then end warmup.
             "mp_warmup_end",
             "mp_warmup_pausetimer 0",

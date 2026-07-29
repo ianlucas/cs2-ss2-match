@@ -17,6 +17,7 @@ public class ReadyupWarmupState : WarmupState
     public static readonly List<string> ReadyCmds = ["sw_ready", "sw_r", "sw_pronto"];
     public static readonly List<string> UnreadyCmds = ["sw_unready", "sw_ur", "sw_naopronto"];
     private long _warmupStart = 0;
+    private static bool IsBo1 => Rules.GetTotalMapCount() < 2;
 
     public override void Load()
     {
@@ -41,17 +42,20 @@ public class ReadyupWarmupState : WarmupState
             var nextMap = Rules.GetNextMap();
             Runtime.Core.ConVar.Find<string>("nextlevel")?.Value = nextMap?.MapName ?? "";
             _warmupStart = TimeHelper.NowSeconds();
-            Timers.SetEverySecond("ReadyStatusReminder", SendReadyStatusReminder);
-            Timers.Set(
-                "MatchmakingReadyTimeout",
-                ConVars.MatchmakingReadyTimeout.Value,
-                OnMatchCancelled
-            );
+            if (IsBo1)
+            {
+                Timers.SetEverySecond("ReadyStatusReminder", SendReadyStatusReminder);
+                Timers.Set(
+                    "MatchmakingReadyTimeout",
+                    ConVars.MatchmakingReadyTimeout.Value,
+                    OnMatchCancelled
+                );
+            }
         }
         Timers.SetEveryChatInterval("WarmupInstructions", SendWarmupInstructions);
         Runtime.Log("Executing warm-up commands...");
         Config.ExecWarmup(
-            warmupTime: Rules.IsMatchmaking() ? ConVars.MatchmakingReadyTimeout.Value : -1,
+            warmupTime: Rules.IsMatchmaking() && IsBo1 ? ConVars.MatchmakingReadyTimeout.Value : -1,
             isLockTeams: Rules.AreTeamsLocked()
         );
         _matchCancelled = false;
@@ -148,6 +152,7 @@ public class ReadyupWarmupState : WarmupState
             player != null
             && !player.IsFakeClient
             && ConVars.IsMatchmaking.Value
+            && IsBo1
             && Runtime.Core.PlayerManager.GetActualPlayers().Count() == 1
         )
             Runtime.Core.Engine.ExecuteCommand(
