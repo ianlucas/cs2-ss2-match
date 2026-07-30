@@ -151,7 +151,15 @@ public partial class LiveState
         Runtime.Log(
             $"player_death weapon={@event.Weapon} normalized={normalizedWeapon} active={(activeWeapon != null ? ItemHelper.GetItemDesignerName(activeWeapon.AttributeManager.Item.ItemDefinitionIndex) : "none")}"
         );
-        PlayerState? assisterState = null;
+        var assisterState = Runtime.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
+        if (assisterState != null && assisterState.Team != victimState.Team)
+            if (@event.AssistedFlash)
+                assisterState.Stats.FlashbangAssists += 1;
+            else
+            {
+                assisterState.Stats.Assists += 1;
+                _playerKilledOrAssistedOrTradedKill[assisterState.SteamID] = true;
+            }
         victimState.Stats.Deaths += 1;
         _playerDied[victimState.SteamID] = true;
         if (isSuicide)
@@ -211,20 +219,6 @@ public partial class LiveState
                     attackerState.Stats.HeadshotKills += 1;
                 if (killedWithKnife)
                     attackerState.Stats.KnifeKills += 1;
-                assisterState = Runtime.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
-                if (assisterState != null)
-                {
-                    var friendlyFire = assisterState.Team == victimState.Team;
-                    var assistedFlash = @event.AssistedFlash;
-                    if (!friendlyFire)
-                        if (assistedFlash)
-                            assisterState.Stats.FlashbangAssists += 1;
-                        else
-                        {
-                            assisterState.Stats.Assists += 1;
-                            _playerKilledOrAssistedOrTradedKill[assisterState.SteamID] = true;
-                        }
-                }
             }
         }
         Rules.SendEvent(
