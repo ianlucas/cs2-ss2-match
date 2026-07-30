@@ -21,6 +21,9 @@ public partial class LiveState
     private readonly Dictionary<ulong, (Team, ulong, Team, long)> _playerKilledBy = [];
     private bool _hadFirstDeath = false;
     private bool _hadFirstKill = false;
+    // `mp_backup_restore_load_file` fires a real `round_end` for the aborted round; `Stats_OnRoundEnd`
+    // must skip it while this is set. Cleared by the `round_start` that follows the restore.
+    private bool _isRestoring = false;
 
     // KAST
     private readonly Dictionary<ulong, bool> _playerDied = [];
@@ -29,6 +32,7 @@ public partial class LiveState
 
     public HookResult Stats_OnRoundStart(EventRoundStart @event)
     {
+        _isRestoring = false;
         _isTeamClutching.Clear();
         _roundClutchingCount.Clear();
         _playerKilledBy.Clear();
@@ -316,6 +320,8 @@ public partial class LiveState
 
     public HookResult Stats_OnRoundEnd(EventRoundEnd @event)
     {
+        if (_isRestoring)
+            return HookResult.Continue;
         var gameRules = Runtime.Core.EntitySystem.GetGameRules();
         if (gameRules == null)
             return HookResult.Continue;

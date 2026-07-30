@@ -61,6 +61,16 @@ public partial class LiveState
                 // Because we increment at OnRoundStart.
                 Round = roundAsInt - 1;
                 _thrownUtilities.Clear();
+                _roundKills.Clear();
+                _playerDied.Clear();
+                _playerKilledOrAssistedOrTradedKill.Clear();
+                _playerPlayedRound.Clear();
+                _roundClutchingCount.Clear();
+                _isTeamClutching.Clear();
+                _playerKilledBy.Clear();
+                _hadFirstKill = false;
+                _hadFirstDeath = false;
+                _isRestoring = true;
                 Rules.SendEvent(OnBackupRestoreEvent.Create(filename));
                 Runtime.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file \"{filename}\"");
             }
