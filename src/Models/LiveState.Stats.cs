@@ -260,10 +260,21 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.BombDefuses += 1;
-
-            var timeToDefuse = TimeHelper.Now() - _bombPlantedAt;
-            var c4Timer = (Runtime.Core.ConVar.Find<int>("mp_c4timer")?.Value ?? 0) * 1000;
-            var bombTimeRemaining = c4Timer - timeToDefuse;
+            var plantedC4 = Runtime
+                .Core.EntitySystem.GetAllEntitiesByDesignerName<CPlantedC4>("planted_c4")
+                .FirstOrDefault();
+            long bombTimeRemaining;
+            if (plantedC4 != null)
+                bombTimeRemaining = (long)(
+                    (plantedC4.C4Blow.Value - Runtime.Core.Engine.GlobalVars.CurrentTime) * 1000
+                );
+            else
+            {
+                Runtime.Log("No planted_c4 entity found, falling back to wall clock.");
+                var timeToDefuse = TimeHelper.Now() - _bombPlantedAt;
+                var c4Timer = (Runtime.Core.ConVar.Find<int>("mp_c4timer")?.Value ?? 0) * 1000;
+                bombTimeRemaining = c4Timer - timeToDefuse;
+            }
             if (bombTimeRemaining < 0)
             {
                 Runtime.Log($"bombTimeRemaining={bombTimeRemaining} is negative!");
