@@ -87,7 +87,7 @@ public partial class LiveState
         if (attackerState != null && victimState != null)
         {
             var friendlyFire = attackerState.Team == victimState.Team;
-            if (@event.BlindDuration > 2.5f)
+            if (@event.BlindDuration > 2.5f && attackerState != victimState)
                 if (friendlyFire)
                     attackerState.Stats.FriendliesFlashed += 1;
                 else
