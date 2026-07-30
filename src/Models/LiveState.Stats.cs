@@ -6,6 +6,7 @@
 using Match.Get5.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
+using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.SchemaDefinitions;
 
@@ -321,6 +322,12 @@ public partial class LiveState
     public HookResult Stats_OnRoundEnd(EventRoundEnd @event)
     {
         if (_isRestoring)
+            return HookResult.Continue;
+        // `Game_Commencing` is a full match reset, not a played round; and any `round_end` arriving
+        // after the map result was recorded must not mutate it retroactively.
+        if ((RoundEndReason)@event.Reason == RoundEndReason.GameCommencing)
+            return HookResult.Continue;
+        if (Rules.MapEndResult != null)
             return HookResult.Continue;
         var gameRules = Runtime.Core.EntitySystem.GetGameRules();
         if (gameRules == null)
