@@ -25,6 +25,10 @@ public partial class LiveState
     // `player_death.weapon` reports fire kills as the raw `inferno` entity name, never
     // distinguishing molotov from incendiary.
     private readonly Dictionary<ulong, string> _lastDamageWeapon = [];
+
+    // Deduplicates damage ticks into hits: shotgun pellets land as one call per pellet in the same
+    // server tick, and a single grenade or inferno damages the same victim across many ticks.
+    private readonly Dictionary<(ulong, ulong, string), int> _lastHitToken = [];
     private bool _hadOpeningDuel = false;
 
     // `mp_backup_restore_load_file` fires a real `round_end` for the aborted round; `Stats_OnRoundEnd`
@@ -43,6 +47,7 @@ public partial class LiveState
         _roundClutchingCount.Clear();
         _playerKilledBy.Clear();
         _lastDamageWeapon.Clear();
+        _lastHitToken.Clear();
         _hadOpeningDuel = false;
         _playerDied.Clear();
         _playerKilledOrAssistedOrTradedKill.Clear();
@@ -294,9 +299,11 @@ public partial class LiveState
 
     public void Stats_OnTakeDamage_Alive(
         PlayerState attackerState,
+        PlayerState victimState,
         string weaponDesignerName,
         int damage,
-        HitGroup_t hitGroup
+        HitGroup_t hitGroup,
+        int hitToken
     )
     {
         if (ItemHelper.IsUtilityDesignerName(weaponDesignerName))
@@ -305,8 +312,12 @@ public partial class LiveState
         var weaponStats = attackerState.Stats.GetWeaponStats(
             ItemHelper.NormalizeDesignerName(weaponDesignerName, null)
         );
-        weaponStats.Hits += 1;
         weaponStats.Damage += damage;
+        var hitKey = (attackerState.SteamID, victimState.SteamID, weaponDesignerName);
+        if (_lastHitToken.TryGetValue(hitKey, out var lastToken) && lastToken == hitToken)
+            return;
+        _lastHitToken[hitKey] = hitToken;
+        weaponStats.Hits += 1;
         switch (hitGroup)
         {
             case HitGroup_t.HITGROUP_HEAD:

@@ -286,7 +286,16 @@ public partial class LiveState : ActiveMatchState
                     ? info->Trace->HitBox->m_nGroupId
                     : HitGroup_t.HITGROUP_GENERIC;
             _lastDamageWeapon[victimState.SteamID] = weaponDesignerName;
-            Stats_OnTakeDamage_Alive(attackerState, weaponDesignerName, damage, hitGroup);
+            Stats_OnTakeDamage_Alive(
+                attackerState,
+                victimState,
+                weaponDesignerName,
+                damage,
+                hitGroup,
+                hitToken: ItemHelper.IsUtilityDesignerName(weaponDesignerName)
+                    ? (int)inflictor.Index
+                    : Runtime.Core.Engine.GlobalVars.TickCount
+            );
             return ret;
         };
 

@@ -113,6 +113,7 @@ public partial class LiveState
         _isTeamClutching.Clear();
         _playerKilledBy.Clear();
         _lastDamageWeapon.Clear();
+        _lastHitToken.Clear();
         _hadOpeningDuel = false;
         _isRestoring = true;
     }
