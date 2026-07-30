@@ -20,6 +20,11 @@ public partial class LiveState
     private readonly Dictionary<ulong, int> _roundClutchingCount = [];
     private readonly Dictionary<ulong, int> _roundKills = [];
     private readonly Dictionary<ulong, (Team, ulong, Team, long)> _playerKilledBy = [];
+
+    // Last weapon that damaged each victim, resolved from the inflictor. Needed because
+    // `player_death.weapon` reports fire kills as the raw `inferno` entity name, never
+    // distinguishing molotov from incendiary.
+    private readonly Dictionary<ulong, string> _lastDamageWeapon = [];
     private bool _hadOpeningDuel = false;
 
     // `mp_backup_restore_load_file` fires a real `round_end` for the aborted round; `Stats_OnRoundEnd`
@@ -37,6 +42,7 @@ public partial class LiveState
         _isTeamClutching.Clear();
         _roundClutchingCount.Clear();
         _playerKilledBy.Clear();
+        _lastDamageWeapon.Clear();
         _hadOpeningDuel = false;
         _playerDied.Clear();
         _playerKilledOrAssistedOrTradedKill.Clear();
@@ -122,7 +128,13 @@ public partial class LiveState
             && !killedByBomb
             && !isBotAttacker;
         var headshot = @event.Headshot;
-        var normalizedWeapon = ItemHelper.NormalizeDesignerName(@event.Weapon);
+        var eventWeapon = @event.Weapon;
+        if (
+            eventWeapon == "inferno"
+            && _lastDamageWeapon.TryGetValue(victimState.SteamID, out var lastDamageWeapon)
+        )
+            eventWeapon = lastDamageWeapon;
+        var normalizedWeapon = ItemHelper.NormalizeDesignerName(eventWeapon);
         var activeWeapon = attackerState
             ?.Handle
             ?.Controller

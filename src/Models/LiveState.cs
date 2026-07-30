@@ -285,6 +285,7 @@ public partial class LiveState : ActiveMatchState
                 info->Trace != null && info->Trace->HitBox != null
                     ? info->Trace->HitBox->m_nGroupId
                     : HitGroup_t.HITGROUP_GENERIC;
+            _lastDamageWeapon[victimState.SteamID] = weaponDesignerName;
             Stats_OnTakeDamage_Alive(attackerState, weaponDesignerName, damage, hitGroup);
             return ret;
         };
