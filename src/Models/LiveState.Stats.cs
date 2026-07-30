@@ -105,6 +105,14 @@ public partial class LiveState
         return HookResult.Continue;
     }
 
+    public HookResult Stats_OnPlayerDisconnect(EventPlayerDisconnect @event)
+    {
+        var playerState = @event.UserIdPlayer?.GetState();
+        if (playerState != null)
+            _playerDied[playerState.SteamID] = true;
+        return HookResult.Continue;
+    }
+
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
         var attacker = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker);
@@ -114,17 +122,22 @@ public partial class LiveState
         if (victimState == null)
             return HookResult.Continue;
         var victimTeam = victimState.Team.CurrentTeam;
-        if (
-            !_isTeamClutching.ContainsKey(victimTeam)
-            && Runtime.Core.PlayerManager.GetAliveInTeam(victimTeam).Count() == 1
-        )
+        if (!_isTeamClutching.ContainsKey(victimTeam))
         {
-            _isTeamClutching[victimTeam] = true;
-            var clutcher = Runtime.Core.PlayerManager.GetAliveInTeam(victimTeam).FirstOrDefault();
-            if (clutcher != null)
-                _roundClutchingCount[clutcher.SteamID] = Runtime
-                    .Core.PlayerManager.GetAliveInTeam(victimTeam.Toggle())
-                    .Count();
+            var aliveTeammates = Runtime
+                .Core.EntitySystem.GetAlivePawnsInTeam(victimTeam)
+                .ToList();
+            if (aliveTeammates.Count == 1)
+            {
+                _isTeamClutching[victimTeam] = true;
+                var clutcherState = aliveTeammates[0]
+                    .OriginalController.Value?.As<CCSPlayerController>()
+                    .GetState();
+                if (clutcherState != null)
+                    _roundClutchingCount[clutcherState.SteamID] = Runtime
+                        .Core.EntitySystem.GetAlivePawnsInTeam(victimTeam.Toggle())
+                        .Count();
+            }
         }
         var killedByBomb = @event.Weapon == "planted_c4";
         var killedWithKnife = ItemHelper.IsMeleeDesignerName(@event.Weapon);

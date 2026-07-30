@@ -64,6 +64,7 @@ public partial class LiveState : ActiveMatchState
         HookGameEvent<EventRoundEnd>(Stats_OnRoundEnd);
         HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
         HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
+        HookGameEvent<EventPlayerDisconnect>(Stats_OnPlayerDisconnect);
         Runtime.Log("Executing live match configuration");
         Rules.SendEvent(OnGoingLiveEvent.Create());
         Config.ExecLive(
