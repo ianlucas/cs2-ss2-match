@@ -124,9 +124,17 @@ public partial class LiveState
             && !killedByBomb
             && !isBotAttacker;
         var headshot = @event.Headshot;
-        var normalizedWeapon = ItemHelper.NormalizeDesignerName(
-            @event.Weapon,
-            attackerState?.Handle?.Controller
+        var normalizedWeapon = ItemHelper.NormalizeDesignerName(@event.Weapon);
+        var activeWeapon = attackerState
+            ?.Handle
+            ?.Controller
+            .PlayerPawn
+            .Value
+            ?.WeaponServices
+            ?.ActiveWeapon
+            .Value;
+        Runtime.Log(
+            $"player_death weapon={@event.Weapon} normalized={normalizedWeapon} active={(activeWeapon != null ? ItemHelper.GetItemDesignerName(activeWeapon.AttributeManager.Item.ItemDefinitionIndex) : "none")}"
         );
         PlayerState? assisterState = null;
         victimState.Stats.Deaths += 1;
