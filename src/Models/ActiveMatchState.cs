@@ -58,7 +58,9 @@ public class ActiveMatchState : BaseState
     {
         Runtime.Log($"Computing map result: {result}");
         var map = Rules.GetMap() ?? new(Runtime.Core.Engine.GlobalVars.MapName);
-        var stats = Rules.Teams.Select(t => t.Players.Select(p => p.Stats).ToList()).ToList();
+        var stats = Rules
+            .Teams.Select(t => t.Players.Select(p => p.Stats.Clone()).ToList())
+            .ToList();
         var demoFilename = Cstv.GetFilename();
         var scores = Rules.Teams.Select(t => t.Score).ToList();
         var team1 = Rules.Teams.First();
