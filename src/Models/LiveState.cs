@@ -38,6 +38,7 @@ public partial class LiveState : ActiveMatchState
         RegisterCommand(UnpauseCmds, OnUnpauseCommand);
         RegisterCommand(["sw_restore"], OnRestoreCommand);
         HookCoreEvent<EventDelegates.OnTick>(OnTick);
+        HookCoreEvent<EventDelegates.OnCommandExecuteHook>(OnCommandExecuteHook);
         HookGameEvent<EventPlayerConnect>(OnPlayerConnect);
         HookGameEvent<EventPlayerConnectFull>(OnPlayerConnectFull);
         HookGameEvent<EventRoundPrestart>(OnRoundPrestart);

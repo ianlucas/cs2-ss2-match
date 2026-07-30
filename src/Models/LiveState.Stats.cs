@@ -404,6 +404,7 @@ public partial class LiveState
                 _statsBackup[gameRules.TotalRoundsPlayed].Add((player, player.Stats.Clone()));
             }
         }
+        WriteStatsBackupToDisk(gameRules.TotalRoundsPlayed);
         Rules.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
         Rules.SendEvent(OnRoundStatsUpdatedEvent.Create());
         return HookResult.Continue;

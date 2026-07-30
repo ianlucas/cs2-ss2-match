@@ -9,6 +9,10 @@ namespace Match;
 
 public class PlayerStats(ulong steamId)
 {
+    // For JSON deserialization. `SteamID` is then populated from the payload.
+    public PlayerStats()
+        : this(0) { }
+
     [JsonPropertyName("steamid")]
     public string SteamID { get; set; } = steamId.ToString();
 

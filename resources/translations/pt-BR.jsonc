@@ -6,6 +6,7 @@
   "match.admin_restore": "[purple]{0} {1} (Admin) restaurou um round.",
   "match.admin_restore_syntax": "[red]{0} Uso: !restore <round>",
   "match.admin_restore_error": "[red]{0} O round {1} não foi encontrado.",
+  "match.admin_restore_stats_warning": "[red]{0} Nenhum snapshot de estatísticas encontrado para o round {1}. As estatísticas dos jogadores não foram restauradas.",
 
   "match.t": "Terroristas",
   "match.ct": "Contra-Terroristas",
