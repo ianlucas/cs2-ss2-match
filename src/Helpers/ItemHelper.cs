@@ -46,6 +46,9 @@ public static class ItemHelper
             designerName = GetItemDesignerName(
                 activeWeapon.AttributeManager.Item.ItemDefinitionIndex
             );
-        return designerName.Replace("weapon_", "");
+        designerName = designerName.Replace("weapon_", "");
+        if (designerName.EndsWith("_off"))
+            designerName = designerName[..^"_off".Length];
+        return designerName;
     }
 }
