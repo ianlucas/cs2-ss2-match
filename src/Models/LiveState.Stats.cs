@@ -124,9 +124,7 @@ public partial class LiveState
         var victimTeam = victimState.Team.CurrentTeam;
         if (!_isTeamClutching.ContainsKey(victimTeam))
         {
-            var aliveTeammates = Runtime
-                .Core.EntitySystem.GetAlivePawnsInTeam(victimTeam)
-                .ToList();
+            var aliveTeammates = Runtime.Core.EntitySystem.GetAlivePawnsInTeam(victimTeam).ToList();
             if (aliveTeammates.Count == 1)
             {
                 _isTeamClutching[victimTeam] = true;
