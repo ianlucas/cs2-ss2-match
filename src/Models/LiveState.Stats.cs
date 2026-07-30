@@ -175,6 +175,7 @@ public partial class LiveState
                     attackerTeam,
                     TimeHelper.Now()
                 );
+                var isTradeKill = false;
                 foreach (
                     var (
                         aVictim,
@@ -188,9 +189,11 @@ public partial class LiveState
                         && (TimeHelper.Now() - theVictimKilledAt) <= 2_000
                     )
                     {
-                        attackerState.Stats.TradeKills += 1;
+                        isTradeKill = true;
                         _playerKilledOrAssistedOrTradedKill[aVictim] = true;
                     }
+                if (isTradeKill)
+                    attackerState.Stats.TradeKills += 1;
                 attackerState.Stats.Kills += 1;
                 _playerKilledOrAssistedOrTradedKill[attackerState.SteamID] = true;
                 if (headshot)
