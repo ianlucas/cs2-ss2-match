@@ -22,6 +22,7 @@ public partial class LiveState
     private readonly Dictionary<ulong, (Team, ulong, Team, long)> _playerKilledBy = [];
     private bool _hadFirstDeath = false;
     private bool _hadFirstKill = false;
+
     // `mp_backup_restore_load_file` fires a real `round_end` for the aborted round; `Stats_OnRoundEnd`
     // must skip it while this is set. Cleared by the `round_start` that follows the restore.
     private bool _isRestoring = false;
@@ -98,9 +99,8 @@ public partial class LiveState
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
         var attacker = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker);
-        var attackerState = attacker?.GetState();
-        if (attacker?.IsFakeClient == true)
-            return HookResult.Continue;
+        var isBotAttacker = attacker?.IsFakeClient == true;
+        var attackerState = isBotAttacker ? null : attacker?.GetState();
         var victimState = @event.UserIdPlayer?.GetState();
         if (victimState == null)
             return HookResult.Continue;
@@ -119,7 +119,10 @@ public partial class LiveState
         }
         var killedByBomb = @event.Weapon == "planted_c4";
         var killedWithKnife = ItemHelper.IsMeleeDesignerName(@event.Weapon);
-        var isSuicide = (attackerState == null || attackerState == victimState) && !killedByBomb;
+        var isSuicide =
+            (attackerState == null || attackerState == victimState)
+            && !killedByBomb
+            && !isBotAttacker;
         var headshot = @event.Headshot;
         var normalizedWeapon = ItemHelper.NormalizeDesignerName(
             @event.Weapon,
