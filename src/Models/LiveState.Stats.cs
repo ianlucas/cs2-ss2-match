@@ -20,8 +20,7 @@ public partial class LiveState
     private readonly Dictionary<ulong, int> _roundClutchingCount = [];
     private readonly Dictionary<ulong, int> _roundKills = [];
     private readonly Dictionary<ulong, (Team, ulong, Team, long)> _playerKilledBy = [];
-    private bool _hadFirstDeath = false;
-    private bool _hadFirstKill = false;
+    private bool _hadOpeningDuel = false;
 
     // `mp_backup_restore_load_file` fires a real `round_end` for the aborted round; `Stats_OnRoundEnd`
     // must skip it while this is set. Cleared by the `round_start` that follows the restore.
@@ -38,8 +37,7 @@ public partial class LiveState
         _isTeamClutching.Clear();
         _roundClutchingCount.Clear();
         _playerKilledBy.Clear();
-        _hadFirstDeath = false;
-        _hadFirstKill = false;
+        _hadOpeningDuel = false;
         _playerDied.Clear();
         _playerKilledOrAssistedOrTradedKill.Clear();
         _playerPlayedRound.Clear();
@@ -139,14 +137,6 @@ public partial class LiveState
         PlayerState? assisterState = null;
         victimState.Stats.Deaths += 1;
         _playerDied[victimState.SteamID] = true;
-        if (!_hadFirstDeath)
-        {
-            _hadFirstDeath = true;
-            if (victimTeam == Team.T)
-                victimState.Stats.FirstDeathsT += 1;
-            else
-                victimState.Stats.FirstDeathsCT += 1;
-        }
         if (isSuicide)
             victimState.Stats.Suicides += 1;
         else if (!killedByBomb)
@@ -160,13 +150,17 @@ public partial class LiveState
                 if (headshot)
                     weaponStats.Headshots += 1;
                 var attackerTeam = attackerState.Team.CurrentTeam;
-                if (!_hadFirstKill)
+                if (!_hadOpeningDuel)
                 {
-                    _hadFirstKill = true;
+                    _hadOpeningDuel = true;
                     if (attackerTeam == Team.T)
                         attackerState.Stats.FirstKillsT += 1;
                     else
                         attackerState.Stats.FirstKillsCT += 1;
+                    if (victimTeam == Team.T)
+                        victimState.Stats.FirstDeathsT += 1;
+                    else
+                        victimState.Stats.FirstDeathsCT += 1;
                 }
                 _roundKills[attackerState.SteamID] += 1;
                 _playerKilledBy[victimState.SteamID] = (

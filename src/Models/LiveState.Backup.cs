@@ -112,8 +112,7 @@ public partial class LiveState
         _roundClutchingCount.Clear();
         _isTeamClutching.Clear();
         _playerKilledBy.Clear();
-        _hadFirstKill = false;
-        _hadFirstDeath = false;
+        _hadOpeningDuel = false;
         _isRestoring = true;
     }
 
