@@ -129,7 +129,7 @@ public partial class LiveState
         var killedByBomb = @event.Weapon == "planted_c4";
         var killedWithKnife = ItemHelper.IsMeleeDesignerName(@event.Weapon);
         var isSuicide =
-            (attackerState == null || attackerState == victimState)
+            (attacker == null || attacker.SteamID == victimState.SteamID)
             && !killedByBomb
             && !isBotAttacker;
         var headshot = @event.Headshot;
