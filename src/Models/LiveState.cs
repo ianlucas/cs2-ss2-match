@@ -38,6 +38,7 @@ public partial class LiveState : ActiveMatchState
         RegisterCommand(UnpauseCmds, OnUnpauseCommand);
         RegisterCommand(["sw_restore"], OnRestoreCommand);
         HookCoreEvent<EventDelegates.OnTick>(OnTick);
+        HookCoreEvent<EventDelegates.OnCommandExecuteHook>(OnCommandExecuteHook);
         HookGameEvent<EventPlayerConnect>(OnPlayerConnect);
         HookGameEvent<EventPlayerConnectFull>(OnPlayerConnectFull);
         HookGameEvent<EventRoundPrestart>(OnRoundPrestart);
@@ -63,6 +64,7 @@ public partial class LiveState : ActiveMatchState
         HookGameEvent<EventRoundEnd>(Stats_OnRoundEnd);
         HookGameEvent<EventCsWinPanelMatch>(OnCsWinPanelMatch);
         HookGameEvent<EventPlayerDisconnect>(OnPlayerDisconnect);
+        HookGameEvent<EventPlayerDisconnect>(Stats_OnPlayerDisconnect);
         Runtime.Log("Executing live match configuration");
         Rules.SendEvent(OnGoingLiveEvent.Create());
         Config.ExecLive(
@@ -284,7 +286,17 @@ public partial class LiveState : ActiveMatchState
                 info->Trace != null && info->Trace->HitBox != null
                     ? info->Trace->HitBox->m_nGroupId
                     : HitGroup_t.HITGROUP_GENERIC;
-            Stats_OnTakeDamage_Alive(attackerState, weaponDesignerName, damage, hitGroup);
+            _lastDamageWeapon[victimState.SteamID] = weaponDesignerName;
+            Stats_OnTakeDamage_Alive(
+                attackerState,
+                victimState,
+                weaponDesignerName,
+                damage,
+                hitGroup,
+                hitToken: ItemHelper.IsUtilityDesignerName(weaponDesignerName)
+                    ? (int)inflictor.Index
+                    : Runtime.Core.Engine.GlobalVars.TickCount
+            );
             return ret;
         };
 
@@ -296,6 +308,8 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnRoundEndPre(EventRoundEnd @event)
     {
+        if (_isRestoring)
+            return HookResult.Continue;
         _canSurrender = false;
         var localize = Runtime.Core.Localizer;
         var home = Rules.Teams.First();

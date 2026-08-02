@@ -132,7 +132,7 @@ public static class Config
             "mp_death_drop_grenade 2",
             "mp_death_drop_gun 1",
             "mp_defuser_allocation 0",
-            "mp_disconnect_kills_players 0",
+            "mp_disconnect_kills_players 1",
             "mp_display_kill_assists 1",
             "mp_endmatch_votenextmap 0",
             "mp_forcecamera 1",

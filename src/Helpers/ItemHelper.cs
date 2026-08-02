@@ -41,11 +41,16 @@ public static class ItemHelper
     {
         if (IsMeleeDesignerName(designerName))
             return "knife";
+        if (designerName == "planted_c4")
+            return "c4";
         var activeWeapon = owner?.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
         if (activeWeapon != null)
             designerName = GetItemDesignerName(
                 activeWeapon.AttributeManager.Item.ItemDefinitionIndex
             );
-        return designerName.Replace("weapon_", "");
+        designerName = designerName.Replace("weapon_", "");
+        if (designerName.EndsWith("_off"))
+            designerName = designerName[..^"_off".Length];
+        return designerName;
     }
 }

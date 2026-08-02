@@ -63,8 +63,11 @@ public static class Get5EventHelpers
             ping = player.Controller.Ping,
         };
 
-    public static object ToWeapon(string weapon) =>
-        new { name = weapon.Replace("weapon_", ""), id = ItemHelper.GetItemDefIndex(weapon) };
+    public static object ToWeapon(string weapon)
+    {
+        var name = weapon.Replace("weapon_", "");
+        return new { name, id = ItemHelper.GetItemDefIndex($"weapon_{name}") };
+    }
 
     public static string ToSite(int? site) =>
         site switch

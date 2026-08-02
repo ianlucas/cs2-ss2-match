@@ -6,6 +6,7 @@
 using Match.Get5.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
+using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.SchemaDefinitions;
 
@@ -19,8 +20,18 @@ public partial class LiveState
     private readonly Dictionary<ulong, int> _roundClutchingCount = [];
     private readonly Dictionary<ulong, int> _roundKills = [];
     private readonly Dictionary<ulong, (Team, ulong, Team, long)> _playerKilledBy = [];
-    private bool _hadFirstDeath = false;
-    private bool _hadFirstKill = false;
+
+    // Last weapon that damaged each victim, resolved from the inflictor. Needed because
+    // `player_death.weapon` reports fire kills as the raw `inferno` entity name, never
+    // distinguishing molotov from incendiary.
+    private readonly Dictionary<ulong, string> _lastDamageWeapon = [];
+
+    // Deduplicates damage ticks into hits: shotgun pellets land as one call per pellet in the same
+    // server tick, and a single grenade or inferno damages the same victim across many ticks.
+    private readonly Dictionary<(ulong, ulong, string), int> _lastHitToken = [];
+    private bool _hadOpeningDuel = false;
+    private bool _isRestoring = false;
+    private int _restoreRound = 0;
 
     // KAST
     private readonly Dictionary<ulong, bool> _playerDied = [];
@@ -29,11 +40,20 @@ public partial class LiveState
 
     public HookResult Stats_OnRoundStart(EventRoundStart @event)
     {
+        if (_isRestoring)
+        {
+            if (_restoreRound == 0)
+                Rules.ResetAllPlayerAndTeamStats();
+            else
+                RestoreStats(_restoreRound);
+            _isRestoring = false;
+        }
         _isTeamClutching.Clear();
         _roundClutchingCount.Clear();
         _playerKilledBy.Clear();
-        _hadFirstDeath = false;
-        _hadFirstKill = false;
+        _lastDamageWeapon.Clear();
+        _lastHitToken.Clear();
+        _hadOpeningDuel = false;
         _playerDied.Clear();
         _playerKilledOrAssistedOrTradedKill.Clear();
         _playerPlayedRound.Clear();
@@ -72,7 +92,7 @@ public partial class LiveState
         if (attackerState != null && victimState != null)
         {
             var friendlyFire = attackerState.Team == victimState.Team;
-            if (@event.BlindDuration > 2.5f)
+            if (@event.BlindDuration > 2.5f && attackerState != victimState)
                 if (friendlyFire)
                     attackerState.Stats.FriendliesFlashed += 1;
                 else
@@ -90,47 +110,65 @@ public partial class LiveState
         return HookResult.Continue;
     }
 
+    public HookResult Stats_OnPlayerDisconnect(EventPlayerDisconnect @event)
+    {
+        var playerState = @event.UserIdPlayer?.GetState();
+        if (playerState != null)
+            _playerDied[playerState.SteamID] = true;
+        return HookResult.Continue;
+    }
+
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
-        var attacker = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker);
-        var attackerState = attacker?.GetState();
-        if (attacker?.IsFakeClient == true)
+        if (_isRestoring)
             return HookResult.Continue;
+        var attacker = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker);
+        var isBotAttacker = attacker?.IsFakeClient == true;
+        var attackerState = isBotAttacker ? null : attacker?.GetState();
         var victimState = @event.UserIdPlayer?.GetState();
         if (victimState == null)
             return HookResult.Continue;
         var victimTeam = victimState.Team.CurrentTeam;
-        if (
-            !_isTeamClutching.ContainsKey(victimTeam)
-            && Runtime.Core.PlayerManager.GetAliveInTeam(victimTeam).Count() == 1
-        )
+        if (!_isTeamClutching.ContainsKey(victimTeam))
         {
-            _isTeamClutching[victimTeam] = true;
-            var clutcher = Runtime.Core.PlayerManager.GetAliveInTeam(victimTeam).FirstOrDefault();
-            if (clutcher != null)
-                _roundClutchingCount[clutcher.SteamID] = Runtime
-                    .Core.PlayerManager.GetAliveInTeam(victimTeam.Toggle())
-                    .Count();
+            var aliveTeammates = Runtime.Core.EntitySystem.GetAlivePawnsInTeam(victimTeam).ToList();
+            if (aliveTeammates.Count == 1)
+            {
+                _isTeamClutching[victimTeam] = true;
+                var clutcherState = aliveTeammates[0]
+                    .OriginalController.Value?.As<CCSPlayerController>()
+                    .GetState();
+                if (clutcherState != null)
+                    _roundClutchingCount[clutcherState.SteamID] = Runtime
+                        .Core.EntitySystem.GetAlivePawnsInTeam(victimTeam.Toggle())
+                        .Count();
+            }
         }
         var killedByBomb = @event.Weapon == "planted_c4";
         var killedWithKnife = ItemHelper.IsMeleeDesignerName(@event.Weapon);
-        var isSuicide = (attackerState == null || attackerState == victimState) && !killedByBomb;
+        var isSuicide =
+            (attacker == null || attacker.SteamID == victimState.SteamID)
+            && !killedByBomb
+            && !isBotAttacker;
         var headshot = @event.Headshot;
-        var normalizedWeapon = ItemHelper.NormalizeDesignerName(
-            @event.Weapon,
-            attackerState?.Handle?.Controller
-        );
-        PlayerState? assisterState = null;
+        var eventWeapon = @event.Weapon;
+        if (
+            eventWeapon == "inferno"
+            && _lastDamageWeapon.TryGetValue(victimState.SteamID, out var lastDamageWeapon)
+        )
+            eventWeapon = lastDamageWeapon;
+        var normalizedWeapon = ItemHelper.NormalizeDesignerName(eventWeapon);
+        var assisterState = Runtime.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
+        if (assisterState != null && assisterState.Team != victimState.Team)
+            if (@event.AssistedFlash)
+                assisterState.Stats.FlashbangAssists += 1;
+            else
+            {
+                assisterState.Stats.Assists += 1;
+                _playerKilledOrAssistedOrTradedKill[assisterState.SteamID] = true;
+            }
         victimState.Stats.Deaths += 1;
         _playerDied[victimState.SteamID] = true;
-        if (!_hadFirstDeath)
-        {
-            _hadFirstDeath = true;
-            if (victimTeam == Team.T)
-                victimState.Stats.FirstDeathsT += 1;
-            else
-                victimState.Stats.FirstDeathsCT += 1;
-        }
         if (isSuicide)
             victimState.Stats.Suicides += 1;
         else if (!killedByBomb)
@@ -144,13 +182,17 @@ public partial class LiveState
                 if (headshot)
                     weaponStats.Headshots += 1;
                 var attackerTeam = attackerState.Team.CurrentTeam;
-                if (!_hadFirstKill)
+                if (!_hadOpeningDuel)
                 {
-                    _hadFirstKill = true;
+                    _hadOpeningDuel = true;
                     if (attackerTeam == Team.T)
                         attackerState.Stats.FirstKillsT += 1;
                     else
                         attackerState.Stats.FirstKillsCT += 1;
+                    if (victimTeam == Team.T)
+                        victimState.Stats.FirstDeathsT += 1;
+                    else
+                        victimState.Stats.FirstDeathsCT += 1;
                 }
                 _roundKills[attackerState.SteamID] += 1;
                 _playerKilledBy[victimState.SteamID] = (
@@ -159,6 +201,7 @@ public partial class LiveState
                     attackerTeam,
                     TimeHelper.Now()
                 );
+                var isTradeKill = false;
                 foreach (
                     var (
                         aVictim,
@@ -172,29 +215,17 @@ public partial class LiveState
                         && (TimeHelper.Now() - theVictimKilledAt) <= 2_000
                     )
                     {
-                        attackerState.Stats.TradeKills += 1;
+                        isTradeKill = true;
                         _playerKilledOrAssistedOrTradedKill[aVictim] = true;
                     }
+                if (isTradeKill)
+                    attackerState.Stats.TradeKills += 1;
                 attackerState.Stats.Kills += 1;
                 _playerKilledOrAssistedOrTradedKill[attackerState.SteamID] = true;
                 if (headshot)
                     attackerState.Stats.HeadshotKills += 1;
                 if (killedWithKnife)
                     attackerState.Stats.KnifeKills += 1;
-                assisterState = Runtime.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
-                if (assisterState != null)
-                {
-                    var friendlyFire = assisterState.Team == victimState.Team;
-                    var assistedFlash = @event.AssistedFlash;
-                    if (!friendlyFire)
-                        if (assistedFlash)
-                            assisterState.Stats.FlashbangAssists += 1;
-                        else
-                        {
-                            assisterState.Stats.Assists += 1;
-                            _playerKilledOrAssistedOrTradedKill[assisterState.SteamID] = true;
-                        }
-                }
             }
         }
         Rules.SendEvent(
@@ -236,10 +267,21 @@ public partial class LiveState
         if (playerState != null)
         {
             playerState.Stats.BombDefuses += 1;
-
-            var timeToDefuse = TimeHelper.Now() - _bombPlantedAt;
-            var c4Timer = (Runtime.Core.ConVar.Find<int>("mp_c4timer")?.Value ?? 0) * 1000;
-            var bombTimeRemaining = c4Timer - timeToDefuse;
+            var plantedC4 = Runtime
+                .Core.EntitySystem.GetAllEntitiesByDesignerName<CPlantedC4>("planted_c4")
+                .FirstOrDefault();
+            long bombTimeRemaining;
+            if (plantedC4 != null)
+                bombTimeRemaining = (long)(
+                    (plantedC4.C4Blow.Value - Runtime.Core.Engine.GlobalVars.CurrentTime) * 1000
+                );
+            else
+            {
+                Runtime.Log("No planted_c4 entity found, falling back to wall clock.");
+                var timeToDefuse = TimeHelper.Now() - _bombPlantedAt;
+                var c4Timer = (Runtime.Core.ConVar.Find<int>("mp_c4timer")?.Value ?? 0) * 1000;
+                bombTimeRemaining = c4Timer - timeToDefuse;
+            }
             if (bombTimeRemaining < 0)
             {
                 Runtime.Log($"bombTimeRemaining={bombTimeRemaining} is negative!");
@@ -269,9 +311,11 @@ public partial class LiveState
 
     public void Stats_OnTakeDamage_Alive(
         PlayerState attackerState,
+        PlayerState victimState,
         string weaponDesignerName,
         int damage,
-        HitGroup_t hitGroup
+        HitGroup_t hitGroup,
+        int hitToken
     )
     {
         if (ItemHelper.IsUtilityDesignerName(weaponDesignerName))
@@ -280,8 +324,12 @@ public partial class LiveState
         var weaponStats = attackerState.Stats.GetWeaponStats(
             ItemHelper.NormalizeDesignerName(weaponDesignerName, null)
         );
-        weaponStats.Hits += 1;
         weaponStats.Damage += damage;
+        var hitKey = (attackerState.SteamID, victimState.SteamID, weaponDesignerName);
+        if (_lastHitToken.TryGetValue(hitKey, out var lastToken) && lastToken == hitToken)
+            return;
+        _lastHitToken[hitKey] = hitToken;
+        weaponStats.Hits += 1;
         switch (hitGroup)
         {
             case HitGroup_t.HITGROUP_HEAD:
@@ -316,6 +364,14 @@ public partial class LiveState
 
     public HookResult Stats_OnRoundEnd(EventRoundEnd @event)
     {
+        if (_isRestoring)
+            return HookResult.Continue;
+        // `Game_Commencing` is a full match reset, not a played round; and any `round_end` arriving
+        // after the map result was recorded must not mutate it retroactively.
+        if ((RoundEndReason)@event.Reason == RoundEndReason.GameCommencing)
+            return HookResult.Continue;
+        if (Rules.MapEndResult != null)
+            return HookResult.Continue;
         var gameRules = Runtime.Core.EntitySystem.GetGameRules();
         if (gameRules == null)
             return HookResult.Continue;
@@ -330,11 +386,12 @@ public partial class LiveState
                 winnerTeam.Stats.ScoreCT += 1;
                 break;
         }
-        _statsBackup[gameRules.TotalRoundsPlayed] = [];
-        _teamStatsBackup[gameRules.TotalRoundsPlayed] = [];
+        var completedRounds = gameRules.TotalRoundsPlayed + 1;
+        _statsBackup[completedRounds] = [];
+        _teamStatsBackup[completedRounds] = [];
         foreach (var team in Rules.Teams)
         {
-            _teamStatsBackup[gameRules.TotalRoundsPlayed].Add((team, team.Stats.Clone()));
+            _teamStatsBackup[completedRounds].Add((team, team.Stats.Clone()));
             foreach (var player in team.Players)
             {
                 if (player.Handle != null)
@@ -388,9 +445,10 @@ public partial class LiveState
                     )
                         player.Stats.KAST += 1;
 
-                _statsBackup[gameRules.TotalRoundsPlayed].Add((player, player.Stats.Clone()));
+                _statsBackup[completedRounds].Add((player, player.Stats.Clone()));
             }
         }
+        WriteStatsBackupToDisk(completedRounds);
         Rules.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
         Rules.SendEvent(OnRoundStatsUpdatedEvent.Create());
         return HookResult.Continue;
