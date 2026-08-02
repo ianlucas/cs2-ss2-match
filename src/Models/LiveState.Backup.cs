@@ -98,10 +98,6 @@ public partial class LiveState
     {
         foreach (var report in Rules.GetAllPlayers().SelectMany(p => p.DamageReport.Values))
             report.Reset();
-        if (roundAsInt == 0)
-            Rules.ResetAllPlayerAndTeamStats();
-        else
-            RestoreStats(roundAsInt);
         // Because we increment at OnRoundStart.
         Round = roundAsInt - 1;
         _thrownUtilities.Clear();
@@ -115,6 +111,7 @@ public partial class LiveState
         _lastDamageWeapon.Clear();
         _lastHitToken.Clear();
         _hadOpeningDuel = false;
+        _restoreRound = roundAsInt;
         _isRestoring = true;
     }
 
@@ -171,9 +168,8 @@ public partial class LiveState
                     player?.Controller.PlayerName ?? "Console"
                 ]
             );
-            // We load the stats before trying to restore the round. Most cases should work as
-            // `mp_backup_restore_load_file` can only fail when the file is not found, but we already had a check
-            // for that.
+            // `mp_backup_restore_load_file` can only fail when the file is not found, but we
+            // already had a check for that.
             PrepareForRestore(roundAsInt);
             Rules.SendEvent(OnBackupRestoreEvent.Create(filename));
             Runtime.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file \"{filename}\"");

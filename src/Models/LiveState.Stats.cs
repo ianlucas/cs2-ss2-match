@@ -30,10 +30,8 @@ public partial class LiveState
     // server tick, and a single grenade or inferno damages the same victim across many ticks.
     private readonly Dictionary<(ulong, ulong, string), int> _lastHitToken = [];
     private bool _hadOpeningDuel = false;
-
-    // `mp_backup_restore_load_file` fires a real `round_end` for the aborted round; `Stats_OnRoundEnd`
-    // must skip it while this is set. Cleared by the `round_start` that follows the restore.
     private bool _isRestoring = false;
+    private int _restoreRound = 0;
 
     // KAST
     private readonly Dictionary<ulong, bool> _playerDied = [];
@@ -42,7 +40,14 @@ public partial class LiveState
 
     public HookResult Stats_OnRoundStart(EventRoundStart @event)
     {
-        _isRestoring = false;
+        if (_isRestoring)
+        {
+            if (_restoreRound == 0)
+                Rules.ResetAllPlayerAndTeamStats();
+            else
+                RestoreStats(_restoreRound);
+            _isRestoring = false;
+        }
         _isTeamClutching.Clear();
         _roundClutchingCount.Clear();
         _playerKilledBy.Clear();
@@ -115,6 +120,8 @@ public partial class LiveState
 
     public HookResult Stats_OnPlayerDeath(EventPlayerDeath @event)
     {
+        if (_isRestoring)
+            return HookResult.Continue;
         var attacker = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker);
         var isBotAttacker = attacker?.IsFakeClient == true;
         var attackerState = isBotAttacker ? null : attacker?.GetState();
