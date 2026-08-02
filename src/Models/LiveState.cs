@@ -308,6 +308,8 @@ public partial class LiveState : ActiveMatchState
 
     public HookResult OnRoundEndPre(EventRoundEnd @event)
     {
+        if (_isRestoring)
+            return HookResult.Continue;
         _canSurrender = false;
         var localize = Runtime.Core.Localizer;
         var home = Rules.Teams.First();

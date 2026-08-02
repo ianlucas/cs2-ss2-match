@@ -41,6 +41,8 @@ public static class ItemHelper
     {
         if (IsMeleeDesignerName(designerName))
             return "knife";
+        if (designerName == "planted_c4")
+            return "c4";
         var activeWeapon = owner?.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
         if (activeWeapon != null)
             designerName = GetItemDesignerName(

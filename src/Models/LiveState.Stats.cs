@@ -158,17 +158,6 @@ public partial class LiveState
         )
             eventWeapon = lastDamageWeapon;
         var normalizedWeapon = ItemHelper.NormalizeDesignerName(eventWeapon);
-        var activeWeapon = attackerState
-            ?.Handle
-            ?.Controller
-            .PlayerPawn
-            .Value
-            ?.WeaponServices
-            ?.ActiveWeapon
-            .Value;
-        Runtime.Log(
-            $"player_death weapon={@event.Weapon} normalized={normalizedWeapon} active={(activeWeapon != null ? ItemHelper.GetItemDesignerName(activeWeapon.AttributeManager.Item.ItemDefinitionIndex) : "none")}"
-        );
         var assisterState = Runtime.Core.PlayerManager.GetPlayer(@event.Assister)?.GetState();
         if (assisterState != null && assisterState.Team != victimState.Team)
             if (@event.AssistedFlash)
@@ -397,9 +386,6 @@ public partial class LiveState
                 winnerTeam.Stats.ScoreCT += 1;
                 break;
         }
-        // `TotalRoundsPlayed` has not been incremented for the round that just ended, while the
-        // engine's `_roundNN.txt` backup written at the next round start already counts it; the
-        // snapshot key must match the engine's numbering for `RestoreStats` to line up.
         var completedRounds = gameRules.TotalRoundsPlayed + 1;
         _statsBackup[completedRounds] = [];
         _teamStatsBackup[completedRounds] = [];
