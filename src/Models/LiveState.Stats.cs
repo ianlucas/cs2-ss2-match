@@ -397,11 +397,15 @@ public partial class LiveState
                 winnerTeam.Stats.ScoreCT += 1;
                 break;
         }
-        _statsBackup[gameRules.TotalRoundsPlayed] = [];
-        _teamStatsBackup[gameRules.TotalRoundsPlayed] = [];
+        // `TotalRoundsPlayed` has not been incremented for the round that just ended, while the
+        // engine's `_roundNN.txt` backup written at the next round start already counts it; the
+        // snapshot key must match the engine's numbering for `RestoreStats` to line up.
+        var completedRounds = gameRules.TotalRoundsPlayed + 1;
+        _statsBackup[completedRounds] = [];
+        _teamStatsBackup[completedRounds] = [];
         foreach (var team in Rules.Teams)
         {
-            _teamStatsBackup[gameRules.TotalRoundsPlayed].Add((team, team.Stats.Clone()));
+            _teamStatsBackup[completedRounds].Add((team, team.Stats.Clone()));
             foreach (var player in team.Players)
             {
                 if (player.Handle != null)
@@ -455,10 +459,10 @@ public partial class LiveState
                     )
                         player.Stats.KAST += 1;
 
-                _statsBackup[gameRules.TotalRoundsPlayed].Add((player, player.Stats.Clone()));
+                _statsBackup[completedRounds].Add((player, player.Stats.Clone()));
             }
         }
-        WriteStatsBackupToDisk(gameRules.TotalRoundsPlayed);
+        WriteStatsBackupToDisk(completedRounds);
         Rules.SendEvent(OnRoundEndEvent.Create(winner: winnerTeam, reason: @event.Reason));
         Rules.SendEvent(OnRoundStatsUpdatedEvent.Create());
         return HookResult.Continue;
