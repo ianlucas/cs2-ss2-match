@@ -290,7 +290,6 @@ public partial class LiveState : ActiveMatchState
             _lastDamageWeapon[victimState.Key] = weaponDesignerName;
             Stats_OnTakeDamage_Alive(
                 attackerState,
-                victimState,
                 weaponDesignerName,
                 damage,
                 hitGroup,

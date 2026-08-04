@@ -26,9 +26,9 @@ public partial class LiveState
     // distinguishing molotov from incendiary.
     private readonly Dictionary<string, string> _lastDamageWeapon = [];
 
-    // Deduplicates damage ticks into hits: shotgun pellets land as one call per pellet in the same
-    // server tick, and a single grenade or inferno damages the same victim across many ticks.
-    private readonly Dictionary<(string, string, string), int> _lastHitToken = [];
+    // Deduplicates damage callbacks into hits. One shot may damage multiple players (pellets,
+    // penetration, or an explosion), but it is still one hit in the weapon statistics.
+    private readonly Dictionary<(string, string), int> _lastHitToken = [];
     private bool _hadOpeningDuel = false;
     private bool _isRestoring = false;
     private int _restoreRound = 0;
@@ -146,8 +146,7 @@ public partial class LiveState
         var killedByBomb = @event.Weapon == "planted_c4";
         var killedWithKnife = ItemHelper.IsMeleeDesignerName(@event.Weapon);
         var isSuicide =
-            (attackerState == null || attackerState.Key == victimState.Key)
-            && !killedByBomb;
+            (attackerState == null || attackerState.Key == victimState.Key) && !killedByBomb;
         var headshot = @event.Headshot;
         var eventWeapon = @event.Weapon;
         if (
@@ -309,7 +308,6 @@ public partial class LiveState
 
     public void Stats_OnTakeDamage_Alive(
         PlayerState attackerState,
-        PlayerState victimState,
         string weaponDesignerName,
         int damage,
         HitGroup_t hitGroup,
@@ -323,7 +321,7 @@ public partial class LiveState
             ItemHelper.NormalizeDesignerName(weaponDesignerName, null)
         );
         weaponStats.Damage += damage;
-        var hitKey = (attackerState.Key, victimState.Key, weaponDesignerName);
+        var hitKey = (attackerState.Key, weaponDesignerName);
         if (_lastHitToken.TryGetValue(hitKey, out var lastToken) && lastToken == hitToken)
             return;
         _lastHitToken[hitKey] = hitToken;
