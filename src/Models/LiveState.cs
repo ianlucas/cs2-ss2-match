@@ -33,6 +33,7 @@ public partial class LiveState : ActiveMatchState
 
     public override void Load()
     {
+        Rules.SynchronizeBots();
         RegisterCommand(SurrenderCmds, OnSurrenderCommand);
         RegisterCommand(PauseCmds, OnPauseCommand);
         RegisterCommand(UnpauseCmds, OnUnpauseCommand);
@@ -253,18 +254,18 @@ public partial class LiveState : ActiveMatchState
                 && _thrownUtilities.TryGetValue(inflictor.Index, out var utility)
             )
             {
-                var victim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
+                var victim = utility.GetValueOrDefault(victimState.Key, new(victimState));
                 if (victimController.GetHealth() <= 0)
                     victim.Killed = true;
                 victim.Damage += damage;
                 victim.FriendlyFire = isFriendlyFire;
-                utility[victimState.SteamID] = victim;
+                utility[victimState.Key] = victim;
             }
             if (isFriendlyFire)
                 return ret;
             if (
                 victimState.DamageReport.TryGetValue(
-                    attackerState.SteamID,
+                    attackerState.Key,
                     out var attackerDamageReport
                 )
             )
@@ -274,7 +275,7 @@ public partial class LiveState : ActiveMatchState
             }
             if (
                 attackerState.DamageReport.TryGetValue(
-                    victimState.SteamID,
+                    victimState.Key,
                     out var victimDamageReport
                 )
             )
@@ -286,7 +287,7 @@ public partial class LiveState : ActiveMatchState
                 info->Trace != null && info->Trace->HitBox != null
                     ? info->Trace->HitBox->m_nGroupId
                     : HitGroup_t.HITGROUP_GENERIC;
-            _lastDamageWeapon[victimState.SteamID] = weaponDesignerName;
+            _lastDamageWeapon[victimState.Key] = weaponDesignerName;
             Stats_OnTakeDamage_Alive(
                 attackerState,
                 victimState,

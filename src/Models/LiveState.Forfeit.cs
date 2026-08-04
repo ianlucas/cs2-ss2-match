@@ -29,8 +29,10 @@ public partial class LiveState
 
     public void OnPlayerConnected(IPlayer player)
     {
+        if (player.IsFakeClient)
+            Rules.SynchronizeBots();
         var playerState = player.GetState();
-        if (playerState != null && Rules.HasTeamsWithAnyPlayerConnected())
+        if (playerState is { IsBot: false } && Rules.HasTeamsWithAnyHumanConnected())
         {
             _isForfeiting = false;
             Timers.Clear("ForfeitTimeout");
@@ -42,19 +44,23 @@ public partial class LiveState
     {
         var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
-            TryForfeitMatch(playerState);
+        {
+            playerState.Handle = null;
+            TryForfeitMatch();
+        }
         return HookResult.Continue;
     }
 
-    public void TryForfeitMatch(PlayerState? disconnecting = null)
+    public void TryForfeitMatch()
     {
         if (!_isForfeiting && ConVars.IsForfeitEnabled.Value && Rules.MapEndResult == null)
             foreach (var team in Rules.Teams)
+            {
+                var humans = team.Players.Where(player => !player.IsBot);
                 if (
-                    team.Players.Count > 0
-                    && team.Players.All(p =>
-                        p.SteamID == disconnecting?.SteamID || p.Handle == null
-                    )
+                    humans.Any()
+                    && !humans.Any(player => player.Handle != null)
+                    && team.Opposition.Players.Any(player => !player.IsBot && player.Handle != null)
                 )
                 {
                     _isForfeiting = true;
@@ -70,5 +76,6 @@ public partial class LiveState
                     );
                     return;
                 }
+            }
     }
 }

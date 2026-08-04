@@ -6,7 +6,7 @@
 namespace Match;
 
 public class ThrownUtility(int roundNumber, long roundTime, PlayerState player, string weapon)
-    : Dictionary<ulong, UtilityDamage>
+    : Dictionary<string, UtilityDamage>
 {
     public int RoundNumber = roundNumber;
     public long RoundTime = roundTime;

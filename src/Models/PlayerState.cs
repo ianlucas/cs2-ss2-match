@@ -7,13 +7,19 @@ using SwiftlyS2.Shared.Players;
 
 namespace Match;
 
-public class PlayerState(ulong steamId, string name, PlayerTeam team, IPlayer? handle = null)
+public class PlayerState(
+    ulong steamId,
+    string name,
+    PlayerTeam team,
+    IPlayer? handle = null,
+    bool isBot = false
+)
 {
     public bool IsReady = false;
 
     public IPlayer? Handle = handle;
 
-    public Dictionary<ulong, DamageReport> DamageReport = [];
+    public Dictionary<string, DamageReport> DamageReport = [];
 
     public string Name = name;
 
@@ -21,9 +27,15 @@ public class PlayerState(ulong steamId, string name, PlayerTeam team, IPlayer? h
 
     public ulong SteamID = steamId;
 
+    public bool IsBot = isBot;
+
+    public string Key => IsBot ? Name : SteamID.ToString();
+
+    public ulong EventSteamID => IsBot ? Rules.GetBotSteamID(Name) : SteamID;
+
     public KnifeRoundVote KnifeRoundVote = KnifeRoundVote.None;
 
-    public PlayerStats Stats = new(steamId);
+    public PlayerStats Stats = new(isBot ? Rules.GetBotSteamID(name) : steamId);
 
     public void LeaveTeam()
     {

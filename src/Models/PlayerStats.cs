@@ -9,7 +9,6 @@ namespace Match;
 
 public class PlayerStats(ulong steamId)
 {
-    // For JSON deserialization. `SteamID` is then populated from the payload.
     public PlayerStats()
         : this(0) { }
 
