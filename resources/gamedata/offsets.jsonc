@@ -1,7 +1,7 @@
 {
   "CCSPlayerPawn::OnTakeDamage_Alive": {
-    "linux": 250,
-    "windows": 249
+    "linux": 251,
+    "windows": 250
   },
   //csshocked
   "CInferno::m_nSourceWeaponDefIndex": {
