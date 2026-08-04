@@ -59,7 +59,7 @@ public static class Rules
             Id = Guid.NewGuid().ToString();
         if (!IsLoadedFromFile)
             Maps.Add(new(Runtime.Core.Engine.GlobalVars.MapName));
-        var idsInMatch = GetAllPlayers().Select(p => p.SteamID);
+        var idsInMatch = GetAllPlayers().Where(p => !p.IsBot).Select(p => p.SteamID);
         foreach (var player in Runtime.Core.PlayerManager.GetActualPlayers())
             if (!idsInMatch.Contains(player.SteamID))
                 if (
@@ -80,7 +80,7 @@ public static class Rules
             {
                 player.DamageReport.Clear();
                 foreach (var opponent in team.Opposition.Players)
-                    player.DamageReport.Add(opponent.SteamID, new(opponent));
+                    player.DamageReport[opponent.Key] = new(opponent);
             }
         }
         IsSeriesStarted = true;
@@ -206,6 +206,73 @@ public static class Rules
         return GetAllPlayers().FirstOrDefault(p => p.SteamID == steamId);
     }
 
+    public static PlayerState? GetBotStateFromName(string name)
+    {
+        return GetAllPlayers().FirstOrDefault(p => p.IsBot && p.Name == name);
+    }
+
+    public static PlayerState? GetPlayerState(IPlayer player)
+    {
+        return player.IsFakeClient
+            ? GetBotStateFromName(player.Controller.PlayerName)
+            : GetPlayerStateFromSteamID(player.SteamID);
+    }
+
+    public static void SynchronizeBots()
+    {
+        if (State is not LiveState)
+            return;
+
+        var bots = Runtime
+            .Core.PlayerManager.GetAllValidPlayers()
+            .Where(player => player.IsFakeClient)
+            .Where(player => player.Controller.Team is Team.T or Team.CT)
+            .ToList();
+        var connectedBots = bots.ToHashSet();
+        foreach (var player in GetAllPlayers().Where(player => player.IsBot))
+            if (player.Handle != null && !connectedBots.Contains(player.Handle))
+                player.Handle = null;
+
+        bool changed = false;
+        foreach (var bot in bots)
+        {
+            var team = GetTeam(bot.Controller.Team);
+            if (team == null)
+                continue;
+            var player = GetBotStateFromName(bot.Controller.PlayerName);
+            if (player == null)
+            {
+                player = new(0, bot.Controller.PlayerName, team, bot, isBot: true);
+                team.AddPlayer(player);
+                changed = true;
+            }
+            else
+            {
+                player.Handle = bot;
+                if (player.Team != team)
+                {
+                    player.LeaveTeam();
+                    player.Team = team;
+                    team.AddPlayer(player);
+                    changed = true;
+                }
+            }
+        }
+        if (changed)
+            RebuildDamageReports();
+    }
+
+    private static void RebuildDamageReports()
+    {
+        foreach (var team in Teams)
+        foreach (var player in team.Players)
+        {
+            player.DamageReport.Clear();
+            foreach (var opponent in team.Opposition.Players)
+                player.DamageReport[opponent.Key] = new(opponent);
+        }
+    }
+
     public static int GetNeededPlayersCount()
     {
         return IsLoadedFromFile ? GetAllPlayers().Count() : ConVars.PlayersNeeded.Value;
@@ -226,9 +293,9 @@ public static class Rules
         return Teams.FirstOrDefault(t => t.StartingTeam == team);
     }
 
-    public static bool HasTeamsWithAnyPlayerConnected()
+    public static bool HasTeamsWithAnyHumanConnected()
     {
-        return Teams.All(t => t.Players.Any(p => p.Handle != null));
+        return Teams.All(t => t.Players.Any(p => !p.IsBot && p.Handle != null));
     }
 
     public static IEnumerable<PlayerTeam> GetUnreadyTeams()
@@ -348,7 +415,7 @@ public static class Rules
             foreach (var player in team.Players)
             {
                 player.IsReady = false;
-                player.Stats = new(player.SteamID);
+                player.Stats = new(player.Key);
             }
         }
     }
@@ -356,7 +423,7 @@ public static class Rules
     public static void ResetAllPlayerAndTeamStats()
     {
         foreach (var player in GetAllPlayers())
-            player.Stats = new(player.SteamID);
+            player.Stats = new(player.Key);
 
         foreach (var team in Teams)
             team.Stats = new();

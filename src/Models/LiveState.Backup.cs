@@ -38,7 +38,7 @@ public partial class LiveState
             foreach (var (team, teamStats) in _teamStatsBackup[round])
                 backup.Teams[team.Index] = teamStats;
             foreach (var (playerState, playerStats) in _statsBackup[round])
-                backup.Players[playerState.SteamID.ToString()] = playerStats;
+                backup.Players[playerState.Key] = playerStats;
             File.WriteAllText(filename, JsonSerializer.Serialize(backup));
         }
         catch (Exception e)
@@ -61,7 +61,7 @@ public partial class LiveState
                 if (backup.Teams.TryGetValue(team.Index, out var teamStats))
                     team.Stats = teamStats;
             foreach (var playerState in Rules.GetAllPlayers())
-                if (backup.Players.TryGetValue(playerState.SteamID.ToString(), out var playerStats))
+                if (backup.Players.TryGetValue(playerState.Key, out var playerStats))
                     playerState.Stats = playerStats;
             return true;
         }

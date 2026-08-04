@@ -28,7 +28,7 @@ public static class Get5EventHelpers
             players = team
                 .Players.Select(player => new
                 {
-                    steamid = player.SteamID.ToString(),
+                    steamid = player.Key,
                     name = player.Name,
                     stats = player.Stats,
                     ping = player.Handle?.Controller.Ping,
@@ -44,11 +44,11 @@ public static class Get5EventHelpers
     public static object ToPlayer(PlayerState player) =>
         new
         {
-            steamid = player.SteamID.ToString(),
+            steamid = player.Key,
             name = player.Name,
             user_id = player.Handle?.UserID,
             side = ToSideString(player.Team.CurrentTeam),
-            is_bot = player.Handle?.IsFakeClient ?? false,
+            is_bot = player.IsBot,
             ping = player.Handle?.Controller.Ping,
         };
 

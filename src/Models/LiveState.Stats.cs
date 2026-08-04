@@ -17,26 +17,26 @@ public partial class LiveState
     private readonly Dictionary<int, List<(PlayerState, PlayerStats)>> _statsBackup = [];
     private readonly Dictionary<int, List<(PlayerTeam, TeamStats)>> _teamStatsBackup = [];
     private readonly Dictionary<Team, bool> _isTeamClutching = [];
-    private readonly Dictionary<ulong, int> _roundClutchingCount = [];
-    private readonly Dictionary<ulong, int> _roundKills = [];
-    private readonly Dictionary<ulong, (Team, ulong, Team, long)> _playerKilledBy = [];
+    private readonly Dictionary<string, int> _roundClutchingCount = [];
+    private readonly Dictionary<string, int> _roundKills = [];
+    private readonly Dictionary<string, (Team, string, Team, long)> _playerKilledBy = [];
 
     // Last weapon that damaged each victim, resolved from the inflictor. Needed because
     // `player_death.weapon` reports fire kills as the raw `inferno` entity name, never
     // distinguishing molotov from incendiary.
-    private readonly Dictionary<ulong, string> _lastDamageWeapon = [];
+    private readonly Dictionary<string, string> _lastDamageWeapon = [];
 
     // Deduplicates damage ticks into hits: shotgun pellets land as one call per pellet in the same
     // server tick, and a single grenade or inferno damages the same victim across many ticks.
-    private readonly Dictionary<(ulong, ulong, string), int> _lastHitToken = [];
+    private readonly Dictionary<(string, string, string), int> _lastHitToken = [];
     private bool _hadOpeningDuel = false;
     private bool _isRestoring = false;
     private int _restoreRound = 0;
 
     // KAST
-    private readonly Dictionary<ulong, bool> _playerDied = [];
-    private readonly Dictionary<ulong, bool> _playerKilledOrAssistedOrTradedKill = [];
-    private readonly Dictionary<ulong, bool> _playerPlayedRound = [];
+    private readonly Dictionary<string, bool> _playerDied = [];
+    private readonly Dictionary<string, bool> _playerKilledOrAssistedOrTradedKill = [];
+    private readonly Dictionary<string, bool> _playerPlayedRound = [];
 
     public HookResult Stats_OnRoundStart(EventRoundStart @event)
     {
@@ -59,11 +59,11 @@ public partial class LiveState
         _playerPlayedRound.Clear();
         foreach (var player in Rules.GetAllPlayers())
         {
-            _roundKills[player.SteamID] = 0;
+            _roundKills[player.Key] = 0;
             if (player.Handle != null)
             {
                 player.Stats.RoundsPlayed += 1;
-                _playerPlayedRound[player.SteamID] = true;
+                _playerPlayedRound[player.Key] = true;
             }
         }
         return HookResult.Continue;
@@ -101,10 +101,10 @@ public partial class LiveState
             var entityId = (uint)@event.EntityID;
             if (_thrownUtilities.TryGetValue(entityId, out var utility))
             {
-                var theVictim = utility.GetValueOrDefault(victimState.SteamID, new(victimState));
+                var theVictim = utility.GetValueOrDefault(victimState.Key, new(victimState));
                 theVictim.FriendlyFire = friendlyFire;
                 theVictim.BlindDuration = @event.BlindDuration;
-                utility[victimState.SteamID] = theVictim;
+                utility[victimState.Key] = theVictim;
             }
         }
         return HookResult.Continue;
@@ -114,7 +114,7 @@ public partial class LiveState
     {
         var playerState = @event.UserIdPlayer?.GetState();
         if (playerState != null)
-            _playerDied[playerState.SteamID] = true;
+            _playerDied[playerState.Key] = true;
         return HookResult.Continue;
     }
 
@@ -123,8 +123,7 @@ public partial class LiveState
         if (_isRestoring)
             return HookResult.Continue;
         var attacker = Runtime.Core.PlayerManager.GetPlayer(@event.Attacker);
-        var isBotAttacker = attacker?.IsFakeClient == true;
-        var attackerState = isBotAttacker ? null : attacker?.GetState();
+        var attackerState = attacker?.GetState();
         var victimState = @event.UserIdPlayer?.GetState();
         if (victimState == null)
             return HookResult.Continue;
@@ -139,7 +138,7 @@ public partial class LiveState
                     .OriginalController.Value?.As<CCSPlayerController>()
                     .GetState();
                 if (clutcherState != null)
-                    _roundClutchingCount[clutcherState.SteamID] = Runtime
+                    _roundClutchingCount[clutcherState.Key] = Runtime
                         .Core.EntitySystem.GetAlivePawnsInTeam(victimTeam.Toggle())
                         .Count();
             }
@@ -147,14 +146,13 @@ public partial class LiveState
         var killedByBomb = @event.Weapon == "planted_c4";
         var killedWithKnife = ItemHelper.IsMeleeDesignerName(@event.Weapon);
         var isSuicide =
-            (attacker == null || attacker.SteamID == victimState.SteamID)
-            && !killedByBomb
-            && !isBotAttacker;
+            (attackerState == null || attackerState.Key == victimState.Key)
+            && !killedByBomb;
         var headshot = @event.Headshot;
         var eventWeapon = @event.Weapon;
         if (
             eventWeapon == "inferno"
-            && _lastDamageWeapon.TryGetValue(victimState.SteamID, out var lastDamageWeapon)
+            && _lastDamageWeapon.TryGetValue(victimState.Key, out var lastDamageWeapon)
         )
             eventWeapon = lastDamageWeapon;
         var normalizedWeapon = ItemHelper.NormalizeDesignerName(eventWeapon);
@@ -165,10 +163,10 @@ public partial class LiveState
             else
             {
                 assisterState.Stats.Assists += 1;
-                _playerKilledOrAssistedOrTradedKill[assisterState.SteamID] = true;
+                _playerKilledOrAssistedOrTradedKill[assisterState.Key] = true;
             }
         victimState.Stats.Deaths += 1;
-        _playerDied[victimState.SteamID] = true;
+        _playerDied[victimState.Key] = true;
         if (isSuicide)
             victimState.Stats.Suicides += 1;
         else if (!killedByBomb)
@@ -194,10 +192,10 @@ public partial class LiveState
                     else
                         victimState.Stats.FirstDeathsCT += 1;
                 }
-                _roundKills[attackerState.SteamID] += 1;
-                _playerKilledBy[victimState.SteamID] = (
+                _roundKills[attackerState.Key] += 1;
+                _playerKilledBy[victimState.Key] = (
                     victimTeam,
-                    attackerState.SteamID,
+                    attackerState.Key,
                     attackerTeam,
                     TimeHelper.Now()
                 );
@@ -210,7 +208,7 @@ public partial class LiveState
                 )
                     if (
                         attackerTeam == theVictimTeam
-                        && victimState.SteamID == theVictimAttacker
+                        && victimState.Key == theVictimAttacker
                         && victimTeam == theVictimAttackerTeam
                         && (TimeHelper.Now() - theVictimKilledAt) <= 2_000
                     )
@@ -221,7 +219,7 @@ public partial class LiveState
                 if (isTradeKill)
                     attackerState.Stats.TradeKills += 1;
                 attackerState.Stats.Kills += 1;
-                _playerKilledOrAssistedOrTradedKill[attackerState.SteamID] = true;
+                _playerKilledOrAssistedOrTradedKill[attackerState.Key] = true;
                 if (headshot)
                     attackerState.Stats.HeadshotKills += 1;
                 if (killedWithKnife)
@@ -325,7 +323,7 @@ public partial class LiveState
             ItemHelper.NormalizeDesignerName(weaponDesignerName, null)
         );
         weaponStats.Damage += damage;
-        var hitKey = (attackerState.SteamID, victimState.SteamID, weaponDesignerName);
+        var hitKey = (attackerState.Key, victimState.Key, weaponDesignerName);
         if (_lastHitToken.TryGetValue(hitKey, out var lastToken) && lastToken == hitToken)
             return;
         _lastHitToken[hitKey] = hitToken;
@@ -396,7 +394,7 @@ public partial class LiveState
             {
                 if (player.Handle != null)
                     player.Stats.Score = player.Handle.Controller.Score;
-                if (_roundKills.TryGetValue(player.SteamID, out var kills))
+                if (_roundKills.TryGetValue(player.Key, out var kills))
                     switch (kills)
                     {
                         case 1:
@@ -417,7 +415,7 @@ public partial class LiveState
                     }
                 if (
                     player.Team.CurrentTeam == winner
-                    && _roundClutchingCount.TryGetValue(player.SteamID, out var opponents)
+                    && _roundClutchingCount.TryGetValue(player.Key, out var opponents)
                 )
                     switch (opponents)
                     {
@@ -438,10 +436,10 @@ public partial class LiveState
                             break;
                     }
 
-                if (_playerPlayedRound.ContainsKey(player.SteamID))
+                if (_playerPlayedRound.ContainsKey(player.Key))
                     if (
-                        _playerKilledOrAssistedOrTradedKill.ContainsKey(player.SteamID)
-                        || !_playerDied.ContainsKey(player.SteamID)
+                        _playerKilledOrAssistedOrTradedKill.ContainsKey(player.Key)
+                        || !_playerDied.ContainsKey(player.Key)
                     )
                         player.Stats.KAST += 1;
 
