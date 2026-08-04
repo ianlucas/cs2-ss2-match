@@ -31,9 +31,11 @@ public class PlayerState(
 
     public string Key => IsBot ? Name : SteamID.ToString();
 
+    public ulong EventSteamID => IsBot ? Rules.GetBotSteamID(Name) : SteamID;
+
     public KnifeRoundVote KnifeRoundVote = KnifeRoundVote.None;
 
-    public PlayerStats Stats = new(isBot ? name : steamId.ToString());
+    public PlayerStats Stats = new(isBot ? Rules.GetBotSteamID(name) : steamId);
 
     public void LeaveTeam()
     {

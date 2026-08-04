@@ -28,9 +28,10 @@ public static class Get5EventHelpers
             players = team
                 .Players.Select(player => new
                 {
-                    steamid = player.Key,
+                    steamid = player.EventSteamID.ToString(),
                     name = player.Name,
                     stats = player.Stats,
+                    is_bot = player.IsBot,
                     ping = player.Handle?.Controller.Ping,
                 })
                 .ToList(),
@@ -44,7 +45,7 @@ public static class Get5EventHelpers
     public static object ToPlayer(PlayerState player) =>
         new
         {
-            steamid = player.Key,
+            steamid = player.EventSteamID.ToString(),
             name = player.Name,
             user_id = player.Handle?.UserID,
             side = ToSideString(player.Team.CurrentTeam),
@@ -55,7 +56,7 @@ public static class Get5EventHelpers
     public static object ToPlayer(IPlayer player) =>
         new
         {
-            steamid = player.Controller.SteamID.ToString(),
+            steamid = Rules.GetEventSteamID(player).ToString(),
             name = player.Controller.PlayerName,
             user_id = player.UserID,
             side = ToSideString(player.Controller.Team),

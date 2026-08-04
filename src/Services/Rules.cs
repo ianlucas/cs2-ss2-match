@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+using System.Text;
 using Match.Get5.Events;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.ProtobufDefinitions;
@@ -11,6 +12,8 @@ namespace Match;
 
 public static class Rules
 {
+    private const ulong BotSteamIDBase = 1_000_000_000_000_000;
+    private const ulong BotSteamIDMask = 0x000F_FFFF_FFFF_FFFF;
     public static readonly List<PlayerTeam> Teams = [];
     public static readonly List<Map> Maps = [];
     public static readonly PlayerTeam Team1;
@@ -218,6 +221,20 @@ public static class Rules
             : GetPlayerStateFromSteamID(player.SteamID);
     }
 
+    public static ulong GetEventSteamID(IPlayer player) =>
+        player.IsFakeClient ? GetBotSteamID(player.Controller.PlayerName) : player.SteamID;
+
+    public static ulong GetBotSteamID(string name)
+    {
+        ulong hash = 14695981039346656037;
+        foreach (var value in Encoding.UTF8.GetBytes(name))
+        {
+            hash ^= value;
+            hash = unchecked(hash * 1099511628211);
+        }
+        return BotSteamIDBase + (hash & BotSteamIDMask);
+    }
+
     public static void SynchronizeBots()
     {
         if (State is not LiveState)
@@ -415,7 +432,7 @@ public static class Rules
             foreach (var player in team.Players)
             {
                 player.IsReady = false;
-                player.Stats = new(player.Key);
+                player.Stats = new(player.EventSteamID);
             }
         }
     }
@@ -423,7 +440,7 @@ public static class Rules
     public static void ResetAllPlayerAndTeamStats()
     {
         foreach (var player in GetAllPlayers())
-            player.Stats = new(player.Key);
+            player.Stats = new(player.EventSteamID);
 
         foreach (var team in Teams)
             team.Stats = new();

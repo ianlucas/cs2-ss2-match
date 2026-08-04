@@ -7,13 +7,10 @@ using System.Text.Json.Serialization;
 
 namespace Match;
 
-public class PlayerStats(string steamId)
+public class PlayerStats(ulong steamId)
 {
-    public PlayerStats(ulong steamId)
-        : this(steamId.ToString()) { }
-
     public PlayerStats()
-        : this("0") { }
+        : this(0) { }
 
     [JsonPropertyName("steamid")]
     public string SteamID { get; set; } = steamId.ToString();
