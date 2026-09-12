@@ -27,7 +27,7 @@ public static partial class Natives
     )
         where TDelegate : Delegate
     {
-        var offset = Runtime.Core.GameData.GetOffset(offsetName);
+        var offset = ResolveOffset(offsetName);
         var vtable =
             Runtime.Core.Memory.GetVTableAddress(library ?? Library.Server, vtableName)
             ?? throw new InvalidOperationException($"Failed to locate {vtableName} vtable.");
@@ -36,6 +36,10 @@ public static partial class Natives
 
     private static int ResolveOffset(string offsetName)
     {
+        if (!Runtime.Core.GameData.HasOffset(offsetName))
+            throw new InvalidOperationException(
+                $"Failed to locate game offset '{offsetName}'. The offset may not exist in the current game version or be missing from the gamedata files."
+            );
         return Runtime.Core.GameData.GetOffset(offsetName);
     }
 }
