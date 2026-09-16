@@ -9,6 +9,17 @@ namespace Match;
 
 public static partial class Natives
 {
+    public delegate nint CEconItemSchema_GetItemDefinitionDelegate(
+        nint thisPtr,
+        uint defIndex,
+        byte flag
+    );
+
+    public static readonly IUnmanagedFunction<CEconItemSchema_GetItemDefinitionDelegate> CEconItemSchema_GetItemDefinition =
+        ResolveFunction<CEconItemSchema_GetItemDefinitionDelegate>(
+            "CEconItemSchema::GetItemDefinition"
+        );
+
     public delegate nint CEconItemSchema_GetItemDefinitionByNameDelegate(
         nint thisPtr,
         nint pchName
