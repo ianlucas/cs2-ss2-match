@@ -29,7 +29,7 @@ public static class CTakeDamageInfoExtensions
                     .As<CCSPlayerPawn>()
                     .WeaponServices?.ActiveWeapon.Value?.AttributeManager.Item.ItemDefinitionIndex;
             if (inflictor.DesignerName == "inferno")
-                defIndex = inflictor.As<CInferno>().GetSourceWeaponDefIndex();
+                defIndex = inflictor.As<CInferno>().SourceItemDefIndex;
             if (defIndex != null)
             {
                 var item = SchemaHelper.GetItemSchema()?.GetItemDefinition(defIndex.Value);
