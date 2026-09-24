@@ -10,8 +10,8 @@
 
   "match.t": "Terrorists",
   "match.ct": "Counter-Terrorists",
-  "match.not_ready": "[NOT READY]",
-  "match.ready": "[READY]",
+  "match.not_ready": "NOT READY",
+  "match.ready": "READY",
   "match.match_waiting_team": "[red]{0} {1} must be ready within {2} or they will forfeit the match.",
   "match.match_waiting_players": "[red]{0} Teams must be ready within {1} or the match will end in a tie.",
   "match.forfeit_start": "[red]{0} Team {1} has no connected players and will forfeit in {2} seconds.",

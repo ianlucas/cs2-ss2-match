@@ -216,9 +216,12 @@ public static class Rules
 
     public static PlayerState? GetPlayerState(IPlayer player)
     {
-        return player.IsFakeClient
-            ? GetBotStateFromName(player.Controller.PlayerName)
-            : GetPlayerStateFromSteamID(player.SteamID);
+        if (!player.IsFakeClient)
+            return GetPlayerStateFromSteamID(player.SteamID);
+        // Bot controllers only exist after ClientPutInServer, which runs after player_connect.
+        return player.Controller is { IsValid: true } controller
+            ? GetBotStateFromName(controller.PlayerName)
+            : null;
     }
 
     public static ulong GetEventSteamID(IPlayer player) =>
