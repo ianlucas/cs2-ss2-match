@@ -10,8 +10,8 @@
 
   "match.t": "Terroristas",
   "match.ct": "Contra-Terroristas",
-  "match.not_ready": "[NOT READY]",
-  "match.ready": "[READY]",
+  "match.not_ready": "NOT READY",
+  "match.ready": "READY",
   "match.match_waiting_team": "[red]{0} {1} deve ficar pronto dentro de {2} ou perderá a partida por desistência.",
   "match.match_waiting_players": "[red]{0} As equipes devem estar prontas dentro de {1} ou a partida será cancelada.",
   "match.forfeit_start": "[red]{0} A equipe {1} não tem jogadores conectados e perderá por desistência em {2} segundos.",
