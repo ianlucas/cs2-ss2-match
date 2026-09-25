@@ -61,7 +61,7 @@ public partial class Match
                 !player.IsFakeClient
                 && ConVars.IsMatchmaking.Value
                 && ConVars.IsMatchmakingKick.Value
-                && Core.Permission.PlayerHasPermissions(player.SteamID, ["@css/root"])
+                && !Core.Permission.PlayerHasPermissions(player.SteamID, ["@css/root"])
             )
                 player.Kick(
                     "Match is reserved for a lobby.",
