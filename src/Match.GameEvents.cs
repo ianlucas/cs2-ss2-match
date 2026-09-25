@@ -20,7 +20,7 @@ public partial class Match
         if (message.Length == 0)
             return HookResult.Continue;
         Rules.SendEvent(
-            OnPlayerSayEvent.Create(player, @event.TeamOnly ? "say_team" : "team", message)
+            OnPlayerSayEvent.Create(player, @event.TeamOnly ? "say_team" : "say", message)
         );
         return HookResult.Continue;
     }
