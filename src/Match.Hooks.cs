@@ -44,16 +44,16 @@ public partial class Match
             if (!ConVars.IsBots.Value)
             {
                 if (DidKickBots)
-                    return 0;
+                    return;
                 Core.PlayerManager.KickAllBots("Kicked by match_bots' ConVar.");
                 DidKickBots = true;
-                return 0;
+                return;
             }
             var connectedHumans = Core.PlayerManager.GetActualPlayers();
             if (!connectedHumans.Any() && Rules.State is ReadyupWarmupState)
             {
                 Core.PlayerManager.KickAllBots("Kicked by match_bots' ConVar.");
-                return 0;
+                return;
             }
             var neededPerTeam = ConVars.PlayersNeededPerTeam.Value;
             var teams = new List<(IEnumerable<IPlayer>, string)>()
@@ -88,7 +88,6 @@ public partial class Match
                         "Kicked by match_bots' ConVar.",
                         ENetworkDisconnectionReason.NETWORK_DISCONNECT_KICKED
                     );
-            return 0;
         };
     }
 }

@@ -9,19 +9,19 @@ namespace Match;
 
 public static partial class Natives
 {
-    public delegate bool CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate(nint thisPtr);
+    public delegate byte CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate(nint thisPtr);
 
     public static readonly IUnmanagedFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate> CCSGameRules_AreTeamsPlayingSwitchedSides =
         ResolveFunction<CCSGameRules_AreTeamsPlayingSwitchedSidesDelegate>(
             "CCSGameRules::AreTeamsPlayingSwitchedSides"
         );
 
-    public delegate nint CCSGameRules_HandleSwapTeamsDelegate(nint thisPtr);
+    public delegate void CCSGameRules_HandleSwapTeamsDelegate(nint thisPtr);
 
     public static readonly IUnmanagedFunction<CCSGameRules_HandleSwapTeamsDelegate> CCSGameRules_HandleSwapTeams =
         ResolveFunction<CCSGameRules_HandleSwapTeamsDelegate>("CCSGameRules::HandleSwapTeams");
 
-    public delegate bool CCSGameRules_IsLastRoundBeforeHalfTimeDelegate(nint thisPtr);
+    public delegate byte CCSGameRules_IsLastRoundBeforeHalfTimeDelegate(nint thisPtr);
 
     public static readonly IUnmanagedFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate> CCSGameRules_IsLastRoundBeforeHalfTime =
         ResolveFunction<CCSGameRules_IsLastRoundBeforeHalfTimeDelegate>(
