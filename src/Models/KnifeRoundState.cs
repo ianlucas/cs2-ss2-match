@@ -57,7 +57,7 @@ public class KnifeRoundState : ReadyupWarmupState
 
     public Natives.CCSPlayerPawnBase_IncrementNumMVPsDelegate OnIncrementNumMVPs(
         Func<Natives.CCSPlayerPawnBase_IncrementNumMVPsDelegate> next
-    ) => (a1, a2) => 0;
+    ) => (a1, a2) => { };
 
     public Natives.CCSGameRules_TerminateRoundWindowsDelegate OnTerminateRoundWindows(
         Func<Natives.CCSGameRules_TerminateRoundWindowsDelegate> next

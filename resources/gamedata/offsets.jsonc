@@ -1,4 +1,10 @@
 {
+  // 1. Find the CCSPlayerPawn vtable.
+  //    Linux: _ZTV13CCSPlayerPawn, functions start 0x10 after it.
+  //    Windows: xref ??_R4CCSPlayerPawn@@6B@, functions start 8 bytes after that xref.
+  // 2. Take the function at index 256 on Linux and 255 on Windows.
+  // 3. It's a short function that passes its CTakeDamageResult argument to a pawn component
+  //    function, which calls the function that fires the "player_hurt" event.
   "CCSPlayerPawn::OnTakeDamage_Alive": {
     "linux": 256,
     "windows": 255

@@ -14,7 +14,7 @@ public static class CCSGameRulesExtensions
     {
         public bool AreTeamsPlayingSwitchedSides()
         {
-            return Natives.CCSGameRules_AreTeamsPlayingSwitchedSides.Call(self.Address);
+            return Natives.CCSGameRules_AreTeamsPlayingSwitchedSides.Call(self.Address) != 0;
         }
 
         public void HandleSwapTeams()
@@ -24,7 +24,7 @@ public static class CCSGameRulesExtensions
 
         public bool IsLastRoundBeforeHalfTime()
         {
-            return Natives.CCSGameRules_IsLastRoundBeforeHalfTime.Call(self.Address);
+            return Natives.CCSGameRules_IsLastRoundBeforeHalfTime.Call(self.Address) != 0;
         }
 
         public Team DetermineWinnerBySurvival()
