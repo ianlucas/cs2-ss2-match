@@ -72,7 +72,7 @@ public partial class LiveState : ActiveMatchState
             maxRounds: ConVars.MaxRounds.Value,
             otMaxRounds: ConVars.OtMaxRounds.Value,
             isFriendlyPause: ConVars.IsFriendlyPause.Value,
-            backupPath: Rules.GetBackupPrefix(),
+            backupPath: Rules.GetGameBackupPrefix(),
             restartDelay: Rules.GetTotalMapCount() > 1 ? ConVars.TvDelay.Value : -1
         );
         var localize = Runtime.Core.Localizer;

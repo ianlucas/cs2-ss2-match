@@ -98,6 +98,10 @@ public class ActiveMatchState : BaseState
                     team1.SeriesScore > team2.SeriesScore ? team1
                     : team2.SeriesScore > team1.SeriesScore ? team2
                     : null;
+            // Matchmaking warm-up points `nextlevel` at the next series map; clear it so the series
+            // ends on the restart's round prestart, or when the next map loads.
+            if (ConVars.IsMatchmaking.Value)
+                Runtime.Core.ConVar.Find<string>("nextlevel")?.Value = "";
         }
         Rules.MapEndResult = new MapEndResult
         {
