@@ -410,6 +410,19 @@ public static class Rules
         return Id != null ? GetMatchPath(Runtime.Core.Engine.GlobalVars.MapName) : null;
     }
 
+    // The game refuses round backup paths that are absolute or contain `..` or `:`, and resolves
+    // the others against `game/csgo`.
+    public static bool IsGameBackupPathAllowed(string path) =>
+        !Path.IsPathRooted(path)
+        && !path.StartsWith('\\')
+        && !path.Contains("..")
+        && !path.Contains(':');
+
+    public static string? GetGameBackupPrefix() =>
+        GetBackupPrefix() is string prefix
+            ? Path.GetRelativePath(Runtime.Core.GameFilesDirectory, prefix)
+            : null;
+
     public static string? GetDemoFilename()
     {
         return Id != null ? GetMatchPath($"{Runtime.Core.Engine.GlobalVars.MapName}.dem") : null;

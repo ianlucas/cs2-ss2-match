@@ -124,15 +124,19 @@ public partial class LiveState
         )
             return;
         var filename = @event.Command.Arg(1) ?? "";
+        // The game refuses this path, so nothing gets restored.
+        if (!Rules.IsGameBackupPathAllowed(filename))
+            return;
+        var path = Path.Combine(Runtime.Core.GameFilesDirectory, filename);
         var match = Regex.Match(filename, @"_round(\d+)\.txt$", RegexOptions.IgnoreCase);
-        if (match.Success && File.Exists(filename))
+        if (match.Success && File.Exists(path))
         {
             Runtime.Log(
                 $"Out-of-band backup restore detected ({filename}), restoring stats.",
                 force: true
             );
             PrepareForRestore(int.Parse(match.Groups[1].Value));
-            Rules.SendEvent(OnBackupRestoreEvent.Create(filename));
+            Rules.SendEvent(OnBackupRestoreEvent.Create(path));
         }
         else
             Runtime.Log(
@@ -168,11 +172,13 @@ public partial class LiveState
                     player?.Controller.PlayerName ?? "Console"
                 ]
             );
-            // `mp_backup_restore_load_file` can only fail when the file is not found, but we
-            // already had a check for that.
+            // Besides a missing file, `mp_backup_restore_load_file` only fails without the
+            // `-allow_round_backup_files` launch option, which saving the file also needed.
             PrepareForRestore(roundAsInt);
             Rules.SendEvent(OnBackupRestoreEvent.Create(filename));
-            Runtime.Core.Engine.ExecuteCommand($"mp_backup_restore_load_file \"{filename}\"");
+            Runtime.Core.Engine.ExecuteCommand(
+                $"mp_backup_restore_load_file \"{Rules.GetGameBackupPrefix()}_round{round}.txt\""
+            );
         }
         else
             player?.SendChat(
