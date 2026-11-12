@@ -65,25 +65,21 @@ public partial class LiveState
                         ConVars.SurrenderTimeout.Value
                     ]
                 );
-                Timers.Set(
-                    timerName,
-                    ConVars.SurrenderTimeout.Value,
-                    () =>
-                    {
-                        _surrendingTeam = null;
-                        var hadAllSurrenderVotes =
-                            playerState.Team.SurrenderVotes.Count == playerState.Team.Players.Count;
-                        playerState.Team.SurrenderVotes.Clear();
-                        playerState.Team.SendChat(
-                            Runtime.Core.Localizer[
-                                hadAllSurrenderVotes
-                                    ? "match.surrender_fail1"
-                                    : "match.surrender_fail2",
-                                Rules.GetChatPrefix()
-                            ]
-                        );
-                    }
-                );
+                Timers.Set(timerName, ConVars.SurrenderTimeout.Value, () =>
+                {
+                    _surrendingTeam = null;
+                    var hadAllSurrenderVotes =
+                        playerState.Team.SurrenderVotes.Count == playerState.Team.Players.Count;
+                    playerState.Team.SurrenderVotes.Clear();
+                    playerState.Team.SendChat(
+                        Runtime.Core.Localizer[
+                            hadAllSurrenderVotes
+                                ? "match.surrender_fail1"
+                                : "match.surrender_fail2",
+                            Rules.GetChatPrefix()
+                        ]
+                    );
+                });
             }
         }
     }

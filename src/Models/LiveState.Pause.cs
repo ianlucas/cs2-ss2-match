@@ -107,17 +107,15 @@ public partial class LiveState
             if (!Rules.AreAllTeamsReadyToUnpause())
             {
                 if (!askedForUnpause)
-                    Timers.SetEveryChatInterval(
-                        "FriendlyUnpauseInstructions",
-                        () =>
-                            Runtime.Core.PlayerManager.SendChat(
-                                Runtime.Core.Localizer[
-                                    "match.pause_unpause1",
-                                    Rules.GetChatPrefix(),
-                                    playerState.Team.FormattedName,
-                                    playerState.Team.Opposition.FormattedName
-                                ]
-                            )
+                    Timers.SetEveryChatInterval("FriendlyUnpauseInstructions", () =>
+                        Runtime.Core.PlayerManager.SendChat(
+                            Runtime.Core.Localizer[
+                                "match.pause_unpause1",
+                                Rules.GetChatPrefix(),
+                                playerState.Team.FormattedName,
+                                playerState.Team.Opposition.FormattedName
+                            ]
+                        )
                     );
                 return;
             }
