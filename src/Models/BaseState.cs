@@ -60,8 +60,8 @@ public class BaseState
     {
         var eventName = typeof(THandler).Name;
         var eventSource = Runtime.Core.Event;
-        var eventInfo =
-            eventSource.GetType().GetEvent(eventName) ?? throw new ArgumentException(
+        var eventInfo = eventSource.GetType().GetEvent(eventName)
+            ?? throw new ArgumentException(
                 $"Event '{eventName}' not found on type '{eventSource.GetType().Name}'"
             );
         eventInfo.AddEventHandler(eventSource, handler);

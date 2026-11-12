@@ -273,12 +273,7 @@ public partial class LiveState : ActiveMatchState
                 attackerDamageReport.From.Value += damage;
                 attackerDamageReport.From.Hits += 1;
             }
-            if (
-                attackerState.DamageReport.TryGetValue(
-                    victimState.Key,
-                    out var victimDamageReport
-                )
-            )
+            if (attackerState.DamageReport.TryGetValue(victimState.Key, out var victimDamageReport))
             {
                 victimDamageReport.To.Value += damage;
                 victimDamageReport.To.Hits += 1;

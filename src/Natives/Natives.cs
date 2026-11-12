@@ -12,12 +12,12 @@ public static partial class Natives
     private static IUnmanagedFunction<TDelegate> ResolveFunction<TDelegate>(string signatureName)
         where TDelegate : Delegate
     {
-        nint? address = Runtime.Core.GameData.GetSignature(signatureName);
-        if (address is null)
+        var address = Runtime.Core.GameData.GetSignature(signatureName);
+        if (address == nint.Zero)
             throw new InvalidOperationException(
                 $"Failed to locate game function signature '{signatureName}'. The function may not exist in the current game version or the signature pattern may be outdated."
             );
-        return Runtime.Core.Memory.GetUnmanagedFunctionByAddress<TDelegate>(address.Value);
+        return Runtime.Core.Memory.GetUnmanagedFunctionByAddress<TDelegate>(address);
     }
 
     private static IUnmanagedFunction<TDelegate> ResolveFunction<TDelegate>(
@@ -28,8 +28,7 @@ public static partial class Natives
         where TDelegate : Delegate
     {
         var offset = ResolveOffset(offsetName);
-        var vtable =
-            Runtime.Core.Memory.GetVTableAddress(library ?? Library.Server, vtableName)
+        var vtable = Runtime.Core.Memory.GetVTableAddress(library ?? Library.Server, vtableName)
             ?? throw new InvalidOperationException($"Failed to locate {vtableName} vtable.");
         return Runtime.Core.Memory.GetUnmanagedFunctionByVTable<TDelegate>(vtable, offset);
     }

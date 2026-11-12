@@ -14,12 +14,10 @@
   <ItemGroup>
     <PackageReference
       Include="SwiftlyS2.CS2"
-      Version="1.4.10"
+      Version="1.5.2"
       ExcludeAssets="runtime"
       PrivateAssets="all"
     />
-    <!-- MySqlConnector is a SwiftlyS2.CS2 dependency that this plugin neither uses nor ships. -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-473q-m89c-ghf8" />
   </ItemGroup>
 
   <ItemGroup>
